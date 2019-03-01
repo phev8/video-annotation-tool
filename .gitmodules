@@ -1,6 +1,6 @@
-[submodule "Signal-Annotation-Tool-Client"]
-	path = Signal-Annotation-Tool-Client
-	url = https://github.com/etherealyn/Signal-Annotation-Tool-Client
-[submodule "Signal-Annotation-Tool-Server"]
-	path = Signal-Annotation-Tool-Server
-	url = https://github.com/etherealyn/Signal-Annotation-Tool-Server
+[submodule "signal-annotation-tool-server"]
+	path = signal-annotation-tool-server
+	url = https://github.com/etherealyn/signal-annotation-tool-server
+[submodule "signal-annotation-tool-client"]
+	path = signal-annotation-tool-client
+	url = https://github.com/etherealyn/signal-annotation-tool-client
