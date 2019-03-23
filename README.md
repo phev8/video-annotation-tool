@@ -6,8 +6,8 @@
 
 ## Development
 
-This repository serves as a parent module for our client and server implementation. `git clone`, therefore, requires `--recursive` flag.  
+This repository serves as a parent module for our client and server implementation. `git clone`, therefore, requires `--recurse-submodules` flag.  
 
 ```bash
-git clone --recursive https://github.com/phev8/signal-annotation-tool
+git clone --recurse-submodules https://github.com/phev8/signal-annotation-tool
 ```

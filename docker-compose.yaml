@@ -1,0 +1,42 @@
+version: '3.1'
+
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  mongodb:
+    image: 'bitnami/mongodb:latest'
+    networks:
+      - app-tier
+    volumes:
+      - './mongodb_data:/bitnami'
+    ports:
+      - "27017:27017"
+  backend-tier:
+    build: ./srv
+    networks:
+      - app-tier
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./videos:/videos
+    environment:
+      - SAT_CORS=http://localhost:4200
+      - SAT_MULTER_DEST=/videos
+      - SAT_DB_HOST=mongodb
+      - SAT_DB_PORT=27017
+    depends_on:
+      - mongodb
+  frontend-tier:
+    build: ./web
+    networks:
+      - app-tier
+    depends_on:
+      - backend-tier
+    ports:
+      - "4200:80"
+
+volumes:
+  mongodb_data:
+    driver: local
