@@ -4,7 +4,7 @@
 * [Signal Annotation Tool (Client)](https://github.com/etherealyn/signal-annotation-tool-client) 
 * [Signal Annotation Tool (Server)](https://github.com/etherealyn/signal-annotation-tool-server) 
 
-## Development
+## Cloning the repository
 
 This repository serves as a parent module for our client and server implementation. `git clone`, therefore, requires `--recurse-submodules` flag.  
 
@@ -16,6 +16,7 @@ $ git clone --recurse-submodules https://github.com/phev8/signal-annotation-tool
 
 ### Prerequisites:
 
+* Clone this repository
 * Docker
 * Docker Compose
 
