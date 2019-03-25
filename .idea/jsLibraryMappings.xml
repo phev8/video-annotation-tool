@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptLibraryMappings">
+    <includedPredefinedLibrary name="Node.js Core" />
+    <excludedPredefinedLibrary name="signal-annotation-tool/server/node_modules" />
+    <excludedPredefinedLibrary name="signal-annotation-tool/srv/node_modules" />
+    <excludedPredefinedLibrary name="signal-annotation-tool/web/node_modules" />
+  </component>
+</project>
