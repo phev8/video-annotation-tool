@@ -14,6 +14,7 @@ services:
     ports:
       - "27017:27017"
   backend-tier:
+    image: 'etherealyn/sat-backend:latest'
     build: ./srv
     networks:
       - app-tier
@@ -29,6 +30,7 @@ services:
     depends_on:
       - mongodb
   frontend-tier:
+    image: 'etherealyn/sat-frontend:latest'
     build: ./web
     networks:
       - app-tier
