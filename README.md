@@ -4,7 +4,16 @@
 * [Signal Annotation Tool (Client)](https://github.com/etherealyn/signal-annotation-tool-client) 
 * [Signal Annotation Tool (Server)](https://github.com/etherealyn/signal-annotation-tool-server) 
 
-## Cloning the repository
+## Quickstart
+
+### Prerequisites:
+
+* [git](https://git-scm.com/downloads) 
+* [Docker](https://docs.docker.com/install/)
+* [Docker Compose](https://docs.docker.com/install/)
+
+
+## 1. Clone the repository
 
 This repository serves as a parent module for our client and server implementation. `git clone`, therefore, requires `--recurse-submodules` flag.  
 
@@ -12,22 +21,15 @@ This repository serves as a parent module for our client and server implementati
 $ git clone --recurse-submodules https://github.com/phev8/signal-annotation-tool
 ```
 
-## Quickstart
-
-### Prerequisites:
-
-* Clone this repository
-* Docker
-* Docker Compose
-
-### Create and start containers
+### 2. Create and start containers
 
 ```bash
+$ cd signal-annotation-tool
 $ docker-compose up
 ```
 When the process is finished, open your browser and go to `localhost:4200`.
 
-### Stop and remove containers, networks and volumes:
+### 3. Stop and remove containers, networks and volumes
 ```bash
 $ docker-compose down
 ```
