@@ -10,7 +10,7 @@
 
 * [git](https://git-scm.com/downloads) 
 * [Docker](https://docs.docker.com/install/)
-* [Docker Compose](https://docs.docker.com/install/)
+* [Docker Compose](https://docs.docker.com/compose/install/)
 
 
 ## 1. Clone the repository
