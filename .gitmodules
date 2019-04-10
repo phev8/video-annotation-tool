@@ -1,0 +1,6 @@
+[submodule "srv"]
+	path = srv
+	url = https://github.com/etherealyn/signal-annotation-tool-server.git
+[submodule "web"]
+	path = web
+	url = https://github.com/etherealyn/signal-annotation-tool-client
