@@ -5,6 +5,12 @@ networks:
     driver: bridge
 
 services:
+  fix-mongodb-permissions:
+    image: 'bitnami/mongodb:latest'
+    user: root
+    command: chown -R 1001:1001 /bitnami
+    volumes:
+    - './mongodb_data:/bitnami'
   mongodb:
     image: 'bitnami/mongodb:latest'
     networks:
@@ -13,6 +19,8 @@ services:
       - './mongodb_data:/bitnami'
     ports:
       - "27017:27017"
+    depends_on:
+      - fix-mongodb-permissions
   backend-tier:
     image: 'etherealyn/sat-backend:latest'
     build: ./srv
