@@ -21,7 +21,7 @@ services:
       - app-tier
     volumes:
       - './mongodb_data:/bitnami'
-    environment:
+#    environment:
 #      - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
 #      - MONGODB_USERNAME=$MONGODB_USERNAME
 #      - MONGODB_PASSWORD=$MONGODB_PASSWORD

@@ -2,18 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7c47cc83-d2cb-45f7-a76a-9ddbd0f120ac" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/web/conf/entrypoint.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/docker-compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/srv" beforeDir="false" afterPath="$PROJECT_DIR$/srv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/srv/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/srv/config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/srv/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/srv/src/main.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web" beforeDir="false" afterPath="$PROJECT_DIR$/web" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/web/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/web/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/environments/environment.prod.ts" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/environments/environment.prod.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/web/src/main.ts" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -40,6 +29,15 @@
               <folding>
                 <element signature="e#0#43#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/web/conf/entrypoint.sh">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="40">
+              <caret line="2" selection-start-line="2" selection-end-line="2" />
             </state>
           </provider>
         </entry>
@@ -89,8 +87,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/docker-compose.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="45" selection-start-line="45" selection-end-line="45" />
+            <state relative-caret-position="195">
+              <caret line="24" column="12" selection-start-line="24" selection-start-column="12" selection-end-line="24" selection-end-column="12" />
               <folding>
                 <element signature="e#16#56#0" />
                 <element signature="e#63#105#0" />
@@ -187,8 +185,8 @@
         <option value="$PROJECT_DIR$/web/src/environments/environment.ts" />
         <option value="$PROJECT_DIR$/web/Dockerfile" />
         <option value="$PROJECT_DIR$/srv/src/main.ts" />
-        <option value="$PROJECT_DIR$/docker-compose.yaml" />
         <option value="$PROJECT_DIR$/.env" />
+        <option value="$PROJECT_DIR$/docker-compose.yaml" />
       </list>
     </option>
   </component>
@@ -209,6 +207,30 @@
             <path>
               <item name="signal-annotation-tool" type="b2602c69:ProjectViewProjectNode" />
               <item name="signal-annotation-tool" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="signal-annotation-tool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="signal-annotation-tool" type="462c0819:PsiDirectoryNode" />
+              <item name="web" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="signal-annotation-tool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="signal-annotation-tool" type="462c0819:PsiDirectoryNode" />
+              <item name="web" type="462c0819:PsiDirectoryNode" />
+              <item name="conf" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="signal-annotation-tool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="signal-annotation-tool" type="462c0819:PsiDirectoryNode" />
+              <item name="web" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="signal-annotation-tool" type="b2602c69:ProjectViewProjectNode" />
+              <item name="signal-annotation-tool" type="462c0819:PsiDirectoryNode" />
+              <item name="web" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="environments" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -301,15 +323,16 @@
       <workItem from="1556227822635" duration="5197000" />
       <workItem from="1556233224933" duration="134000" />
       <workItem from="1556233674779" duration="2567000" />
-      <workItem from="1556261094709" duration="6674000" />
+      <workItem from="1556261094709" duration="7558000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="19932000" />
+    <option name="totallyTimeSpent" value="20816000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="1920" height="1055" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1638207" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -575,28 +598,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/web/conf/entrypoint.sh">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="40">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/srv/package-lock.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/srv/package.json">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/web/src/environments/environment.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="6" selection-start-line="6" selection-end-line="6" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/backend-variables.env">
       <provider selected="true" editor-type-id="text-editor">
@@ -612,27 +618,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/web/Dockerfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="18" column="53" selection-start-line="18" selection-start-column="53" selection-end-line="18" selection-end-column="53" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/web/conf/nginx.conf">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="160">
           <caret line="17" column="29" selection-start-line="17" selection-start-column="20" selection-end-line="17" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/srv/src/main.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="3" selection-start-line="3" selection-end-line="3" />
-          <folding>
-            <element signature="e#0#43#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -643,13 +632,6 @@
             <caret line="3" column="3" selection-start-line="3" selection-start-column="3" selection-end-line="3" selection-end-column="27" />
           </first_editor>
           <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/web/src/environments/environment.prod.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="40">
-          <caret line="2" column="21" selection-start-line="2" selection-start-column="21" selection-end-line="2" selection-end-column="21" />
         </state>
       </provider>
     </entry>
@@ -673,10 +655,51 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/web/src/environments/environment.prod.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="40">
+          <caret line="2" column="21" selection-start-line="2" selection-start-column="21" selection-end-line="2" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/web/src/environments/environment.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="6" selection-start-line="6" selection-end-line="6" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/srv/src/main.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="3" selection-start-line="3" selection-end-line="3" />
+          <folding>
+            <element signature="e#0#43#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/web/conf/entrypoint.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="40">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/web/Dockerfile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="18" column="53" selection-start-line="18" selection-start-column="53" selection-end-line="18" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/docker-compose.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="45" selection-start-line="45" selection-end-line="45" />
+        <state relative-caret-position="195">
+          <caret line="24" column="12" selection-start-line="24" selection-start-column="12" selection-end-line="24" selection-end-column="12" />
           <folding>
             <element signature="e#16#56#0" />
             <element signature="e#63#105#0" />
