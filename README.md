@@ -13,7 +13,7 @@
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
 
-## 1. Clone the repository
+### 1. Clone the repository
 
 This repository serves as a parent module for our client and server implementation. `git clone`, therefore, requires `--recurse-submodules` flag.  
 
@@ -21,7 +21,15 @@ This repository serves as a parent module for our client and server implementati
 $ git clone --recurse-submodules https://github.com/phev8/signal-annotation-tool
 ```
 
-### 2. Create and start containers
+### 2. Edit .env
+
+Change `SAT_HOSTNAME` entry in the `.env`.
+
+```dotenv
+SAT_HOSTNAME=example.com
+```
+
+### 3. Create and start containers
 
 ```bash
 $ cd signal-annotation-tool
@@ -29,7 +37,7 @@ $ docker-compose up
 ```
 When the process is finished, open your browser and go to `localhost:4200`.
 
-### 3. Stop and remove containers, networks and volumes
+### 4. Stop and remove containers, networks and volumes
 ```bash
 $ docker-compose down
 ```
