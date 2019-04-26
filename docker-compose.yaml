@@ -4,19 +4,28 @@ networks:
   app-tier:
     driver: bridge
 
+volumes:
+  mongodb_data:
+    driver: local
+
 services:
   fix-mongodb-permissions:
     image: 'bitnami/mongodb:latest'
     user: root
     command: chown -R 1001:1001 /bitnami
     volumes:
-    - './mongodb_data:/bitnami'
+      - './mongodb_data:/bitnami'
   mongodb:
     image: 'bitnami/mongodb:latest'
     networks:
       - app-tier
     volumes:
       - './mongodb_data:/bitnami'
+    environment:
+#      - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
+#      - MONGODB_USERNAME=$MONGODB_USERNAME
+#      - MONGODB_PASSWORD=$MONGODB_PASSWORD
+#      - MONGODB_DATABASE=$MONGODB_DATABASE
     ports:
       - "27017:27017"
     depends_on:
@@ -31,10 +40,13 @@ services:
     volumes:
       - ./videos:/videos
     environment:
-      - SAT_CORS=http://localhost:4200
-      - SAT_MULTER_DEST=/videos
-      - SAT_DB_HOST=mongodb
-      - SAT_DB_PORT=27017
+      - CORS=http://$SAT_HOSTNAME:4200
+      - MULTER_DEST=/videos
+      - DB_HOST=mongodb
+      - DB_PORT=27017
+#      - DB_USERNAME=$MONGODB_USERNAME
+#      - DB_PASSWORD=$MONGODB_PASSWORD
+#      - DB_NAME=$MONGODB_DATABASE
     depends_on:
       - mongodb
   frontend-tier:
@@ -42,11 +54,10 @@ services:
     build: ./web
     networks:
       - app-tier
-    depends_on:
-      - backend-tier
     ports:
       - "4200:80"
+    environment:
+      - API_URL=http://$SAT_HOSTNAME:3000
+    depends_on:
+      - backend-tier
 
-volumes:
-  mongodb_data:
-    driver: local
