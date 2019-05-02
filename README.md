@@ -44,9 +44,19 @@ Alternatively you can build containers locally:
 docker-compose up --build
 ```
 
-### 4. Stop and remove containers, networks and volumes
+## Troubleshooting
+
+###  Stop and remove containers, networks and volumes
+
+WARNING: This will clear any data you had in your mongodb instance. If you wish to save persistent data, try this link 
+(TODO: add a link describing how to backup docker volumes)
+
+If you had a previous version running in your system you might want to remove previous containers, networks and volumes. 
+
 ```bash
 $ docker-compose down
 ```
+
+---
 
 NOTE: The containers will attempt to use port 27017 for Mongo, port 4200 for the Frontend and port 3000 for the Backend. Depending on your system you might want to change these values in `docker-compose.yaml`.
