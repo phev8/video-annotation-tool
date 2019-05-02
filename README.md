@@ -29,13 +29,20 @@ Change `SAT_HOSTNAME` entry in the `.env`.
 SAT_HOSTNAME=example.com
 ```
 
-### 3. Create and start containers
+### 3. Pull containers and bring them up (launch):
 
 ```bash
 $ cd signal-annotation-tool
+$ docker-compose pull
 $ docker-compose up
 ```
 When the process is finished, open your browser and go to `localhost:4200`.
+
+Alternatively you can build containers locally:
+
+```bash
+docker-compose up --build
+```
 
 ### 4. Stop and remove containers, networks and volumes
 ```bash
