@@ -29,7 +29,7 @@ Change `SAT_HOSTNAME` entry in the `.env`.
 SAT_HOSTNAME=example.com
 ```
 
-### 3. Create and start containers
+### 3. Pull containers and bring them up (launch):
 
 ```bash
 $ cd signal-annotation-tool
@@ -38,9 +38,25 @@ $ docker-compose up
 ```
 When the process is finished, open your browser and go to `localhost:4200`.
 
-### 4. Stop and remove containers, networks and volumes
+Alternatively you can build containers locally:
+
+```bash
+docker-compose up --build
+```
+
+## Troubleshooting
+
+###  Stop and remove containers, networks and volumes
+
+WARNING: This will clear any data you had in your mongodb instance. If you wish to save persistent data, try this link 
+(TODO: add a link describing how to backup docker volumes)
+
+If you had a previous version running in your system you might want to remove previous containers, networks and volumes. 
+
 ```bash
 $ docker-compose down
 ```
+
+---
 
 NOTE: The containers will attempt to use port 27017 for Mongo, port 4200 for the Frontend and port 3000 for the Backend. Depending on your system you might want to change these values in `docker-compose.yaml`.

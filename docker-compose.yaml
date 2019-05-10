@@ -9,27 +9,22 @@ volumes:
     driver: local
 
 services:
-  fix-mongodb-permissions:
-    image: 'bitnami/mongodb:latest'
-    user: root
-    command: chown -R 1001:1001 /bitnami
-    volumes:
-      - './mongodb_data:/bitnami'
+        #  fix-mongodb-permissions:
+        #    image: 'bitnami/mongodb:latest'
+        #    user: root
+        #    command: chown -R 1001:1001 /bitnami
+        #    volumes:
+        #      - ./mongodb_data:/bitnami
   mongodb:
     image: 'bitnami/mongodb:latest'
     networks:
       - app-tier
     volumes:
-      - './mongodb_data:/bitnami'
-#    environment:
-#      - MONGODB_ROOT_PASSWORD=$MONGODB_ROOT_PASSWORD
-#      - MONGODB_USERNAME=$MONGODB_USERNAME
-#      - MONGODB_PASSWORD=$MONGODB_PASSWORD
-#      - MONGODB_DATABASE=$MONGODB_DATABASE
+      - mongodb_data:/bitnami
     ports:
       - "27017:27017"
-    depends_on:
-      - fix-mongodb-permissions
+        #    depends_on:
+        #      - fix-mongodb-permissions
   backend-tier:
     image: 'etherealyn/vat-backend:v0.3.1'
     build: ./srv
@@ -44,9 +39,6 @@ services:
       - MULTER_DEST=/videos
       - DB_HOST=mongodb
       - DB_PORT=27017
-#      - DB_USERNAME=$MONGODB_USERNAME
-#      - DB_PASSWORD=$MONGODB_PASSWORD
-#      - DB_NAME=$MONGODB_DATABASE
     depends_on:
       - mongodb
   frontend-tier:
