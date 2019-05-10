@@ -31,7 +31,7 @@ services:
     depends_on:
       - fix-mongodb-permissions
   backend-tier:
-    image: 'etherealyn/sat-backend:latest'
+    image: 'etherealyn/vat-backend:v0.3.1'
     build: ./srv
     networks:
       - app-tier
@@ -50,7 +50,7 @@ services:
     depends_on:
       - mongodb
   frontend-tier:
-    image: 'etherealyn/sat-frontend:latest'
+    image: 'etherealyn/vat-frontend:v0.3.1'
     build: ./web
     networks:
       - app-tier

@@ -33,6 +33,7 @@ SAT_HOSTNAME=example.com
 
 ```bash
 $ cd signal-annotation-tool
+$ docker-compose pull
 $ docker-compose up
 ```
 When the process is finished, open your browser and go to `localhost:4200`.
