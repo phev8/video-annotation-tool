@@ -25,6 +25,11 @@ $ git clone --recurse-submodules https://github.com/phev8/signal-annotation-tool
 
 Change `SAT_HOSTNAME` entry in the `.env`.
 
+```bash
+$ cd signal-annotation-tool
+$ nano .env
+```
+
 ```dotenv
 SAT_HOSTNAME=example.com
 ```
