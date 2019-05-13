@@ -7,6 +7,8 @@ networks:
 volumes:
   mongodb_data:
     driver: local
+  video_data:
+    driver: local
 
 services:
   mongodb:
@@ -18,14 +20,14 @@ services:
     ports:
       - "27017:27017"
   backend-tier:
-    image: 'etherealyn/vat-backend:v0.3.2'
+    image: 'etherealyn/vat-backend:v0.3.3'
     build: ./srv
     networks:
       - app-tier
     ports:
       - "3000:3000"
     volumes:
-      - ./videos:/videos
+      - video_data:/videos
     environment:
       - CORS=http://$SAT_HOSTNAME:4200
       - MULTER_DEST=/videos
