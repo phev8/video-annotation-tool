@@ -1,0 +1,6 @@
+dist
+node_modules
+npm-debug.log
+.idea
+.editorconfig
+.gitignore

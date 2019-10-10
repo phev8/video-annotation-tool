@@ -1,0 +1,39 @@
+<div style="margin-left: 12px" *ngIf="project">
+  <strong>{{project.title}}</strong><br>
+  {{project.description}}
+</div>
+<hr>
+<div style="display:table;margin:0 auto;" *ngIf="loading">
+  <span class="spinner spinner-md">
+      Loading...
+  </span>
+</div>
+<app-file-upload *ngIf="project" [currentProject]="project"></app-file-upload>
+<clr-tree-node *ngFor="let directory of rootDirectory">
+  <div>
+    <clr-icon [attr.shape]='directory.expanded ? "folder-open" : "folder"'></clr-icon>
+    {{ directory.name }}
+  </div>
+  <div class="btn-group btn-link btn-icon action-icons">
+    <button type="button" class="btn" title="Upload Files" (click)="openUploadDialog()">
+      <clr-icon shape="upload"></clr-icon>
+    </button>
+  </div>
+  <ng-template [(clrIfExpanded)]="directory.expanded">
+    <clr-tree-node *ngFor="let file of directory.files">
+      <button
+        (click)="openFile(file)"
+        class="clr-treenode-link"
+        [class.active]="file.active">
+        <clr-icon [attr.shape]="file.icon"></clr-icon>
+        {{file.name }}
+      </button>
+      <div *ngIf="false">
+        <button class="btn btn-link btn-icon" (click)="onFileDelete(file.filename)">
+          <clr-icon shape="trash"></clr-icon>
+        </button>
+      </div>
+    </clr-tree-node>
+  </ng-template>
+</clr-tree-node>
+

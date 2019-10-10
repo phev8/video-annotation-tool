@@ -1,0 +1,69 @@
+<form class="login" (ngSubmit)="onSubmit()" #signupForm="ngForm">
+  <section class="title">
+    <h3 class="welcome">Register to use</h3>
+    {{appName}}
+  </section>
+
+  <div class="login-group">
+    <clr-input-container>
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required minlength="3" maxlength="24" clrInput
+             [(ngModel)]="model.username"
+             #username="ngModel"/>
+      <clr-control-error *clrIfError="'required'">A username is required</clr-control-error>
+      <clr-control-error *clrIfError="'minlength'">A minimal length for a password is 3</clr-control-error>
+      <clr-control-error *clrIfError="'maxlength'">A maximal length for a password is 24</clr-control-error>
+    </clr-input-container>
+
+    <clr-input-container>
+      <label for="email">E-mail</label>
+      <input type="email" id="email" name="email" email maxlength="256" clrInput [(ngModel)]="model.email"/>
+      <clr-control-error *clrIfError="'email'">An e-mail should contain '@'</clr-control-error>
+    </clr-input-container>
+
+    <clr-password-container>
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" clrPassword minlength="8" maxlength="64" required
+             [(ngModel)]="model.password"
+             #password="ngModel" (ngModelChange)="verifyPassword()"/>
+      <clr-control-error *clrIfError="'required'">A password is required</clr-control-error>
+      <clr-control-error *clrIfError="'minlength'">A minimal length for a password is 8</clr-control-error>
+      <clr-control-error *clrIfError="'maxlength'">A maximal length for a password is 64</clr-control-error>
+    </clr-password-container>
+
+    <clr-password-container>
+      <label for="repeatPassword">Verify password</label>
+      <input type="password" id="repeatPassword" name="repeatPassword" clrPassword
+             required
+             [(ngModel)]="model.repeatPassword"
+             (ngModelChange)="verifyPassword()"
+             #repeatPassword="ngModel"
+             minlength="8"
+             maxlength="64"
+      />
+      <clr-control-helper [hidden]="password.invalid || repeatPassword.invalid || arePasswordsSame">
+        <div style="color: #c92100"><strong>Please type the same password twice</strong></div>
+      </clr-control-helper>
+      <clr-control-error *clrIfError="'required'">A password verification is required</clr-control-error>
+      <clr-control-error *clrIfError="'minlength'">A minimal length for a password is 8</clr-control-error>
+      <clr-control-error *clrIfError="'maxlength'">A maximal length for a password is 64</clr-control-error>
+    </clr-password-container>
+
+    <div *ngIf="error" class="error active">
+      {{errorMessage}}
+    </div>
+    <div *ngIf="complete" class="alert alert-success">
+      {{message}}
+    </div>
+
+    <button [clrLoading]="signupBtnState"
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="loading||username.invalid || password.invalid || repeatPassword.invalid || !arePasswordsSame">
+      REGISTER
+    </button>
+    <button class="btn btn-outline signup" (click)="onLoginClick()">Login instead</button>
+  </div>
+</form>
+
+

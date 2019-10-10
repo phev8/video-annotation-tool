@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: sat-srv
+spec:
+  selector:
+    app: sat-server
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: NodePort

@@ -1,0 +1,207 @@
+//.video-container:hover {
+//  border: 2px solid transparent;
+//}
+//
+//.video-container:hover {
+//  border: 2px solid aqua;
+//}
+
+.rounded-corners {
+  border-radius: 3px;
+}
+
+.videogrid-controls {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  z-index: 300;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  -webkit-transition: bottom 1s;
+  -khtml-transition: bottom 1s;
+  -moz-transition: bottom 1s;
+  -ms-transition: bottom 1s;
+  transition: bottom 1s;
+}
+
+.play-pause {
+  user-select: none;
+  display: flex;
+  justify-content: center;
+  height: 48px;
+  width: 48px;
+  cursor: pointer;
+  color: white;
+  line-height: 48px;
+}
+
+.play-pause clr-icon {
+  pointer-events: none;
+  margin: 16px;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 80%;
+  height: 8px;
+  border-radius: 5px;
+  background: #b1b6b6;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  position: relative;
+  top: 25%;
+  transform: translateY(-25%);
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00feff;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00fffa;
+  cursor: pointer;
+}
+
+.currentTime {
+  height: 48px;
+  span {
+    color: white;
+    line-height: 48px;
+  }
+}
+
+//
+//input[type=range]::-webkit-slider-runnable-track {
+//  background-position: right top;
+//  background-image: linear-gradient(to right, red 60%, transparent 60%);
+//}
+//input[type=range]::-moz-range-track {
+//  background-position: right top;
+//  background-image: linear-gradient(to right, red 60%, transparent 60%);
+//}
+
+//mat-slider {
+//  height: 300px;
+//}
+
+/** Slider CSS -- BEGIN */
+//input[type=range] {
+//  /*removes default webkit styles*/
+//  -webkit-appearance: none;
+//
+//  /*fix for FF unable to apply focus style bug */
+//  border: 1px solid white;
+//
+//  /*required for proper track sizing in FF*/
+//  width: 300px;
+//}
+//input[type=range]::-webkit-slider-runnable-track {
+//  width: 300px;
+//  height: 5px;
+//  background: #ddd;
+//  border: none;
+//  border-radius: 3px;
+//}
+//input[type=range]::-webkit-slider-thumb {
+//  -webkit-appearance: none;
+//  border: none;
+//  height: 16px;
+//  width: 16px;
+//  border-radius: 50%;
+//  background: goldenrod;
+//  margin-top: -4px;
+//}
+//input[type=range]:focus {
+//  outline: none;
+//}
+//input[type=range]:focus::-webkit-slider-runnable-track {
+//  background: #ccc;
+//}
+//
+//input[type=range]::-moz-range-track {
+//  width: 300px;
+//  height: 5px;
+//  background: #ddd;
+//  border: none;
+//  border-radius: 3px;
+//}
+//input[type=range]::-moz-range-thumb {
+//  border: none;
+//  height: 16px;
+//  width: 16px;
+//  border-radius: 50%;
+//  background: goldenrod;
+//}
+//
+///*hide the outline behind the border*/
+//input[type=range]:-moz-focusring{
+//  outline: 1px solid white;
+//  outline-offset: -1px;
+//}
+//
+//input[type=range]::-ms-track {
+//  width: 300px;
+//  height: 5px;
+//
+//  /*remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead */
+//  background: transparent;
+//
+//  /*leave room for the larger thumb to overflow with a transparent border */
+//  border-color: transparent;
+//  border-width: 6px 0;
+//
+//  /*remove default tick marks*/
+//  color: transparent;
+//}
+//input[type=range]::-ms-fill-lower {
+//  background: #777;
+//  border-radius: 10px;
+//}
+//input[type=range]::-ms-fill-upper {
+//  background: #ddd;
+//  border-radius: 10px;
+//}
+//input[type=range]::-ms-thumb {
+//  border: none;
+//  height: 16px;
+//  width: 16px;
+//  border-radius: 50%;
+//  background: goldenrod;
+//}
+//input[type=range]:focus::-ms-fill-lower {
+//  background: #888;
+//}
+//input[type=range]:focus::-ms-fill-upper {
+//  background: #ccc;
+//}
+/** Slider CSS -- END */
+
+//app-playback-button {
+//  -webkit-touch-callout: none;
+//  -webkit-user-select: none;
+//  -moz-user-select: none;
+//  -ms-user-select: none;
+//  user-select: none;
+//  display: flex;
+//  justify-content: center;
+//  height: 48px;
+//  width: 48px;
+//  cursor: pointer;
+//}
+//app-playback-button .button {
+//  display: flex;
+//  align-items: center;
+//  justify-content: center;
+//  width: 48px;
+//}

@@ -1,0 +1,134 @@
+<app-project-form xmlns="http://www.w3.org/1999/html"></app-project-form>
+
+<!--<div *ngIf="isLoading">-->
+<!--<span class="spinner spinner-md">Loading...</span>-->
+<!--</div>-->
+<div *ngIf="!inviteMembers">
+  <button class="btn btn-outline" (click)="isDatagridView = !isDatagridView">Toggle
+    view: {{isDatagridView ? 'Datagrid' : 'Cards'}}</button>
+
+  <clr-datagrid *ngIf="isDatagridView">
+    <clr-dg-column>Title</clr-dg-column>
+    <clr-dg-column>Description</clr-dg-column>
+    <clr-dg-column>Last Modification</clr-dg-column>
+    <clr-dg-column>OwnerId</clr-dg-column>
+    <clr-dg-column>MemberIds</clr-dg-column>
+    <clr-dg-column></clr-dg-column>
+    <clr-dg-column></clr-dg-column>
+
+    <clr-dg-row *ngFor="let project of projects">
+      <clr-dg-cell><a routerLink="/editor/{{project.id}}">{{project.title}}</a></clr-dg-cell>
+      <clr-dg-cell>{{project.description}}</clr-dg-cell>
+      <clr-dg-cell>{{project.modified | date}}</clr-dg-cell>
+      <clr-dg-cell>{{project.ownerId}}</clr-dg-cell>
+      <clr-dg-cell>{{project.memberIds}}</clr-dg-cell>
+      <clr-dg-cell><a href="javascript://" (click)="onInvite(project.id)">Invite Users</a></clr-dg-cell>
+      <clr-dg-cell><button (click)="onDelete(project.id)" class="btn btn-link icon-button"><clr-icon shape="trash"></clr-icon></button></clr-dg-cell>
+    </clr-dg-row>
+
+    <clr-dg-footer>
+      {{projects.length}} project{{projects.length === 1 ? "" : "s"}}
+    </clr-dg-footer>
+  </clr-datagrid>
+
+  <div *ngIf="!isDatagridView">
+    <div class="clr-row">
+      <div class="clr-col" *ngFor="let project of projects">
+        <div class="card">
+          <div class="card-header">
+            <span>{{project.title}}</span><span><button (click)="onDelete(project.id)" class="btn btn-link right"><clr-icon shape="trash"></clr-icon></button></span>
+          </div>
+          <div class="card-block">
+            <!--<div class="card-title">-->
+            <!--Block-->
+            <!--</div>-->
+            <div class="card-text">
+              <strong>Description:</strong> {{project.description}} <br>
+              <strong>Modified:</strong> {{project.modified}} <br>
+              <strong>OwnerId:</strong> {{project.ownerId}} <br>
+              <strong>MemberIds:</strong> {{project.memberIds.join(", ")}}
+            </div>
+          </div>
+          <div class="card-footer">
+            <button class="btn btn-sm btn-primary-outline" routerLink="/editor/{{project.id}}">Open Project</button>
+            <button class="btn btn-sm btn-link" (click)="onInvite(project.id)">Invite Users</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div *ngIf="inviteMembers">
+
+  <div class="clr-row">
+    <div class="clr-col-4"></div>
+    <div class="clr-col-4 card">
+      <div class="clr-row">
+        <div class="clr-col-11">
+          <h3 class="modal-title">Invite Members</h3>
+        </div>
+        <div class="clr-col-1">
+          <button type="button" class="btn btn-link btn-icon top-margin" aria-label="cancel" (click)="closeInvitation()">
+            <clr-icon shape="times" size="36" ></clr-icon>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <clr-datagrid *ngIf="inviteMembers">
+          <clr-dg-column>Member Id</clr-dg-column>
+          <clr-dg-column>Username</clr-dg-column>
+          <clr-dg-column>Email Id</clr-dg-column>
+          <clr-dg-column>Invited</clr-dg-column>
+
+          <clr-dg-row *ngFor="let member of members">
+            <clr-dg-cell>{{member.id}}</clr-dg-cell>
+            <clr-dg-cell>{{member.username}}</clr-dg-cell>
+            <clr-dg-cell>{{member.email}}</clr-dg-cell>
+            <clr-dg-cell><input type="checkbox"  clrCheckbox (change)="changeMembers(member)" checked [disabled]="selectedProject.ownerId === member.id"/></clr-dg-cell>
+          </clr-dg-row>
+
+          <clr-dg-footer>
+            {{members.length}} member{{members.length === 1 ? "" : "s"}}
+          </clr-dg-footer>
+        </clr-datagrid>
+
+        <form (ngSubmit)="invite()">
+          <div class="clr-row">
+            <div class="clr-col-2"></div>
+            <div class="clr-col-4 align-center">
+              <clr-input-container>
+                <label>User Id</label>
+                <input placeholder="User Id" clrInput [(ngModel)]="invitedUser" name="name" required />
+                <clr-control-helper>Enter the user id to invite</clr-control-helper>
+                <clr-control-error>This field is required!</clr-control-error>
+              </clr-input-container>
+            </div>
+            <div class="clr-col-2"></div>
+            <div class="clr-col-4">
+              <button class="btn btn-primary search-button" type="submit">Add</button>
+            </div>
+          </div>
+
+
+
+          <div class="error active" *ngIf="error">
+            {{errorMessage}}
+          </div>
+        </form>
+        <div class="clr-row top-margin">
+          <div class="clr-col-5"></div>
+          <div class="clr-col-2">
+            <button class="btn btn-primary" (click)="updateMembers()">Update</button>
+          </div>
+          <div class="clr-col-5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="clr-col-4"></div>
+  </div>
+
+
+</div>
+

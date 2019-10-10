@@ -1,0 +1,5 @@
+<vg-player (onPlayerReady)="onPlayerReady$($event)" *ngIf="source">
+  <video [vgMedia]="master" #master [vgMaster]="true" preload="auto">
+    <source src='{{url}}/{{source}}' type="video/mp4">
+  </video>
+</vg-player>

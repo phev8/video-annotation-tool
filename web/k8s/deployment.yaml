@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sat-client
+  labels:
+    app: sat-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sat-client
+  template:
+    metadata:
+      labels:
+        app: sat-client
+    spec:
+      containers:
+        - name: sat-web
+          image: eth/sat-web:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80

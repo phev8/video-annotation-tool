@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: sat-web
+spec:
+  selector:
+    app: sat-client
+  ports:
+    - port: 80
+      targetPort: 80
+  type: NodePort

@@ -1,0 +1,34 @@
+<clr-tree-node *ngIf="annotationsFolder">
+  <div>
+    <clr-icon [attr.shape]='annotationsFolder.expanded ? "folder-open" : "folder"'></clr-icon>
+    {{ annotationsFolder.name }}
+  </div>
+  <div class="btn-group btn-link btn-icon action-icons">
+    <button type="button" class="btn" title="Add Class" (click)="addNewLabel()">
+      <clr-icon shape="plus"></clr-icon>
+    </button>
+  </div>
+  <ng-template [(clrIfExpanded)]="annotationsFolder.expanded">
+    <clr-tree-node *ngFor="let label of annotationsFolder.files; let i = index">
+
+      <!--<button-->
+      <!--class="clr-treenode-link"-->
+      <!--[class.active]="label.active">-->
+      <!--</button>-->
+
+      <div class="clr-treenode-link">
+        <!--<clr-icon [attr.shape]="label.icon"></clr-icon>-->
+        <input type="text" [(ngModel)]="label.name" (change)="onLabelNameChange(label)"/>
+        <!--{{label.name}}-->
+      </div>
+      <div>
+        <!--<button class="btn btn-link btn-icon" (click)="onLabelHide(i)">-->
+          <!--<clr-icon shape="eye-hide"></clr-icon>-->
+        <!--</button>-->
+        <button class="btn btn-link btn-icon" (click)="onLabelDelete(label.id)">
+          <clr-icon shape="trash"></clr-icon>
+        </button>
+      </div>
+    </clr-tree-node>
+  </ng-template>
+</clr-tree-node>

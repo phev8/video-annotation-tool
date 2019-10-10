@@ -1,0 +1,69 @@
+.vertical-line {
+  width: 6px; /* Line width */
+  height: 100%; /* Override in-line if you want specific height. */
+  margin-left: -24px;
+  cursor: e-resize;
+  float: left;
+  //display:inline-block;
+  /* Causes the line to float to left of content.
+        You can instead use position:absolute or display:inline-block
+        if this fits better with your design */
+  border: none;
+  border-left: 3px dotted black
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto;
+}
+
+.test {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
+  border-radius: 3px;
+  background: #d9e4ea;
+  margin: 6px 0;
+}
+
+//::ng-deep .as-split-gutter > div {
+//  height: auto !important;
+//}
+
+as-split {
+  overflow: inherit;
+
+  ::ng-deep .is-horizontal {
+    .as-split-gutter {
+      height: 100px !important;
+      background: yellow;
+    }
+  }
+
+  ::ng-deep .is-vertical {
+    .as-split-gutter {
+      background: red;
+      .as-split-gutter-icon {
+        flex-basis: 11px;
+      }
+    }
+  }
+
+}
+
+.no-data {
+  text-align: center;
+}
+
+.float{
+  position:fixed;
+  top:14px;
+  //height:60px;
+  //bottom:40px;
+  right:100px;
+  color:#FFF;
+  border-radius:50px;
+  text-align:center;
+  //box-shadow: 2px 2px 3px #999;
+}

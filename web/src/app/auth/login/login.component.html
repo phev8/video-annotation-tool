@@ -1,0 +1,31 @@
+<form class="login" (ngSubmit)="onSubmit()" #loginForm="ngForm">
+  <section class="title">
+    <h3 class="welcome">Login to</h3>
+    {{appName}}
+  </section>
+
+  <div class="login-group">
+    <clr-input-container>
+      <input type="text" name="username" clrInput placeholder="Username or email"
+             [(ngModel)]="authModel.username"/>
+    </clr-input-container>
+
+    <clr-password-container>
+      <input type="password" name="password" clrPassword placeholder="Password"
+             [(ngModel)]="authModel.password"/>
+    </clr-password-container>
+
+    <clr-checkbox-wrapper>
+      <label for="rememberMe">Remember me
+      </label>
+      <input type="checkbox" id="rememberMe" name="rememberMe" clrCheckbox
+             [(ngModel)]="authModel.rememberMe"/>
+    </clr-checkbox-wrapper>
+
+    <div class="error active" *ngIf="error">
+      {{errorMessage}}
+    </div>
+    <button [clrLoading]="loginBtnState" type="submit" class="btn btn-primary">LOGIN</button>
+    <button class="btn btn-outline signup" (click)="onRegisterClick()">Register instead</button>
+  </div>
+</form>

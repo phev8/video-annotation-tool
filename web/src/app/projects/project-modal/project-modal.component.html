@@ -1,0 +1,30 @@
+<button class="btn btn-primary" (click)="modalOpen = true">New Project</button>
+
+<clr-modal [(clrModalOpen)]="modalOpen">
+
+  <h3 class="modal-title">New Project</h3>
+
+  <div class="modal-body">
+    <form (ngSubmit)="onSubmit(projectForm.form)" #projectForm="ngForm" class="compact">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" class="form-control" id="title" required [(ngModel)]="model.title" name="title"
+               #name="ngModel">
+        <div [hidden]="name.valid || name.pristine"
+             class="alert alert-danger">
+          Title is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" class="form-control" [(ngModel)]="model.description" name="description"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="modalOpen = false">Cancel</button>
+        <button type="submit" class="btn btn-success"  [disabled]="!projectForm.form.valid">Create</button>
+      </div>
+    </form>
+  </div>
+</clr-modal>

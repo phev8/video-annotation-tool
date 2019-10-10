@@ -1,0 +1,8 @@
+<div class="login-wrapper">
+  <app-login *ngIf="isLogin"
+             [appName]="appName"
+             (registerIntent)="onRegisterIntent()"></app-login>
+  <app-signup *ngIf="!isLogin"
+              [appName]="appName"
+              (onLoginIntent)="onLoginIntent()"></app-signup>
+</div>

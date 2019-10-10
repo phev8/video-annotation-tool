@@ -1,0 +1,24 @@
+<clr-main-container>
+  <app-header>
+  </app-header>
+
+  <div class="content-container">
+    <div class="content-area">
+      <ng-content></ng-content>
+    </div>
+
+    <clr-vertical-nav
+      *ngIf="verticalNavVisible"
+      [clrVerticalNavCollapsible]="true"
+      [(clrVerticalNavCollapsed)]="isNavCollapsed"
+      [ngStyle]="getWidth()">
+
+      <div *ngIf="!isNavCollapsed">
+        <app-filetree></app-filetree>
+        <app-label-tree></app-label-tree>
+      </div>
+
+    </clr-vertical-nav>
+  </div>
+
+</clr-main-container>
