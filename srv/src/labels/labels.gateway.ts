@@ -9,6 +9,7 @@ import { map, mergeAll } from 'rxjs/operators';
 import { Segment } from '../entities/segment.entity';
 import { ObjectID } from 'mongodb';
 import { config } from '../../config';
+import { LabelCategory } from '../entities/labelcategory.entity';
 
 @WebSocketGateway({ origins: '*:*', namespace: 'labels' })
 export class LabelsGateway  {
@@ -52,6 +53,12 @@ export class LabelsGateway  {
     return await this.labelsService.getLabels(room, ['id', 'name']);
   }
 
+  @SubscribeMessage('getLabelCategories')
+  async getLabelCategories(socket: SocketIO.Socket, data) {
+    const room = Object.keys(socket.rooms)[1];
+    return await this.labelsService.getLabelCategories(room);
+  }
+
   @SubscribeMessage('addLabel')
   async addLabel(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
@@ -61,6 +68,20 @@ export class LabelsGateway  {
         const newLabel: Label = await this.labelsService.getLabel(id);
         socket.to(room).broadcast.emit('newLabels', newLabel);
         return newLabel;
+      });
+  }
+
+  @SubscribeMessage('addLabelCategory')
+  async addLabelCategory(socket: SocketIO.Socket, data) {
+    const room = LabelsGateway.getProjectRoom(socket);
+    return await this.labelsService.createLabelCategory(room, data.aid)
+      .then(async (value: InsertResult) => {
+        const id = value.identifiers[0].id;
+        const newLabelCategory: LabelCategory = await this.labelsService.getLabelCategory(id);
+        socket.to(room).broadcast.emit('newLabelCategories', newLabelCategory);
+        /*const newLabel: Label = await this.labelsService.getLabel(newLabelCategory.labels[0]["_id"]);
+        socket.to(room).broadcast.emit('newLabels', newLabel);*/
+        return newLabelCategory;
       });
   }
 
@@ -74,6 +95,16 @@ export class LabelsGateway  {
       }, () => true);
   }
 
+  @SubscribeMessage('deleteLabelCategory')
+  async deleteLabelCategory(socket: SocketIO.Socket, data) {
+    const room = LabelsGateway.getProjectRoom(socket);
+    return await this.labelsService.deleteLabelCategory(socket, data.id, room)
+      .then(() => {
+        socket.to(room).broadcast.emit('removedLabelCategories', { id: data.id });
+        return false;
+      }, () => true);
+  }
+
   @SubscribeMessage('editLabel')
   async edit(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
@@ -83,6 +114,21 @@ export class LabelsGateway  {
     return await this.labelsService.updateLabelName(labelId, changeName)
       .then(() => {
         socket.to(room).broadcast.emit('updatedLabels', { id: labelId, change: changeName });
+        return false;
+      }, () => {
+        return true;
+      });
+  }
+
+  @SubscribeMessage('editLabelCategory')
+  async editCategory(socket: SocketIO.Socket, data) {
+    const room = LabelsGateway.getProjectRoom(socket);
+    const labelId = data.id;
+    const changeName = data.change;
+
+    return await this.labelsService.updateLabelCategoryName(labelId, changeName)
+      .then(() => {
+        socket.to(room).broadcast.emit('updatedLabelCategories', { id: labelId, change: changeName });
         return false;
       }, () => {
         return true;

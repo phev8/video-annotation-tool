@@ -1,10 +1,10 @@
-import { Column, Entity, ManyToOne, ObjectIdColumn } from 'typeorm';
+import { Column, Entity, ObjectIdColumn, OneToMany, TreeChildren } from 'typeorm';
 import { Segment } from './segment.entity';
 import { ObjectID } from 'mongodb';
-import { LabelCategory } from './labelcategory.entity';
+import { Label } from './label.entity';
 
 @Entity()
-export class Label {
+export class LabelCategory {
   @ObjectIdColumn()
   id: ObjectID;
 
@@ -17,9 +17,13 @@ export class Label {
   @Column()
   authorId: ObjectID;
 
-  constructor(projectId: ObjectID, authorId: ObjectID, name: string) {
+  @Column()
+  labels: Label[];
+
+  constructor(projectId: ObjectID, authorId: ObjectID, name: string, labels: Label[]) {
     this.projectId = projectId;
     this.authorId = authorId;
     this.name = name;
+    this.labels = labels;
   }
 }

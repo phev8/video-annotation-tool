@@ -5,12 +5,22 @@ import { LabelModel } from '../models/label.model';
 import { joinTestLogs } from 'protractor/built/util';
 import { DateType, IdType } from 'vis';
 import { SegmentModel } from '../models/segmentModel';
+import { LabelCategoryModel } from '../models/labelcategory.model';
 
 interface ILabelRemoved {
   id: string;
 }
 
+interface ILabelCategoryRemoved {
+  id: string;
+}
+
 interface ILabelEditName {
+  id: string;
+  change: string;
+}
+
+interface ILabelCategoryEditName {
   id: string;
   change: string;
 }
@@ -21,8 +31,11 @@ interface ILabelEditName {
 export class LabelsService {
 
   private newLabelSubject = new Subject<LabelModel>();
+  private newLabelCategorySubject = new Subject<LabelCategoryModel>();
   private deleteLabelSubject = new Subject<ILabelRemoved>();
+  private deleteLabelCategorySubject = new Subject<ILabelCategoryRemoved>();
   private editedLabelsSubject = new Subject<ILabelEditName>();
+  private editedLabelCategoriesSubject = new Subject<ILabelCategoryEditName>();
 
   private lastProjectId;
 
@@ -68,6 +81,15 @@ export class LabelsService {
   }
 
   /**
+   * Get all label categories in this project
+   */
+  getLabelCategories(): Promise<LabelCategoryModel[]> {
+    return new Promise((resolve) => {
+      this.socket.emit('getLabelCategories', undefined, (value) => resolve(value));
+    });
+  }
+
+  /**
    * Add a label to this project
    * @param authorId - the ID of the author
    */
@@ -76,6 +98,19 @@ export class LabelsService {
       this.socket.emit('addLabel', {aid: authorId}, (label: LabelModel) => {
         resolve(label);
         this.newLabelSubject.next(label);
+      });
+    });
+  }
+
+  /**
+   * Add a label to this project
+   * @param authorId - the ID of the author
+   */
+  addLabelCategory(authorId: string = '') {
+    return new Promise(resolve => {
+      this.socket.emit('addLabelCategory', {aid: authorId}, (label: LabelCategoryModel) => {
+        resolve(label);
+        this.newLabelCategorySubject.next(label);
       });
     });
   }
@@ -99,6 +134,24 @@ export class LabelsService {
   }
 
   /**
+   * Update the name of a label
+   * @param id of this label
+   * @param newName - a new name to be assigned to this label
+   */
+  async editLabelCategory(id: string, newName: string) {
+    return await new Promise(((resolve, reject) => {
+      this.socket.emit('editLabelCategory', {id, change: newName}, (err) => {
+        if (err) {
+          reject();
+        } else {
+          resolve({id, change: newName});
+          this.editedLabelCategoriesSubject.next({id, change: newName});
+        }
+      });
+    }));
+  }
+
+  /**
    * Delete the label by id
    * @param id of this label
    */
@@ -108,6 +161,23 @@ export class LabelsService {
         if (!err) {
           resolve();
           this.deleteLabelSubject.next({id});
+        } else {
+          reject();
+        }
+      });
+    });
+  }
+
+  /**
+   * Delete the label category by id
+   * @param id of this label
+   */
+  deleteLabelCategory(id: string) {
+    return new Promise((resolve, reject) => {
+      this.socket.emit('deleteLabelCategory', {id}, (err) => {
+        if (!err) {
+          resolve();
+          this.deleteLabelCategorySubject.next({id});
         } else {
           reject();
         }
@@ -155,6 +225,13 @@ export class LabelsService {
     );
   }
 
+  newLabelCategories$(): Observable<LabelCategoryModel> {
+    return merge(
+      this.socket.fromEvent<LabelCategoryModel>('newLabelCategories'),
+      this.newLabelCategorySubject.asObservable()
+    );
+  }
+
   removedLabels$(): Observable<ILabelRemoved> {
     return merge(
       this.socket.fromEvent<ILabelRemoved>('removedLabels'),
@@ -162,9 +239,21 @@ export class LabelsService {
     );
   }
 
+  removedLabelCategories$(): Observable<ILabelRemoved> {
+    return merge(
+      this.socket.fromEvent<ILabelCategoryRemoved>('removedLabelCategories'),
+      this.deleteLabelCategorySubject.asObservable()
+    );
+  }
+
   editedLabels$(onlyExternalChanges: boolean = false) {
     const ws = this.socket.fromEvent<ILabelEditName>('updatedLabels');
     return onlyExternalChanges ? ws : merge(ws, this.editedLabelsSubject.asObservable());
+  }
+
+  editedLabelCategories$(onlyExternalChanges: boolean = false) {
+    const ws = this.socket.fromEvent<ILabelCategoryEditName>('updatedLabelCategories');
+    return onlyExternalChanges ? ws : merge(ws, this.editedLabelCategoriesSubject.asObservable());
   }
 
   // endregion

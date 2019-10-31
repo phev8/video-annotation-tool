@@ -28,6 +28,7 @@ import { Label } from '../entities/label.entity';
 import { Segment } from '../entities/segment.entity';
 import { ObjectID } from 'mongodb';
 import { config } from '../../config';
+ import { LabelCategory } from '../entities/labelcategory.entity';
 
 interface FileUpload {
   readonly fieldname: string;
@@ -163,8 +164,9 @@ export class ProjectController {
 
   @Delete(':id')
   @UseGuards(AuthGuard())
-  async delete(@Param('id') id) {
-    return await this.projectService.delete(id);
+  async delete(@Param('id') projectId) {
+    await this.labelsService.deleteProjectLabelCategories(projectId);
+    return await this.projectService.delete(projectId);
   }
 
   @Get(':id/segments/csv')

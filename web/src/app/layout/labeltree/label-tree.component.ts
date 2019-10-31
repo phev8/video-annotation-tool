@@ -30,7 +30,10 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
       .subscribe(project => {
         if (project) {
           this.project = project;
-          this.labelsService.getLabels().then(value =>
+          /*this.labelsService.getLabels().then(value =>
+            this.annotationsFolder.files = value.map(label => ({id: label.id, name: label.name, icon: 'tag', active: false}))
+          );*/
+          this.labelsService.getLabelCategories().then(value =>
             this.annotationsFolder.files = value.map(label => ({id: label.id, name: label.name, icon: 'tag', active: false}))
           );
         }
@@ -42,6 +45,12 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
       }
     }));
 
+    this.subscription.add(this.labelsService.newLabelCategories$().subscribe(labelCategory => {
+      if (labelCategory) {
+        this.annotationsFolder.files.push({id: labelCategory.id, name: labelCategory.name, icon: 'tag', active: false});
+      }
+    }));
+
     this.subscription.add(this.labelsService.removedLabels$().subscribe(e => {
       const len = this.annotationsFolder.files.length;
       const i = this.annotationsFolder.files.findIndex(x => x.id === e.id);
@@ -50,7 +59,15 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
       }
     }));
 
-    this.subscription.add(this.labelsService.editedLabels$(true).subscribe(edit => {
+    this.subscription.add(this.labelsService.removedLabelCategories$().subscribe(e => {
+      const len = this.annotationsFolder.files.length;
+      const i = this.annotationsFolder.files.findIndex(x => x.id === e.id);
+      if (0 <= i && i < len) {
+        this.annotationsFolder.files.splice(i, 1);
+      }
+    }));
+
+    this.subscription.add(this.labelsService.editedLabelCategories$(true).subscribe(edit => {
       if (edit) {
         const labelId = edit.id;
         const changeName = edit.change;
@@ -67,6 +84,12 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
     this.labelsService.addLabel('');
   }
 
+  addNewLabelCategory() {
+    this.labelsService.addLabelCategory('');
+    //TODO Remove this section
+    //this.labelsService.addLabel('');
+  }
+
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe();
@@ -77,7 +100,15 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
     this.labelsService.deleteLabel(id);
   }
 
+  onLabelCategoryDelete(id: string) {
+    this.labelsService.deleteLabelCategory(id);
+  }
+
   onLabelNameChange(label: IFile) {
     this.labelsService.editLabel(label.id, label.name);
+  }
+
+  onLabelCategoryNameChange(label: IFile) {
+    this.labelsService.editLabelCategory(label.id, label.name);
   }
 }

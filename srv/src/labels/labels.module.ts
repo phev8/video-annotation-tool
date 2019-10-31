@@ -5,9 +5,10 @@ import { Label } from '../entities/label.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SegmentService } from './segment/segment.service';
 import { Segment } from '../entities/segment.entity';
+import { LabelCategory } from '../entities/labelcategory.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Label, Segment])],
+  imports: [TypeOrmModule.forFeature([Label, Segment, LabelCategory])],
   providers: [LabelsGateway, LabelsService, SegmentService],
   exports: [LabelsService, SegmentService],
 })

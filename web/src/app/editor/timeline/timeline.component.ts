@@ -22,6 +22,7 @@ import { Time } from './time';
 import { TimelineData } from './timeline.data';
 import { LabelModel } from '../../models/label.model';
 import { pairwise, startWith } from 'rxjs/operators';
+import { LabelCategoryModel } from '../../models/labelcategory.model';
 
 @Component({
   selector: 'app-timeline',
@@ -84,6 +85,30 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     groupTemplate: (group: DataGroup) => {
       if (group) {
+        const overarchingContainer = document.createElement('div');
+        overarchingContainer.className = 'clr-row top-margin';
+
+        const containerLeft = document.createElement('div');
+        containerLeft.className = 'clr-col-6';
+
+        const containerRight = document.createElement('div');
+        containerRight.className = 'clr-col-6';
+
+
+        const categoryContainer = document.createElement('div');
+        categoryContainer.className = 'btn btn-link';
+
+
+        //const categoryInput = document.createElement('input');
+        //categoryInput.type = 'checkbox';
+        //categoryInput.id = `checkbox_as1`;
+        //categoryInput.id = `checkbox_${group.id}`;
+        const categoryLabel = document.createElement('label');
+        categoryLabel.innerHTML = group['category'];
+
+        //categoryContainer.prepend(categoryInput);
+        categoryContainer.append(categoryLabel);
+
         const container = document.createElement('div');
         container.className = 'checkbox btn';
 
@@ -94,13 +119,23 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.checkboxChange.emit({id: group.id, checked: input.checked});
         });
 
+        /*const temp = document.createElement('div');
+        temp.innerHTML = "<p>asdasdasd</p>";*/
+
         const label = document.createElement('label');
         label.setAttribute('for', `checkbox_${group.id}`);
         label.innerHTML = group.content;
 
         container.prepend(input);
         container.append(label);
-        return container;
+
+        containerLeft.appendChild(categoryContainer);
+        containerRight.appendChild(container);
+
+        overarchingContainer.appendChild(containerLeft);
+        overarchingContainer.appendChild(containerRight);
+        // container.append(temp);
+        return overarchingContainer;
       }
     },
     multiselect: true,
@@ -140,6 +175,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   private timelineData: TimelineData = new TimelineData();
+  private labelCategories: LabelCategoryModel[] = [];
   private customTimeId: IdType;
   private subscription: Subscription;
   private currentTime = 0;
@@ -158,7 +194,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(project => {
         if (project) {
           this.project = project;
-          this.labelsService.getLabels()
+
+          /*this.labelsService.getLabels()
             .then((labels: LabelModel[]) => {
               this.labelsService.getSegments(labels.map(x => {
                 return x.id;
@@ -166,6 +203,15 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
               // this.timelineData.clear();
               this.timelineData.addGroups(labels.map(x => ({id: x.id, content: x.name})));
               // this.timelineData.addItem({id: '-1', content: `stub`, start: 0, end: 100, type: 'range'});
+            });*/
+
+          this.labelsService.getLabelCategories()
+            .then((labelCategories: LabelCategoryModel[]) => {
+              labelCategories.map(labelCategory => {
+                this.labelsService.getSegments(labelCategory.labels.map(x => {return x["_id"]}));
+                this.timelineData.addGroups(labelCategory.labels.map(x => ({id: x["_id"], content: x.name, category: labelCategory.name, categoryId: labelCategory.id})));
+                this.labelCategories.push(labelCategory);
+              });
             });
         }
       });
@@ -293,15 +339,41 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }));
 
+    this.subscription.add(this.labelsService.newLabelCategories$().subscribe(newLabelCategories => {
+      if (newLabelCategories) {
+        const group = {id: newLabelCategories["labels"][0]["_id"], content: newLabelCategories["labels"][0]["name"], category: newLabelCategories.name};
+        this.timelineData.addGroup(group);
+        this.labelCategories.push(newLabelCategories);
+      }
+    }));
+
     this.subscription.add(this.labelsService.removedLabels$().subscribe(removed => {
       if (removed) {
         this.timelineData.removeGroup(removed.id);
       }
     }));
 
+    this.subscription.add(this.labelsService.removedLabelCategories$().subscribe(removed => {
+      if (removed) {
+        let removedCategory: LabelCategoryModel = this.labelCategories.find((labelCategory) => { return labelCategory.id === removed.id;});
+        removedCategory.labels.map( label => this.timelineData.removeGroup(label["_id"]));
+        this.labelCategories.filter(item => item !== removedCategory);
+      }
+    }));
+
     this.subscription.add(this.labelsService.editedLabels$().subscribe(changed => {
         if (changed) {
           this.timelineData.updateGroup({id: changed.id, content: changed.change});
+        }
+      })
+    );
+
+    this.subscription.add(this.labelsService.editedLabelCategories$().subscribe(changed => {
+        if (changed) {
+          this.timelineData.updateGroupCategory(changed.change, changed.id);
+          let category: LabelCategoryModel = this.labelCategories.find( item => item.id === changed.id);
+          category.name = changed.change;
+          //console.log(this.labelCategories);
         }
       })
     );

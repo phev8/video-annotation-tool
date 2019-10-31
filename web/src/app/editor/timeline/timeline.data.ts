@@ -119,4 +119,13 @@ export class TimelineData {
       }
     });
   }
+
+  updateGroupCategory(newCategory: string, categoryId: string) {
+    this._groups.forEach((group, id) => {
+      if(group['categoryId'] === categoryId) {
+        group['category'] = newCategory;
+        this._groups.update(group);
+      }
+    });
+  }
 }

@@ -4,12 +4,12 @@
     {{ annotationsFolder.name }}
   </div>
   <div class="btn-group btn-link btn-icon action-icons">
-    <button type="button" class="btn" title="Add Class" (click)="addNewLabel()">
+    <button type="button" class="btn" title="Add a Category of Labels" (click)="addNewLabelCategory()">
       <clr-icon shape="plus"></clr-icon>
     </button>
   </div>
   <ng-template [(clrIfExpanded)]="annotationsFolder.expanded">
-    <clr-tree-node *ngFor="let label of annotationsFolder.files; let i = index">
+    <clr-tree-node *ngFor="let labelCategory of annotationsFolder.files; let i = index">
 
       <!--<button-->
       <!--class="clr-treenode-link"-->
@@ -18,14 +18,14 @@
 
       <div class="clr-treenode-link">
         <!--<clr-icon [attr.shape]="label.icon"></clr-icon>-->
-        <input type="text" [(ngModel)]="label.name" (change)="onLabelNameChange(label)"/>
+        <input type="text" [(ngModel)]="labelCategory.name" (change)="onLabelCategoryNameChange(labelCategory)"/>
         <!--{{label.name}}-->
       </div>
       <div>
         <!--<button class="btn btn-link btn-icon" (click)="onLabelHide(i)">-->
           <!--<clr-icon shape="eye-hide"></clr-icon>-->
         <!--</button>-->
-        <button class="btn btn-link btn-icon" (click)="onLabelDelete(label.id)">
+        <button class="btn btn-link btn-icon" (click)="onLabelCategoryDelete(labelCategory.id)">
           <clr-icon shape="trash"></clr-icon>
         </button>
       </div>
