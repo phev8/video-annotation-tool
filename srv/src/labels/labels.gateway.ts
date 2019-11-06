@@ -62,7 +62,7 @@ export class LabelsGateway  {
   @SubscribeMessage('addLabel')
   async addLabel(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
-    return await this.labelsService.createLabel(room, data.aid)
+    return await this.labelsService.createLabel(room, data.aid, data.cid)
       .then(async (value: InsertResult) => {
         const id = value.identifiers[0].id;
         const newLabel: Label = await this.labelsService.getLabel(id);

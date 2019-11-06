@@ -23,6 +23,7 @@ import { TimelineData } from './timeline.data';
 import { LabelModel } from '../../models/label.model';
 import { pairwise, startWith } from 'rxjs/operators';
 import { LabelCategoryModel } from '../../models/labelcategory.model';
+import { element } from 'protractor';
 
 @Component({
   selector: 'app-timeline',
@@ -85,6 +86,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     groupTemplate: (group: DataGroup) => {
       if (group) {
+
         const overarchingContainer = document.createElement('div');
         overarchingContainer.className = 'clr-row top-margin';
 
@@ -105,6 +107,9 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         //categoryInput.id = `checkbox_${group.id}`;
         const categoryLabel = document.createElement('label');
         categoryLabel.innerHTML = group['category'];
+        categoryLabel.addEventListener('click', () => {
+          this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],group['categoryId']);
+        });
 
         //categoryContainer.prepend(categoryInput);
         categoryContainer.append(categoryLabel);
@@ -119,10 +124,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.checkboxChange.emit({id: group.id, checked: input.checked});
         });
 
-        /*const temp = document.createElement('div');
-        temp.innerHTML = "<p>asdasdasd</p>";*/
-
         const label = document.createElement('label');
+        label.setAttribute('style', 'padding-right: 2em;');
         label.setAttribute('for', `checkbox_${group.id}`);
         label.innerHTML = group.content;
 
@@ -302,7 +305,15 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.registerHotkeys();
 
     // force a timeline redraw, because sometimes it does not detect changes
-    setTimeout(() => this.timeline.redraw(), 250);
+    setTimeout(() => {
+      this.timeline.redraw();
+      let elements = document.getElementsByClassName('vis-inner');
+
+      // @ts-ignore
+      for (let item of elements) {
+        item.setAttribute('style', 'display: block;');
+      }
+    }, 250);
   }
 
   updateCurrentTime(millis: number) {
@@ -373,7 +384,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.timelineData.updateGroupCategory(changed.change, changed.id);
           let category: LabelCategoryModel = this.labelCategories.find( item => item.id === changed.id);
           category.name = changed.change;
-          //console.log(this.labelCategories);
+          category.labels.map( label => label.name = changed.change + '_' + label.name.split('_')[1]);
         }
       })
     );

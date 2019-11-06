@@ -93,9 +93,9 @@ export class LabelsService {
    * Add a label to this project
    * @param authorId - the ID of the author
    */
-  addLabel(authorId: string = '') {
+  addLabel(authorId: string = '', categoryId: string) {
     return new Promise(resolve => {
-      this.socket.emit('addLabel', {aid: authorId}, (label: LabelModel) => {
+      this.socket.emit('addLabel', {aid: authorId, cid: categoryId}, (label: LabelModel) => {
         resolve(label);
         this.newLabelSubject.next(label);
       });

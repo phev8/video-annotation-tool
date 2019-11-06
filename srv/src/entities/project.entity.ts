@@ -25,4 +25,7 @@ export class Project {
 
   @Column()
   fileTree: Directory;
+
+  @Column()
+  singleMedia: boolean;
 }

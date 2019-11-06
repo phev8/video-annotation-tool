@@ -12,13 +12,14 @@ export class LabelsService {
               private readonly labelCategoryRepository: MongoRepository<LabelCategory>) {
   }
 
-  async createLabel(projectId: string, authorId: string): Promise<InsertResult> {
-    const label = new Label(projectId, authorId, 'Label');
+  async createLabel(projectId: string, authorId: string, categoryId: string): Promise<InsertResult> {
+    let labelCategory = await this.labelCategoryRepository.findOne(categoryId);
+    const label = new Label(projectId, authorId, labelCategory.name+'_'+(labelCategory.labels.length + 1));
     return await this.labelRepository.insert(label);
   }
 
   async createLabelCategory(projectId: string, authorId: string): Promise<InsertResult> {
-    let label = new Label(projectId, authorId, 'LabelCategory1');
+    let label = new Label(projectId, authorId, 'LabelCategory_1');
     await this.labelRepository.insert(label);
     let labels: Label[] = [];
     labels.push(label);
@@ -30,8 +31,14 @@ export class LabelsService {
     return await this.labelRepository.update(labelId, {name: change});
   }
 
-  async updateLabelCategoryName(labelId: string, change: string): Promise<UpdateResult> {
-    return await this.labelCategoryRepository.update(labelId, {name: change});
+  async updateLabelCategoryName(labelCategoryId: string, change: string): Promise<UpdateResult> {
+    let labelCategory = await this.getLabelCategory(labelCategoryId);
+    labelCategory.labels.map( (items) => {
+      let labelName = change + '_' + items.name.split('_')[1];
+      this.updateLabelName(items["_id"].toString(), labelName);
+      items.name = labelName;
+    });
+    return await this.labelCategoryRepository.update(labelCategoryId, {name: change, labels: labelCategory.labels});
   }
 
   async getLabels(projectId: string, select?: (keyof Label)[]): Promise<Label[]> {

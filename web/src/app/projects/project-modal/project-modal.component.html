@@ -21,6 +21,22 @@
         <textarea id="description" class="form-control" [(ngModel)]="model.description" name="description"></textarea>
       </div>
 
+      <div class="form-group">
+        <label class="margin-top">Project Type</label>
+        <clr-toggle-container clrInline>
+          <clr-toggle-wrapper>
+            <input type="checkbox" clrToggle name="options" value='true' [(ngModel)]="singleMedia" />
+            <label>Single Video Project</label>
+          </clr-toggle-wrapper><!--
+          <clr-toggle-wrapper>
+            <input type="checkbox" clrToggle name="options" required value='false' [(ngModel)]="singleMedia" />
+            <label>Multiple Video Project</label>
+          </clr-toggle-wrapper>-->
+          <clr-control-helper>Label tracking is enabled in single video projects</clr-control-helper>
+          <clr-control-error>This field is required!</clr-control-error>
+        </clr-toggle-container>
+      </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="modalOpen = false">Cancel</button>
         <button type="submit" class="btn btn-success"  [disabled]="!projectForm.form.valid">Create</button>

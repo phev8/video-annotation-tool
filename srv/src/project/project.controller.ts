@@ -55,6 +55,7 @@ export class ProjectController {
     const project = new Project();
     project.title = body.title;
     project.description = body.description;
+    project.singleMedia = body.singleMedia;
     project.modified = new Date();
     project.ownerId = req.user.id;
     project.memberIds = [];

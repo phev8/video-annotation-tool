@@ -5,6 +5,7 @@ export class ProjectModel {
     public id: string,
     public title: string,
     public modified: Date,
+    public singleMedia: boolean,
     public ownerId?: string,
     public memberIds?: string[],
     public description?: string,

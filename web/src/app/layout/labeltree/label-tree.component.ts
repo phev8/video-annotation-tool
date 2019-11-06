@@ -81,11 +81,11 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   }
 
   addNewLabel() {
-    this.labelsService.addLabel('');
+    this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],'');
   }
 
   addNewLabelCategory() {
-    this.labelsService.addLabelCategory('');
+    this.labelsService.addLabelCategory(JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
     //TODO Remove this section
     //this.labelsService.addLabel('');
   }

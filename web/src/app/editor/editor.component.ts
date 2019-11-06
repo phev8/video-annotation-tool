@@ -11,7 +11,7 @@ import * as moment from 'moment';
   styleUrls: ['./editor.component.scss']
 })
 export class EditorComponent implements OnInit, OnDestroy {
-  direction = 'horizontal';
+  direction = 'vertical';
   projectId: string;
 
   constructor(private route: ActivatedRoute,

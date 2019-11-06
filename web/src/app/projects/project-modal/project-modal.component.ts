@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 })
 export class ProjectModalComponent implements OnInit, OnDestroy {
   model;
+  singleMedia = true;
 
   modalOpen = false;
   private submitted = false;
@@ -25,7 +26,7 @@ export class ProjectModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.model = new ProjectModel('', '', new Date());
+    this.model = new ProjectModel('', '', new Date(), true);
   }
 
   onSubmit(form: FormGroup) {
