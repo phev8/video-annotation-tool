@@ -35,7 +35,7 @@ export class FileUploadComponent implements OnInit {
   }
 
   onFilesAdded() {
-    const files: { [key: string]: File } = this.file.nativeElement.files;
+    const files: { [key: string]: File } = this.currentProject.singleMedia? Array.prototype.slice.call( this.file.nativeElement.files, 0, 1 ) : this.file.nativeElement.files;
     for (const key in files) {
       if (!isNaN(parseInt(key, 10))) {
         this.files.add(files[key]);

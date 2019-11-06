@@ -15,7 +15,7 @@
     {{ directory.name }}
   </div>
   <div class="btn-group btn-link btn-icon action-icons">
-    <button type="button" class="btn" title="Upload Files" (click)="openUploadDialog()">
+    <button type="button" class="btn" title="Upload Files" [disabled]="(project.singleMedia && project.fileTree.children.length == 1)" (click)="openUploadDialog()">
       <clr-icon shape="upload"></clr-icon>
     </button>
   </div>

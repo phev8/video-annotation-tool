@@ -4,7 +4,7 @@
   <div class="modal-body">
 
     <div>
-      <button [disabled]="uploading || uploadSuccessful"
+      <button [disabled]="uploading || uploadSuccessful || (currentProject.singleMedia && files.size == 1)"
               class="btn btn-primary-outline" (click)="addFiles()">Add files
       </button>
     </div>

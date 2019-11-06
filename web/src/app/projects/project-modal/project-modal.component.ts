@@ -32,6 +32,7 @@ export class ProjectModalComponent implements OnInit, OnDestroy {
   onSubmit(form: FormGroup) {
     this.submitted = true;
     this.modalOpen = false;
+    this.model.singleMedia = form.value.options;
 
     this.subscription = this.projectsService.insertProject(this.model)
       .subscribe(response => {
