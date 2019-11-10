@@ -196,7 +196,7 @@ export class LabelsService {
     return this.socket.fromEvent('getSegments');
   }
 
-  addSegment(p: { hyperid: IdType; group: string; start: DateType; end: DateType, userRole: string }) {
+  addSegment(p: { hyperid: IdType; group: string; start: DateType; end: DateType, authorRole: string, authorId: string }) {
     console.log(p);
     return new Promise(((resolve, reject) => {
       this.socket.emit('addSegment', p, (err) => {

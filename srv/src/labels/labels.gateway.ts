@@ -153,10 +153,10 @@ export class LabelsGateway  {
   async addSegment(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
     const labelId = data.group;
-    const authorId = '';
+    const authorId = data.authorId;
     const start = data.start;
     const end = data.end;
-    const authorClass = data.authorClass;
+    const authorClass = data.authorRole;
     const hyperid = data.hyperid;
     return await this.segmentService
       .createSegment(labelId, authorId, start, end, authorClass)

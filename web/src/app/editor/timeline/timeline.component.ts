@@ -267,7 +267,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
                   group: item.group,
                   start: item.start,
                   end: item.end,
-                  userRole: this.userRole
+                  authorRole: this.userRole,
+                  authorId: JSON.parse(localStorage.getItem('currentSession$'))['user']['id']
                 };
                 this.labelsService.addSegment(segment).then(() => {
                   console.log('segment added');
