@@ -1,6 +1,8 @@
 import * as vis from 'vis';
 import { DataGroup, DataItem, DataSet, IdType } from 'vis';
 import * as hyperid from 'hyperid';
+
+import _ from "lodash";
 import { Time } from './time';
 
 export class TimelineData {
@@ -128,5 +130,17 @@ export class TimelineData {
         this._groups.update(group);
       }
     });
+  }
+
+  deleteGroupCategory(categoryId: string) {
+    this._groups.forEach((group, id) => {
+      if(group['categoryId'] === categoryId) {
+        this.removeGroup(id.toString());
+      }
+    });
+  }
+
+  sortByCategories() {
+    console.log(this._groups);
   }
 }

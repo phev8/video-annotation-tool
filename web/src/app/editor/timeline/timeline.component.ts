@@ -108,7 +108,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         const categoryLabel = document.createElement('label');
         categoryLabel.innerHTML = group['category'];
         categoryLabel.addEventListener('click', () => {
-          this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],group['categoryId']);
+          this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],group['categoryId'], this.userRole);
         });
 
         //categoryContainer.prepend(categoryInput);
@@ -184,6 +184,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   private currentTime = 0;
 
   private checkboxChange = new EventEmitter<{ id: IdType, checked: boolean }>();
+  private userRole: string;
 
   constructor(private projectService: CurrentProjectService,
               private labelsService: LabelsService,
@@ -197,6 +198,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(project => {
         if (project) {
           this.project = project;
+          this.userRole = this.projectService.findUserRole(project, JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
 
           /*this.labelsService.getLabels()
             .then((labels: LabelModel[]) => {
@@ -264,7 +266,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
                   hyperid: item.id,
                   group: item.group,
                   start: item.start,
-                  end: item.end
+                  end: item.end,
+                  userRole: this.userRole
                 };
                 this.labelsService.addSegment(segment).then(() => {
                   console.log('segment added');
@@ -345,14 +348,19 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   private observeLabels() {
     this.subscription.add(this.labelsService.newLabels$().subscribe(newLabel => {
       if (newLabel) {
-        const group = {id: newLabel.id, content: newLabel.name};
-        this.timelineData.addGroup(group);
+        let category: LabelCategoryModel = this.labelCategories.find(value => value.id == newLabel['categoryId'] );
+        if(category!= null) {
+          category.labels.push(newLabel);
+          const group = {id: newLabel.id, content: newLabel.name, category: category.name, categoryId: category.id};
+          this.timelineData.addGroup(group);
+          this.timelineData.sortByCategories();
+        }
       }
     }));
 
     this.subscription.add(this.labelsService.newLabelCategories$().subscribe(newLabelCategories => {
       if (newLabelCategories) {
-        const group = {id: newLabelCategories["labels"][0]["_id"], content: newLabelCategories["labels"][0]["name"], category: newLabelCategories.name};
+        const group = {id: newLabelCategories["labels"][0]["_id"], content: newLabelCategories["labels"][0]["name"], category: newLabelCategories.name, categoryId: newLabelCategories.id};
         this.timelineData.addGroup(group);
         this.labelCategories.push(newLabelCategories);
       }
@@ -367,6 +375,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(this.labelsService.removedLabelCategories$().subscribe(removed => {
       if (removed) {
         let removedCategory: LabelCategoryModel = this.labelCategories.find((labelCategory) => { return labelCategory.id === removed.id;});
+        this.timelineData.deleteGroupCategory(removedCategory.id);
         removedCategory.labels.map( label => this.timelineData.removeGroup(label["_id"]));
         this.labelCategories.filter(item => item !== removedCategory);
       }
@@ -385,6 +394,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           let category: LabelCategoryModel = this.labelCategories.find( item => item.id === changed.id);
           category.name = changed.change;
           category.labels.map( label => label.name = changed.change + '_' + label.name.split('_')[1]);
+          this.timeline.redraw();
         }
       })
     );

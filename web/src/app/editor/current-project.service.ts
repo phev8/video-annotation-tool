@@ -42,4 +42,16 @@ export class CurrentProjectService {
   exportCsv(projectId: string): Observable<any> {
     return this.projectsService.exportCsv(projectId);
   }
+
+  findUserRole(project: ProjectModel, userId: string): string {
+    if(project.ownerId.id === userId) return 'owner';
+    let role = '';
+    project.contributorIds.map(value => {
+      if (value.id === userId) role =  'contributor';
+    });
+    project.supervisorIds.map(value => {
+      if (value.id === userId) role = 'supervisor';
+    });
+    return  role;
+  }
 }

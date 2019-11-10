@@ -17,9 +17,13 @@ export class Label {
   @Column()
   authorId: ObjectID;
 
-  constructor(projectId: ObjectID, authorId: ObjectID, name: string) {
+  @Column()
+  authorClass: string;
+
+  constructor(projectId: ObjectID, authorId: ObjectID, name: string, authorClass: string) {
     this.projectId = projectId;
     this.authorId = authorId;
     this.name = name;
+    this.authorClass = authorClass;
   }
 }

@@ -29,6 +29,7 @@ import { Segment } from '../entities/segment.entity';
 import { ObjectID } from 'mongodb';
 import { config } from '../../config';
  import { LabelCategory } from '../entities/labelcategory.entity';
+ import { User } from '../entities/user.entity';
 
 interface FileUpload {
   readonly fieldname: string;
@@ -57,9 +58,17 @@ export class ProjectController {
     project.description = body.description;
     project.singleMedia = body.singleMedia;
     project.modified = new Date();
-    project.ownerId = req.user.id;
-    project.memberIds = [];
-    project.memberIds.push(project.ownerId);
+    project.ownerId = req.user;
+    project.contributorIds = [];
+    project.supervisorIds = [];
+
+    body.supervisorIds.map( userdetails => {
+      project.supervisorIds.push(userdetails);
+    });
+
+    body.contributorIds.map( userdetails => {
+      project.contributorIds.push(userdetails);
+    });
 
     project.fileTree = new Directory();
     project.fileTree.parent = null;
@@ -73,8 +82,8 @@ export class ProjectController {
   @UseGuards(AuthGuard())
   async inviteMembers(@Param('id') id, @Req() req, @Body() body) {
     const project: Project = await this.projectService.findOne(id);
-    const members: ObjectID[] = project.memberIds;
-    project.memberIds = req.project.memberIds;
+    project.supervisorIds = req.project.supervisorIds;
+    project.contributorIds = req.project.contributorIds;
     return await this.projectService.update(project.id.toHexString(), project);
   }
 
@@ -156,11 +165,17 @@ export class ProjectController {
     const project = await this.projectService.findOne(id);
     let memberIds = [];
     if (body) {
-      let members:string[] = body['memberIds'];
+      let members:User[] = body['contributorIds'];
       for (var member of members) {
         memberIds.push(ObjectID.createFromHexString(member));
       }
-      project.memberIds = memberIds;
+      project.contributorIds = memberIds;
+      memberIds = [];
+      members = body['supervisorIds'];
+      for (var member of members) {
+        memberIds.push(ObjectID.createFromHexString(member));
+      }
+      project.supervisorIds = memberIds;
       return await this.projectService.update(id, project);
     }
   }

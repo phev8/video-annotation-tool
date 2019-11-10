@@ -6,5 +6,6 @@ export class LabelCategoryModel {
   name: string;
   projectId: string;
   authorId: string;
+  authorClass: string;
   labels: LabelModel[];
 }

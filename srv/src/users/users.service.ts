@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../entities/user.entity';
-import { MongoRepository } from 'typeorm';
+import { MongoRepository, Like } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserModel } from './user.model';
 
@@ -44,5 +44,12 @@ export class UsersService {
 
   async findOneById(id: string) {
     return await this.userRepository.findOne(id);
+  }
+
+  async findByUsername(username: string) {
+    const users = await this.userRepository.find();
+    return users.filter(x => {
+      return x.username.startsWith(username);
+    });
   }
 }

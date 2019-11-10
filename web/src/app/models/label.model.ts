@@ -5,5 +5,6 @@ export class LabelModel {
   name: string;
   projectId: string;
   authorId: string;
+  authorClass: string;
   series: SegmentModel[];
 }

@@ -4,8 +4,8 @@
 <!--<span class="spinner spinner-md">Loading...</span>-->
 <!--</div>-->
 <div *ngIf="!inviteMembers">
-  <button class="btn btn-outline" (click)="isDatagridView = !isDatagridView">Toggle
-    view: {{isDatagridView ? 'Datagrid' : 'Cards'}}</button>
+  <!--<button class="btn btn-outline" (click)="isDatagridView = !isDatagridView">Toggle
+    view: {{isDatagridView ? 'Datagrid' : 'Cards'}}</button>-->
 
   <clr-datagrid *ngIf="isDatagridView">
     <clr-dg-column>Title</clr-dg-column>
@@ -33,7 +33,7 @@
 
   <div *ngIf="!isDatagridView">
     <div class="clr-row">
-      <div class="clr-col" *ngFor="let project of projects">
+      <div class="clr-col max-width-35" *ngFor="let project of projects">
         <div class="card">
           <div class="card-header">
             <span>{{project.title}}</span><span><button (click)="onDelete(project.id)" class="btn btn-link right"><clr-icon shape="trash"></clr-icon></button></span>
@@ -45,13 +45,16 @@
             <div class="card-text">
               <strong>Description:</strong> {{project.description}} <br>
               <strong>Modified:</strong> {{project.modified}} <br>
-              <strong>OwnerId:</strong> {{project.ownerId}} <br>
-              <strong>MemberIds:</strong> {{project.memberIds.join(", ")}}
+              <strong>OwnerId:</strong> <span class="label label-info left-margin-1">{{project.ownerId.username}}</span><br>
+              <strong>SupervisorIds:</strong> <span *ngFor="let user of project.supervisorIds; let i = index" [attr.data-index]="i" [ngClass]="i == 0? 'label label-info left-margin-1': 'label label-info'">{{user.username}}</span><br>
+              <strong>ContributorIds:</strong><span *ngFor="let user of project.contributorIds; let i = index" [attr.data-index]="i" [ngClass]="i == 0? 'label label-info left-margin-1': 'label label-info'">{{user.username}}</span>
+              <!--<strong>SupervisorIds:</strong> {{project.supervisorIds.join(", ")}} <br>
+              <strong>ContributorIds:</strong> {{project.contributorIds.join(", ")}}-->
             </div>
           </div>
           <div class="card-footer">
             <button class="btn btn-sm btn-primary-outline" routerLink="/editor/{{project.id}}">Open Project</button>
-            <button class="btn btn-sm btn-link" (click)="onInvite(project.id)">Invite Users</button>
+            <button disabled class="btn btn-sm btn-link" (click)="onInvite(project.id)">Invite Users</button>
           </div>
         </div>
       </div>

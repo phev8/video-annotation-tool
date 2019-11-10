@@ -1,4 +1,5 @@
 import { DirectoryModel } from './directory.model';
+import { UserModel } from './user.model';
 
 export class ProjectModel {
   constructor(
@@ -6,7 +7,9 @@ export class ProjectModel {
     public title: string,
     public modified: Date,
     public singleMedia: boolean,
-    public ownerId?: string,
+    public supervisorIds: UserModel[],
+    public contributorIds: UserModel[],
+    public ownerId?: UserModel,
     public memberIds?: string[],
     public description?: string,
     public fileTree?: DirectoryModel,

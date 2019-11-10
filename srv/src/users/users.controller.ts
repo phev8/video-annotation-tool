@@ -49,6 +49,12 @@ export class UsersController {
     return await this.usersService.findUsersByIds(req.headers.ids.toString().split(','));
   }
 
+  @Get(':username')
+  @UseGuards(AuthGuard())
+  async getUsersByUsername(@Param('username') username): Promise<UserModel[]> {
+    return await this.usersService.findByUsername(username);
+  }
+
   private static isValidUserDto(userDto: UserRegistrationDto) {
     if (userDto) {
       if (userDto.username) {

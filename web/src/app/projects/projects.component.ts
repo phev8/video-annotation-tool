@@ -41,7 +41,6 @@ export class ProjectsComponent implements OnInit {
     });
     this.projectsService.getMembers(this.selectedProject).subscribe( members => {
       this.members = members;
-      console.log('Members : ', this.members);
       this.inviteMembers = true;
     });
   }

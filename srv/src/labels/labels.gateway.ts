@@ -62,19 +62,18 @@ export class LabelsGateway  {
   @SubscribeMessage('addLabel')
   async addLabel(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
-    return await this.labelsService.createLabel(room, data.aid, data.cid)
-      .then(async (value: InsertResult) => {
-        const id = value.identifiers[0].id;
-        const newLabel: Label = await this.labelsService.getLabel(id);
-        socket.to(room).broadcast.emit('newLabels', newLabel);
-        return newLabel;
+    return await this.labelsService.createLabel(room, data.aid, data.cid, data.authorClass)
+      .then(async (value: Label) => {
+        value['categoryId'] = data.cid;
+        socket.to(room).broadcast.emit('newLabels', value);
+        return value;
       });
   }
 
   @SubscribeMessage('addLabelCategory')
   async addLabelCategory(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
-    return await this.labelsService.createLabelCategory(room, data.aid)
+    return await this.labelsService.createLabelCategory(room, data.aid, data.authorClass)
       .then(async (value: InsertResult) => {
         const id = value.identifiers[0].id;
         const newLabelCategory: LabelCategory = await this.labelsService.getLabelCategory(id);
@@ -157,9 +156,10 @@ export class LabelsGateway  {
     const authorId = '';
     const start = data.start;
     const end = data.end;
+    const authorClass = data.authorClass;
     const hyperid = data.hyperid;
     return await this.segmentService
-      .createSegment(labelId, authorId, start, end)
+      .createSegment(labelId, authorId, start, end, authorClass)
       .then(() => {
         return false;
       }, () => {

@@ -12,18 +12,21 @@ export class LabelsService {
               private readonly labelCategoryRepository: MongoRepository<LabelCategory>) {
   }
 
-  async createLabel(projectId: string, authorId: string, categoryId: string): Promise<InsertResult> {
-    let labelCategory = await this.labelCategoryRepository.findOne(categoryId);
-    const label = new Label(projectId, authorId, labelCategory.name+'_'+(labelCategory.labels.length + 1));
-    return await this.labelRepository.insert(label);
+  async createLabel(projectId: string, authorId: string, categoryId: string, authorClass: string): Promise<Label> {
+    let labelCategory: LabelCategory = await this.labelCategoryRepository.findOne(categoryId);
+    const label = new Label(projectId, authorId, labelCategory.name+'_'+(labelCategory.labels.length + 1), authorClass);
+    await this.labelRepository.insert(label);
+    labelCategory.labels.push(label);
+    await this.labelCategoryRepository.update(labelCategory.id.toString(), {labels: labelCategory.labels});
+    return await this.labelRepository.findOne(label);
   }
 
-  async createLabelCategory(projectId: string, authorId: string): Promise<InsertResult> {
-    let label = new Label(projectId, authorId, 'LabelCategory_1');
+  async createLabelCategory(projectId: string, authorId: string, authorClass: string): Promise<InsertResult> {
+    let label = new Label(projectId, authorId, 'LabelInstance_1', authorClass);
     await this.labelRepository.insert(label);
     let labels: Label[] = [];
     labels.push(label);
-    const labelCategory = new LabelCategory(projectId, authorId, 'LabelCategory', labels);
+    const labelCategory = new LabelCategory(projectId, authorId, 'LabelCategory', labels, authorClass);
     return await this.labelCategoryRepository.insert(labelCategory);
   }
 

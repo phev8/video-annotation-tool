@@ -37,6 +37,69 @@
         </clr-toggle-container>
       </div>
 
+      <div class="form-group">
+        <label for="members">Project Members</label>
+        <clr-control-helper>Add members to supervisor and contribute to the project</clr-control-helper>
+      </div>
+
+      <clr-tree-node>
+        <div>
+          <clr-icon [attr.shape]='supervisorModel.status ? "folder-open" : "folder"'></clr-icon>
+          <label>Supervisors</label>
+        </div>
+        <ng-template [(clrIfExpanded)]="supervisorModel.status">
+          <div>
+            <a *ngFor="let user of model.supervisorIds" class="label label-light-blue clickable" (click)="deselectUser(user, supervisorModel)">
+              {{user.username}}
+              <span class="badge">x</span>
+            </a>
+          </div>
+          <form class="search">
+            <label for="search_supervisor" class="width-max">
+              <input class="width-90" id="search_supervisor" type="text" placeholder="Search for users by username" [(ngModel)]="supervisorModel.name" [ngModelOptions]="{standalone: true}" (ngModelChange)="onSupervisorChange($event)">
+              <clr-icon shape="search"></clr-icon>
+            </label>
+          </form>
+          <div class="dropdown open overflow width-90"  *ngIf="supervisorModel.searchStatus !== undefined && !supervisorModel.searchStatus" [hidden]="supervisorModel.searchStatus">
+            <div class="dropdown-menu relative-position width-max">
+              <div *ngFor="let user of supervisorModel.members">
+                <div aria-label="Dropdown header" class="dropdown-item" (click)="selectUser(user, supervisorModel)">{{user.username}}</div>
+              </div>
+              <div class="dropdown-item" [hidden]="supervisorModel.emptyMemberStatus">No Users Found</div>
+            </div>
+          </div>
+        </ng-template>
+      </clr-tree-node>
+
+      <clr-tree-node>
+      <div>
+        <clr-icon [attr.shape]='contributorModel.status ? "folder-open" : "folder"'></clr-icon>
+        <label>Contributors</label>
+      </div>
+      <ng-template [(clrIfExpanded)]="contributorModel.status">
+        <div>
+          <a *ngFor="let user of model.contributorIds" class="label label-light-blue clickable" (click)="deselectUser(user, contributorModel)">
+            {{user.username}}
+            <span class="badge">x</span>
+          </a>
+        </div>
+        <form class="search">
+          <label for="search_contributor" class="width-max">
+            <input class="width-90" id="search_contributor" type="text" placeholder="Search for users by username" [(ngModel)]="contributorModel.name" [ngModelOptions]="{standalone: true}" (ngModelChange)="onContributorChange(this)">
+            <clr-icon shape="search"></clr-icon>
+          </label>
+        </form>
+        <div class="dropdown open overflow width-90"  *ngIf="contributorModel.searchStatus !== undefined && !contributorModel.searchStatus" [hidden]="contributorModel.searchStatus">
+          <div class="dropdown-menu relative-position width-max">
+            <div *ngFor="let user of contributorModel.members">
+              <div aria-label="Dropdown header" class="dropdown-item" (click)="selectUser(user, contributorModel)">{{user.username}}</div>
+            </div>
+            <div class="dropdown-item" [hidden]="contributorModel.emptyMemberStatus">No Users Found</div>
+          </div>
+        </div>
+      </ng-template>
+    </clr-tree-node>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="modalOpen = false">Cancel</button>
         <button type="submit" class="btn btn-success"  [disabled]="!projectForm.form.valid">Create</button>

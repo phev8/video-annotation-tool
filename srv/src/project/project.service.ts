@@ -16,7 +16,7 @@ export class ProjectService {
      const y = ObjectID.createFromHexString(userId);
     const allProjects = await this.projectRepository.find();
      return allProjects.filter(x => {
-       return x.ownerId.equals(y) || x.memberIds.find(value => y.equals(value));
+       return x.ownerId.id.equals(y) || x.contributorIds.find((value) => value.id == y) != null || x.supervisorIds.find((value) => value.id == y) != null;
      });
     //return allProjects;
   }

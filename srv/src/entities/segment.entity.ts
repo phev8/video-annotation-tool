@@ -18,10 +18,14 @@ export class Segment {
   @Column()
   labelId: ObjectID;
 
-  constructor(labelId: ObjectID, authorId: ObjectID, start: number, end: number) {
+  @Column()
+  authorClass: string;
+
+  constructor(labelId: ObjectID, authorId: ObjectID, start: number, end: number, authorClass: string) {
     this.labelId = labelId;
     this.authorId = authorId;
     this.start = start;
     this.end = end;
+    this.authorClass = authorClass;
   }
 }

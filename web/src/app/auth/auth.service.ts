@@ -102,6 +102,13 @@ export class AuthService {
       .pipe(catchError(this.handleError<UserModel[]>(`fetch users for ids: ${id}`)));
   }
 
+  getUsersByUsername(username: string): Observable<UserModel[]> {
+    const headers = new HttpHeaders({'username': username});
+    const url = `${this.userUrl}/${username}`;
+    return this.http.get<UserModel[]>(url, {headers: headers})
+      .pipe(catchError(this.handleError<UserModel[]>(`fetch users for username: ${username}`)));
+  }
+
   /**
    * Handle Http operation that failed.
    * Let the app continue.

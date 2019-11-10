@@ -10,8 +10,8 @@ export class SegmentService {
               private readonly segmentRepository: MongoRepository<Segment>) {
   }
 
-  async createSegment(labelId: string, authorId: string, start: number, end: number) {
-    const segment = new Segment(labelId, authorId, start, end);
+  async createSegment(labelId: string, authorId: string, start: number, end: number, authorClass: string) {
+    const segment = new Segment(labelId, authorId, start, end, authorClass);
     return await this.segmentRepository.insert(segment);
   }
 

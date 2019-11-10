@@ -20,6 +20,7 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   };
 
   private project: ProjectModel;
+  private userRole: string;
   private subscription: Subscription;
 
   constructor(private projectService: CurrentProjectService, private labelsService: LabelsService) {
@@ -30,19 +31,18 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
       .subscribe(project => {
         if (project) {
           this.project = project;
-          /*this.labelsService.getLabels().then(value =>
-            this.annotationsFolder.files = value.map(label => ({id: label.id, name: label.name, icon: 'tag', active: false}))
-          );*/
+          this.userRole = this.projectService.findUserRole(project, JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
           this.labelsService.getLabelCategories().then(value =>
             this.annotationsFolder.files = value.map(label => ({id: label.id, name: label.name, icon: 'tag', active: false}))
           );
         }
       });
 
+    //TODO: Remove this section
     this.subscription.add(this.labelsService.newLabels$().subscribe(label => {
-      if (label) {
+      /*if (label) {
         this.annotationsFolder.files.push({id: label.id, name: label.name, icon: 'tag', active: false});
-      }
+      }*/
     }));
 
     this.subscription.add(this.labelsService.newLabelCategories$().subscribe(labelCategory => {
@@ -81,11 +81,11 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   }
 
   addNewLabel() {
-    this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],'');
+    this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],'', '');
   }
 
   addNewLabelCategory() {
-    this.labelsService.addLabelCategory(JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
+    this.labelsService.addLabelCategory(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'], this.userRole);
     //TODO Remove this section
     //this.labelsService.addLabel('');
   }

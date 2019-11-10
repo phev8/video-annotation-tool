@@ -3,5 +3,6 @@ export class SegmentModel {
   start: number;
   end: number;
   authorId: string;
+  authorClass: string;
   labelId: string;
 }

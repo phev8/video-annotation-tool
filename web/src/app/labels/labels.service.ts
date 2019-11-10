@@ -93,9 +93,9 @@ export class LabelsService {
    * Add a label to this project
    * @param authorId - the ID of the author
    */
-  addLabel(authorId: string = '', categoryId: string) {
+  addLabel(authorId: string = '', categoryId: string, authorClass: string) {
     return new Promise(resolve => {
-      this.socket.emit('addLabel', {aid: authorId, cid: categoryId}, (label: LabelModel) => {
+      this.socket.emit('addLabel', {aid: authorId, cid: categoryId, authorClass: authorClass}, (label: LabelModel) => {
         resolve(label);
         this.newLabelSubject.next(label);
       });
@@ -106,9 +106,9 @@ export class LabelsService {
    * Add a label to this project
    * @param authorId - the ID of the author
    */
-  addLabelCategory(authorId: string = '') {
+  addLabelCategory(authorId: string = '', authorClass: string) {
     return new Promise(resolve => {
-      this.socket.emit('addLabelCategory', {aid: authorId}, (label: LabelCategoryModel) => {
+      this.socket.emit('addLabelCategory', {aid: authorId, authorClass: authorClass}, (label: LabelCategoryModel) => {
         resolve(label);
         this.newLabelCategorySubject.next(label);
       });
@@ -134,7 +134,7 @@ export class LabelsService {
   }
 
   /**
-   * Update the name of a label
+   * Update the name of a label Category
    * @param id of this label
    * @param newName - a new name to be assigned to this label
    */
@@ -196,7 +196,7 @@ export class LabelsService {
     return this.socket.fromEvent('getSegments');
   }
 
-  addSegment(p: { hyperid: IdType; group: string; start: DateType; end: DateType }) {
+  addSegment(p: { hyperid: IdType; group: string; start: DateType; end: DateType, userRole: string }) {
     console.log(p);
     return new Promise(((resolve, reject) => {
       this.socket.emit('addSegment', p, (err) => {

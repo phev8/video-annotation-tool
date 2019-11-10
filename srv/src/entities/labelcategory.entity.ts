@@ -20,10 +20,14 @@ export class LabelCategory {
   @Column()
   labels: Label[];
 
-  constructor(projectId: ObjectID, authorId: ObjectID, name: string, labels: Label[]) {
+  @Column()
+  authorClass: string;
+
+  constructor(projectId: ObjectID, authorId: ObjectID, name: string, labels: Label[], authorClass: string) {
     this.projectId = projectId;
     this.authorId = authorId;
     this.name = name;
     this.labels = labels;
+    this.authorClass = authorClass;
   }
 }

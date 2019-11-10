@@ -1,6 +1,7 @@
 import { Column, Entity, ObjectIdColumn } from 'typeorm';
 import { Directory } from './directory.entity';
 import { ObjectID } from 'mongodb';
+import { User } from './user.entity';
 
 @Entity()
 export class Project {
@@ -12,10 +13,13 @@ export class Project {
   title: string;
 
   @Column()
-  ownerId: ObjectID;
+  ownerId: User;
 
   @Column()
-  memberIds: ObjectID[];
+  supervisorIds: User[];
+
+  @Column()
+  contributorIds: User[];
 
   @Column()
   description: string;
