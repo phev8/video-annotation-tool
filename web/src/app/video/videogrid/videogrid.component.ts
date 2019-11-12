@@ -90,8 +90,6 @@ export class VideogridComponent implements OnInit, OnDestroy {
         this.ratio = '1:2';
       }
 
-      console.log(this.elRef.nativeElement.parentElement);
-      //if(this.singleMedia) this.ratio = "" + (width/this.elRef.nativeElement.parentElement.scrollWidth) + ':' + (height/this.elRef.nativeElement.parentElement.scrollHeight);
       if(this.singleMedia) this.ratio = "" + (this.elRef.nativeElement.parentElement.clientHeight - 50);
     }));
   }
