@@ -2,7 +2,7 @@
 
 <div (mouseleave)="onGlobalMouseLeave()" *ngIf="videoSources && videoSources.length !== 0">
 
-  <mat-grid-list cols="{{videoSources.length === 1 ? '1' : '2'}}" [rowHeight]="ratio">
+  <mat-grid-list cols="{{videoSources.length === 1 ? '1' : '2'}}" [rowHeight]="ratio" (window:resize)="onResize($event)">
     <mat-grid-tile
       *ngFor="let video of videoSources; let i = index"
       class="video-container">
@@ -10,7 +10,7 @@
       <app-video
         source='{{video.source}}' (playerReady)="onPlayerReady($event, i)"
         (mouseenter)='onMouseEnter(i)'
-        (mouseleave)='onMouseLeave(i)'>
+        (mouseleave)='onMouseLeave(i)' class="inherit-height">
       </app-video>
 
     </mat-grid-tile>

@@ -17,6 +17,10 @@
         <app-filetree></app-filetree>
         <app-label-tree></app-label-tree>
       </div>
+      <div *ngIf="isNavCollapsed">
+        <clr-icon shape="pencil" class="fit-content-width"></clr-icon>
+        <clr-icon shape="cursor-hand-open" class="fit-content-width"></clr-icon>
+      </div>
 
     </clr-vertical-nav>
   </div>

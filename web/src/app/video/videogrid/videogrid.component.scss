@@ -6,6 +6,15 @@
 //  border: 2px solid aqua;
 //}
 
+.height-max {
+  max-height: 100%;
+}
+
+.inherit-height {
+  height: inherit;
+  width: inherit;
+}
+
 .rounded-corners {
   border-radius: 3px;
 }

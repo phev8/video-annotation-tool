@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnDestroy, OnInit, QueryList, ViewChildren, ElementRef, ViewChild } from '@angular/core';
 import { VgAPI } from 'videogular2/core';
 import { IVideo } from '../video.interface';
 import { CurrentProjectService } from '../../editor/current-project.service';
@@ -15,6 +15,7 @@ import { VideoComponent } from '../video/video.component';
   styleUrls: ['./videogrid.component.scss']
 })
 export class VideogridComponent implements OnInit, OnDestroy {
+
   private _videoSources: IVideo[] = [];
   private apis: LinkedList<VgAPI> = new LinkedList<VgAPI>();
   private currentTimes: number[] = [];
@@ -27,15 +28,16 @@ export class VideogridComponent implements OnInit, OnDestroy {
   private playbackValues: string[] = ['0.25', '0.5', '0.75', '1.0', '1.25', '1.50', '1.75', '2.0', '3.0'];
   private subscription: Subscription;
   private mainIndex = 0;
+  private singleMedia: boolean;
   loading = true;
 
   // 'main' video index
-  @ViewChildren(VideoComponent) videos: QueryList<VideoComponent>;
+  @ViewChildren(VideoComponent) videos: QueryList<VideoComponent>;e
   ratio = '2:1';
 
   constructor(private videoService: VideoService,
               private editorService: CurrentProjectService,
-              private hotkeysService: HotkeysService) {
+              private hotkeysService: HotkeysService, private elRef: ElementRef) {
     this.registerHotkeys();
   }
 
@@ -43,6 +45,7 @@ export class VideogridComponent implements OnInit, OnDestroy {
     this.subscription = this.editorService.getCurrentProject$().subscribe(project => {
       if (project) {
         this.loading = false;
+        this.singleMedia = project.singleMedia;
 
         /** Gather all videoSources */
         const videos: IVideo[] = [];
@@ -86,6 +89,10 @@ export class VideogridComponent implements OnInit, OnDestroy {
       if (height > width) {
         this.ratio = '1:2';
       }
+
+      console.log(this.elRef.nativeElement.parentElement);
+      //if(this.singleMedia) this.ratio = "" + (width/this.elRef.nativeElement.parentElement.scrollWidth) + ':' + (height/this.elRef.nativeElement.parentElement.scrollHeight);
+      if(this.singleMedia) this.ratio = "" + (this.elRef.nativeElement.parentElement.clientHeight - 50);
     }));
   }
 
@@ -234,5 +241,9 @@ export class VideogridComponent implements OnInit, OnDestroy {
 
     [playVideoHotkey, nextPlayback, prevPlayback, cursorSound, back, windback, forward, windforward]
       .forEach(hotkey => this.hotkeysService.add(hotkey));
+  }
+
+  onResize($event) {
+    this.ngOnInit();
   }
 }
