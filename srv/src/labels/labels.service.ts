@@ -4,6 +4,7 @@ import { Label } from '../entities/label.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LabelCategory } from '../entities/labelcategory.entity';
 import * as SocketIO from 'socket.io';
+import { LabelCategoryDto } from '../dto/label.category.dto';
 
 @Injectable()
 export class LabelsService {
@@ -21,12 +22,12 @@ export class LabelsService {
     return await this.labelRepository.findOne(label);
   }
 
-  async createLabelCategory(projectId: string, authorId: string, authorClass: string): Promise<InsertResult> {
-    let label = new Label(projectId, authorId, 'LabelInstance_1', authorClass);
+  async createLabelCategory(projectId: string, authorId: string, authorClass: string, labelCategoryWrapper: LabelCategoryDto): Promise<InsertResult> {
+    let label = new Label(projectId, authorId, labelCategoryWrapper.categoryName +'_1', authorClass);
     await this.labelRepository.insert(label);
     let labels: Label[] = [];
     labels.push(label);
-    const labelCategory = new LabelCategory(projectId, authorId, 'LabelCategory', labels, authorClass);
+    const labelCategory = new LabelCategory(projectId, authorId, labelCategoryWrapper.categoryName, labels, authorClass, labelCategoryWrapper);
     return await this.labelCategoryRepository.insert(labelCategory);
   }
 

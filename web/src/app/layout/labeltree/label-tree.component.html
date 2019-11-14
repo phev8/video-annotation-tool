@@ -1,4 +1,5 @@
-<clr-tree-node *ngIf="annotationsFolder">
+<app-label-form *ngIf="labelTreeModal" xmlns="http://www.w3.org/1999/html" [userRole]="userRole" [singleMediaProject]="project.singleMedia" (onHide)="changeHide($event)"></app-label-form>
+<clr-tree-node>
   <div>
     <clr-icon [attr.shape]='annotationsFolder.expanded ? "folder-open" : "folder"'></clr-icon>
     {{ annotationsFolder.name }}
@@ -11,20 +12,10 @@
   <ng-template [(clrIfExpanded)]="annotationsFolder.expanded">
     <clr-tree-node *ngFor="let labelCategory of annotationsFolder.files; let i = index">
 
-      <!--<button-->
-      <!--class="clr-treenode-link"-->
-      <!--[class.active]="label.active">-->
-      <!--</button>-->
-
       <div class="clr-treenode-link">
-        <!--<clr-icon [attr.shape]="label.icon"></clr-icon>-->
         <input type="text" [(ngModel)]="labelCategory.name" (change)="onLabelCategoryNameChange(labelCategory)"/>
-        <!--{{label.name}}-->
       </div>
       <div>
-        <!--<button class="btn btn-link btn-icon" (click)="onLabelHide(i)">-->
-          <!--<clr-icon shape="eye-hide"></clr-icon>-->
-        <!--</button>-->
         <button class="btn btn-link btn-icon" (click)="onLabelCategoryDelete(labelCategory.id)">
           <clr-icon shape="trash"></clr-icon>
         </button>

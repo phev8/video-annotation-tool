@@ -6,6 +6,7 @@ import { joinTestLogs } from 'protractor/built/util';
 import { DateType, IdType } from 'vis';
 import { SegmentModel } from '../models/segmentModel';
 import { LabelCategoryModel } from '../models/labelcategory.model';
+import { LabelMetadataModel } from '../models/labeltracking.model';
 
 interface ILabelRemoved {
   id: string;
@@ -109,6 +110,19 @@ export class LabelsService {
   addLabelCategory(authorId: string = '', authorClass: string) {
     return new Promise(resolve => {
       this.socket.emit('addLabelCategory', {aid: authorId, authorClass: authorClass}, (label: LabelCategoryModel) => {
+        resolve(label);
+        this.newLabelCategorySubject.next(label);
+      });
+    });
+  }
+
+  /**
+   * Add a label to this project
+   * @param authorId - the ID of the author
+   */
+  addNewLabelCategory(authorId: string = '', authorClass: string, labelCategoryData: LabelMetadataModel) {
+    return new Promise(resolve => {
+      this.socket.emit('addLabelCategory', {aid: authorId, authorClass: authorClass, labelCategoryData: labelCategoryData}, (label: LabelCategoryModel) => {
         resolve(label);
         this.newLabelCategorySubject.next(label);
       });

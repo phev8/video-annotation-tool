@@ -73,7 +73,7 @@ export class LabelsGateway  {
   @SubscribeMessage('addLabelCategory')
   async addLabelCategory(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
-    return await this.labelsService.createLabelCategory(room, data.aid, data.authorClass)
+    return await this.labelsService.createLabelCategory(room, data.aid, data.authorClass, data.labelCategoryData)
       .then(async (value: InsertResult) => {
         const id = value.identifiers[0].id;
         const newLabelCategory: LabelCategory = await this.labelsService.getLabelCategory(id);

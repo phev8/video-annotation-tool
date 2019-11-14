@@ -12,6 +12,7 @@ import {IFile} from '../../interfaces/IFile';
   styleUrls: ['./label-tree.component.scss']
 })
 export class LabelTreeComponent implements OnInit, OnDestroy {
+
   annotationsFolder: IDirectory = {
     name: 'Dictionary',
     icon: 'folder',
@@ -20,6 +21,7 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   };
 
   private project: ProjectModel;
+  private labelTreeModal: boolean;
   private userRole: string;
   private subscription: Subscription;
 
@@ -27,6 +29,7 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.labelTreeModal = false;
     this.subscription = this.projectService.getCurrentProject$()
       .subscribe(project => {
         if (project) {
@@ -85,7 +88,7 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   }
 
   addNewLabelCategory() {
-    this.labelsService.addLabelCategory(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'], this.userRole);
+    this.labelTreeModal = true;
     //TODO Remove this section
     //this.labelsService.addLabel('');
   }
@@ -110,5 +113,9 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
 
   onLabelCategoryNameChange(label: IFile) {
     this.labelsService.editLabelCategory(label.id, label.name);
+  }
+
+  changeHide($event) {
+    this.labelTreeModal = false;
   }
 }

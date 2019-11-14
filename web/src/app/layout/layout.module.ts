@@ -12,6 +12,7 @@ import { UploadModule } from '../upload/upload.module';
 import { LabelTreeComponent } from './labeltree/label-tree.component';
 import { LabelsModule } from '../labels/labels.module';
 import { FormsModule } from '@angular/forms';
+import { LabelTreeModalComponent } from './labeltree/label-tree-modal/label-tree-modal.component';
 
 
 @NgModule({
@@ -30,6 +31,7 @@ import { FormsModule } from '@angular/forms';
     LayoutComponent,
     FiletreeComponent,
     LabelTreeComponent,
+    LabelTreeModalComponent
   ]
 })
 export class LayoutModule {

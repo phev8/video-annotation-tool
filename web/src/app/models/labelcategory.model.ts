@@ -2,10 +2,13 @@ import { SegmentModel } from './segmentModel';
 import { LabelModel } from './label.model';
 
 export class LabelCategoryModel {
-  id: string;
-  name: string;
-  projectId: string;
-  authorId: string;
-  authorClass: string;
-  labels: LabelModel[];
+
+  constructor(
+    public id: string,
+    public name: string,
+    public projectId: string,
+    public authorId: string,
+    public authorClass: string,
+    public labels: LabelModel[]
+  ) {}
 }

@@ -1,0 +1,54 @@
+
+<clr-modal [clrModalOpen]="modalOpen" (clrModalOpenChange)="toggleModalStatus()" >
+
+  <h3 class="modal-title">New Label Category</h3>
+
+  <div class="modal-body">
+  <form (ngSubmit)="onSubmit(projectForm.form)" #projectForm="ngForm" class="compact">
+    <div class="form-group">
+      <label for="title">Category Name</label>
+      <input type="text" class="form-control" id="title" required [(ngModel)]="model.categoryName" name="categoryName"
+             #name="ngModel">
+    </div>
+
+
+    <div class="form-group" [hidden]="!singleMediaProject">
+      <label class="margin-top">Category Type</label>
+      <clr-toggle-container clrInline>
+        <clr-toggle-wrapper>
+          <input type="checkbox" clrToggle name="options" value='true' [(ngModel)]="model.isTrackingEnabled" />
+          <label>Trackable Labels</label>
+        </clr-toggle-wrapper>
+        <clr-control-helper>Turn on to enable label tracking for this category</clr-control-helper>
+        <clr-control-error>This field is required!</clr-control-error>
+      </clr-toggle-container>
+    </div>
+
+    <div class="form-group" *ngIf="model.isTrackingEnabled">
+      <label class="margin-top">Sampling Frequency</label>
+      <div class="clr-control-container margin-top">
+        <div class="clr-input-wrapper">
+          <input type="number" id="basic" placeholder="Enter value here" class="clr-input" [(ngModel)]="model.samplingFrequency"  [ngModelOptions]="{standalone: true}" [required]="model.isTrackingEnabled">
+
+          <div class="clr-select-wrapper">
+          <select id="select-basic" class="clr-select" [(ngModel)]="model.samplingUnit"  [ngModelOptions]="{standalone: true}">
+            <option value="ms">ms</option>
+            <option value="s">sec</option>
+            <option value="min">min</option>
+          </select>
+          </div>
+        </div>
+        <span class="clr-subtext">Enter how frequently label is to be tracked</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn btn-success"  [disabled]="!projectForm.form.valid">Create</button>
+    </div>
+
+  </form>
+  </div>
+
+
+</clr-modal>
