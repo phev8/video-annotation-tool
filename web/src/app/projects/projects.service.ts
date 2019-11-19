@@ -30,7 +30,9 @@ export class ProjectsService {
   currentProjects$: Observable<ProjectModel[]>;
 
   getProjects(): Observable<ProjectModel[]> {
-    const userId = this.authService.currentUserValue.id;
+    let userId = '';
+    if(this.authService.currentUserValue != undefined)
+      userId = this.authService.currentUserValue.id;
     return this.http.get<ProjectModel[]>(`${this.projectsUrl}/all/${userId}`)
       .pipe(
         catchError(this.handleError('getProjects', []))

@@ -14,6 +14,7 @@ import { ErrorInterceptor } from './auth/error.interceptor';
 import { JwtInterceptor } from './auth/jwt.interceptor';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HotkeyModule } from 'angular2-hotkeys';
+import { CanvasModule } from './canvas/canvas.module';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { HotkeyModule } from 'angular2-hotkeys';
     LayoutModule,
     ProjectsModule,
     EditorModule,
+    CanvasModule,
   ],
   providers: [
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},

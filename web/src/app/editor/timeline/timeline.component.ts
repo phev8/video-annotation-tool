@@ -5,8 +5,8 @@ import {
   ElementRef,
   EventEmitter,
   OnDestroy,
-  OnInit,
-  ViewChild
+  OnInit, Output,
+  ViewChild,
 } from '@angular/core';
 import * as vis from 'vis';
 import { DataGroup, IdType, Timeline, TimelineOptions } from 'vis';
@@ -24,6 +24,7 @@ import { LabelModel } from '../../models/label.model';
 import { pairwise, startWith } from 'rxjs/operators';
 import { LabelCategoryModel } from '../../models/labelcategory.model';
 import { element } from 'protractor';
+import { CurrentToolService } from '../project-toolbox.service';
 
 @Component({
   selector: 'app-timeline',
@@ -39,6 +40,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   private timeline: Timeline;
+
+  @Output() showToolBox = new EventEmitter<boolean>();
 
   // noinspection SpellCheckingInspection
   // noinspection JSUnusedGlobalSymbols
@@ -121,6 +124,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         input.type = 'checkbox';
         input.id = `checkbox_${group.id}`;
         input.addEventListener('change', () => {
+          this.checkForTracking(group['categoryId']);
           this.checkboxChange.emit({id: group.id, checked: input.checked});
         });
 
@@ -190,7 +194,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
               private labelsService: LabelsService,
               private videoService: VideoService,
               private hotkeyService: HotkeysService,
-              private changeDetectorRef: ChangeDetectorRef) {
+              private changeDetectorRef: ChangeDetectorRef,
+              private toolBoxService: CurrentToolService) {
   }
 
   ngOnInit(): void {
@@ -462,5 +467,10 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         this.timelineData.items.remove(selection);
       }
     }
+  }
+
+  private checkForTracking(categoryId: string) {
+    let category: LabelCategoryModel = this.labelCategories.find(value => value.id == categoryId );
+    this.toolBoxService.triggerToolBox(category.isTrackable);
   }
 }

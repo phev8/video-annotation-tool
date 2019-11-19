@@ -9,6 +9,10 @@ export class LabelCategoryModel {
     public projectId: string,
     public authorId: string,
     public authorClass: string,
-    public labels: LabelModel[]
+    public labels: LabelModel[],
+    public isTrackable: boolean,
+    public samplingFrequency?: number,
+    public samplingUnit?: string,
+    public metadata?: string,
   ) {}
 }

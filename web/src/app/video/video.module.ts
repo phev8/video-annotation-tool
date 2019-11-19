@@ -11,6 +11,7 @@ import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { VideoService } from './video.service';
 import { HotkeyModule } from 'angular2-hotkeys';
+import { CanvasModule } from '../canvas/canvas.module';
 
 
 @NgModule({
@@ -25,6 +26,7 @@ import { HotkeyModule } from 'angular2-hotkeys';
     VgOverlayPlayModule,
     VgBufferingModule,
     HotkeyModule,
+    CanvasModule
   ],
   exports: [ VideogridComponent ],
   providers: [ VideoService]

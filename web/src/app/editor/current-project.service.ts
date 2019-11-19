@@ -29,6 +29,8 @@ export class CurrentProjectService {
     return this.currentProject$;
   }
 
+
+
   getCurrentProjectValue(): ProjectModel {
     return this.currentProjectSubject.getValue();
   }

@@ -1,5 +1,6 @@
-<vg-player (onPlayerReady)="onPlayerReady$($event)" *ngIf="source">
-  <video [vgMedia]="master" #master [vgMaster]="true" preload="auto">
+<vg-player (onPlayerReady)="onPlayerReady$($event)" *ngIf="source" class="vg-player-width">
+  <video [vgMedia]="master" #master [vgMaster]="true" preload="auto" class="width-auto">
     <source src='{{url}}/{{source}}' type="video/mp4">
   </video>
+  <drawing-board class="drawing-container"></drawing-board>
 </vg-player>
