@@ -36,7 +36,7 @@ services:
     depends_on:
       - mongodb
   frontend-tier:
-    image: 'etherealyn/vat-frontend:v0.3.1'
+    image: 'etherealyn/vat-frontend:v0.3.3'
     build: ./web
     networks:
       - app-tier
