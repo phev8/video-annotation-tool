@@ -107,9 +107,10 @@ export class TimelineData {
         if (status && status.id) {
           const item = this._items.get(status.id);
           if (item) {
-            if (this.deleteWrongRecords && item.start > item.end) {
+            if ((this.deleteWrongRecords && item.start > item.end) || item.start == item.end) {
               this._items.remove(item.id);
-              reject();
+              let reason = item.start == item.end?  "start and end times cant be identical": "Incorrect segment";
+              reject(reason);
             }
           }
         }

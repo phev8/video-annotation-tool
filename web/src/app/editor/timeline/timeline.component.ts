@@ -204,17 +204,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         if (project) {
           this.project = project;
           this.userRole = this.projectService.findUserRole(project, JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
-
-          /*this.labelsService.getLabels()
-            .then((labels: LabelModel[]) => {
-              this.labelsService.getSegments(labels.map(x => {
-                return x.id;
-              }));
-              // this.timelineData.clear();
-              this.timelineData.addGroups(labels.map(x => ({id: x.id, content: x.name})));
-              // this.timelineData.addItem({id: '-1', content: `stub`, start: 0, end: 100, type: 'range'});
-            });*/
-
           this.labelsService.getLabelCategories()
             .then((labelCategories: LabelCategoryModel[]) => {
               labelCategories.map(labelCategory => {
@@ -225,6 +214,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
             });
         }
       });
+
     this.observeLabels();
     this.observeSegments();
 
@@ -266,7 +256,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.timelineData.stopRecording(curr.id)
             .then((id: IdType) => {
               const item = this.timelineData.items.get(id);
-              if (item) {
+              if (item && item.start!= item.end) {
                 const segment = {
                   hyperid: item.id,
                   group: item.group,
@@ -281,6 +271,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
                   console.error('an error occured while adding a segment');
                 });
               }
+            }, (msg) => {
+              console.error('an error occured while adding a segment:'+ msg);
             });
         }
       }));
