@@ -2,6 +2,7 @@ import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular
 import { CanvasService } from './canvas.service';
 import { Subscription } from 'rxjs';
 import { CurrentToolService } from '../editor/project-toolbox.service';
+import _ from 'lodash'
 
 
 @Component({
@@ -18,7 +19,12 @@ export class CanvasComponent implements OnInit {
 
   private toolSubscription: Subscription;
   private selectedTool: number;
-  private selectedElement;
+  private selectedLabel: string;
+
+
+
+  private fill = '#044B94';
+  private polygonElements;
 
   constructor(
     private canvasService: CanvasService,
@@ -29,6 +35,7 @@ export class CanvasComponent implements OnInit {
   ngOnInit() {
     this.cursor = 'crosshair';
     this.completedElements= [];
+    this.selectedLabel = 'boat';
     this.toolSubscription = this.toolService.getCurrentTool$().subscribe( next => {
       this.cursor = 'crosshair';
       if(next == 1) {
@@ -54,6 +61,11 @@ export class CanvasComponent implements OnInit {
       case 2:
         this.beginRectangleDraw(event);
         break;
+      case 4:
+        this.beginCircleDraw(event);
+        break;
+      case 5:
+        this.addPin(event);
     }
   }
 
@@ -70,6 +82,9 @@ export class CanvasComponent implements OnInit {
       case 2:
         this.continueRectangleDraw(event);
         break;
+      case 4:
+        this.continueCircleDraw(event);
+        break;
     }
   }
 
@@ -85,6 +100,9 @@ export class CanvasComponent implements OnInit {
         break;
       case 2:
         this.endRectangleDraw(event);
+      case 4:
+        this.endCircleDraw(event);
+        break;
     }
   }
 
@@ -104,7 +122,7 @@ export class CanvasComponent implements OnInit {
     Methods for handling pen Drawing
    */
   private beginPenDraw(event: any) {
-    this.createNewSvgElement('polyline', {'fill':'#044B94', 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000'});
+    this.createNewSvgElement('polyline', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000'});
     this.continuePenDraw(event);
   }
 
@@ -122,6 +140,16 @@ export class CanvasComponent implements OnInit {
     }
   }
 
+  private movePolyline(point: any, event: any) {
+    if(this.svgElement) {
+      let xTranslate = point.x - this.svgElement.getAttribute('origin-x');
+      let yTranslate = point.y - this.svgElement.getAttribute('origin-y');
+      _.each(this.svgElement.points, function (value, key) { value.x += xTranslate; value.y += yTranslate; });
+      this.svgElement.setAttribute('origin-x', point.x);
+      this.svgElement.setAttribute('origin-y', point.y);
+      }
+  }
+
   /*
     Methods for handling Selection
    */
@@ -129,17 +157,30 @@ export class CanvasComponent implements OnInit {
     if(this.completedElements.includes(event.target)) {
       this.cursor = "grabbing";
       this.svgElement = event.target;
+      this.svgElement.setAttribute('style', "{cursor: grabbing}");
+      if(this.svgElement.tagName == "polyline") {
+        let point = this.generatePointOnClientElement(event);
+        this.svgElement.setAttribute('origin-x', point.x);
+        this.svgElement.setAttribute('origin-y', point.y);
+      }
     }
   }
 
   private moveSelectedElement(event: any) {
     if (this.svgElement) {
+      let point = this.generatePointOnClientElement(event);
       switch(this.svgElement.tagName) {
         case 'rect':
-          let point = this.generatePointOnClientElement(event);
           this.svgElement.setAttribute('x', point.x);
           this.svgElement.setAttribute('y', point.y);
           break;
+        case 'polyline':
+          this.movePolyline(point, event);
+          break;
+        case 'circle':
+          this.svgElement.setAttribute('cx', point.x);
+          this.svgElement.setAttribute('cy', point.y);
+
         default: console.log(this.svgElement.tagName);
       }
     }
@@ -148,6 +189,8 @@ export class CanvasComponent implements OnInit {
   private endSelection(event: any) {
     if (this.svgElement) {
       this.moveSelectedElement(event);
+      if(this.svgElement.tagName != "polyline")
+      this.svgElement.removeAttribute('style');
       this.svgElement = null;
     }
     this.cursor = "grab";
@@ -158,7 +201,7 @@ export class CanvasComponent implements OnInit {
    */
   private beginRectangleDraw(event: any) {
     let point = this.generatePointOnClientElement(event);
-    this.createNewSvgElement('rect', {'fill':'#044B94', 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'x': point.x, 'y': point.y, width: '10', height: 10});
+    this.createNewSvgElement('rect', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'x': point.x, 'y': point.y, width: '10', height: 10});
     this.continueRectangleDraw(event);
   }
 
@@ -190,6 +233,34 @@ export class CanvasComponent implements OnInit {
     }
   }
 
+  /*
+      Methods to handle circle tool
+   */
+  private beginCircleDraw(event: any) {
+    let point = this.generatePointOnClientElement(event);
+    this.createNewSvgElement('circle', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'cx': point.x, 'cy': point.y, 'r': 0});
+    this.continueCircleDraw(event);
+  }
+
+  private continueCircleDraw(event: any) {
+    if (this.svgElement) {
+      let point = this.generatePointOnClientElement(event);
+      this.adjustCircleDimensions(point);
+    }
+  }
+  private adjustCircleDimensions(point) {
+    let width = point.x - this.svgElement.getAttribute('cx');
+    let height = point.y - this.svgElement.getAttribute('cy');
+    this.svgElement.setAttribute('r', Math.hypot(width, height));
+  }
+
+  private endCircleDraw(event: any) {
+    if (this.svgElement) {
+      this.continueCircleDraw(event);
+      this.svgElement = null;
+    }
+  }
+
   private generatePointOnClientElement(event: any) {
     let point;
     if(this.svgElement)
@@ -205,8 +276,12 @@ export class CanvasComponent implements OnInit {
     return point;
   }
 
-  private createNewSvgElement(tagName: string, attributes: object) {
+  private createNewSvgElement(tagName: string, attributes: object, id?: string) {
     this.svgElement = this.createSvgElement(tagName);
+    this.svgElement.id = this.selectedLabel;
+    if(id) {
+      this.svgElement.id = id;
+    }
     this.completedElements.push(this.svgElement);
     for(let key in attributes) {
       this.svgElement.setAttribute(key, attributes[key]);
@@ -220,8 +295,42 @@ export class CanvasComponent implements OnInit {
   private performUndo() {
     if(this.selectedTool == 3) {
       let currentElement = this.completedElements.pop();
-      if(currentElement)
-      this.svgCanvas.nativeElement.removeChild(currentElement);
+      if(currentElement) {
+        this.handlePolygonPointDeletion(currentElement);
+        this.svgCanvas.nativeElement.removeChild(currentElement);
+      }
+    }
+  }
+
+  /*
+    Method to handle polygons
+   */
+  private addPin(event: any) {
+    let point = this.generatePointOnClientElement(event);
+    if(!this.isPreviousPinPresent()) {
+      this.createNewSvgElement('polygon', {'fill': this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000'});
+      this.polygonElements = this.svgElement;
+    }
+    this.polygonElements.points.appendItem(point);
+    this.addVisualPinElement(point);
+  }
+
+  private addVisualPinElement(point: any) {
+    let id = this.selectedLabel+"_point"+this.polygonElements.points.numberOfItems ;
+    this.createNewSvgElement('circle', {'fill': this.fill, 'fill-opacity': '0.8', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'cx': point.x, 'cy': point.y, 'r': '0.2rem'}, id);
+  }
+
+  private isPreviousPinPresent() {
+    return _.some(this.completedElements, {'tagName': 'polygon', 'id': this.selectedLabel});
+  }
+
+  private handlePolygonPointDeletion(currentElement: any) {
+    if(currentElement.tagName == "circle" && currentElement.id.startsWith(this.selectedLabel+"_")) {
+      for(let i=0; i<this.polygonElements.points.numberOfItems; i++) {
+        if(this.polygonElements.points.getItem(i).x == currentElement.getAttribute('cx') && this.polygonElements.points.getItem(i).y == currentElement.getAttribute('cy')) {
+          this.polygonElements.points.removeItem(i);
+        }
+      }
     }
   }
 }

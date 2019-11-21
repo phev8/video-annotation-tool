@@ -37,8 +37,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
         this.isNavCollapsed = next;
       }
     );
-    this.toolStatus = new Array(4).fill(false);
-    this.iconStyle = new Array(4).fill('fit-content-width');
+    this.toolStatus = new Array(10).fill(false);
+    this.iconStyle = new Array(10).fill('fit-content-width');
   }
 
   ngOnDestroy(): void {
