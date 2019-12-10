@@ -9,7 +9,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import * as vis from 'vis';
-import { DataGroup, IdType, Timeline, TimelineOptions } from 'vis';
+import { DataGroup, DataItem, DataSelectionOptions, IdType, Timeline, TimelineOptions } from 'vis';
 import * as moment from 'moment';
 import { LabelsService } from 'src/app/labels/labels.service';
 import { CurrentProjectService } from '../current-project.service';
@@ -20,11 +20,14 @@ import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 import { ProjectModel } from '../../models/project.model';
 import { Time } from './time';
 import { TimelineData } from './timeline.data';
+import _ from "lodash";
 import { LabelModel } from '../../models/label.model';
 import { pairwise, startWith } from 'rxjs/operators';
 import { LabelCategoryModel } from '../../models/labelcategory.model';
 import { element } from 'protractor';
 import { CurrentToolService } from '../project-toolbox.service';
+import { options } from './timeline.template.options';
+import { forEach } from 'typescript-collections/dist/lib/arrays';
 
 @Component({
   selector: 'app-timeline',
@@ -37,156 +40,16 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loading = true;
   private project: ProjectModel;
-
-
   private timeline: Timeline;
 
   @Output() showToolBox = new EventEmitter<boolean>();
-
-  // noinspection SpellCheckingInspection
-  // noinspection JSUnusedGlobalSymbols
-  private options = {
-    width: '100%',
-    min: Time.seconds(0),
-    start: Time.seconds(0),
-    end: Time.seconds(15),
-    max: Time.seconds(98), // todo
-    moment: function (date) {
-      return moment(date).utc();
-    },
-    format: {
-      minorLabels: {
-        millisecond: 'ss.SSS',
-        second: 'HH:mm:ss',
-        minute: 'HH:mm:ss',
-        hour: 'HH:mm',
-        weekday: 'HH:mm',
-        day: 'HH:mm',
-        week: 'HH:mm',
-        month: 'HH:mm',
-        year: 'HH:mm'
-      },
-      majorLabels: {
-        // millisecond: 'HH:mm:ss',
-        // second: 'D MMMM HH:mm',
-        // minute: 'ddd D MMMM',
-        // hour: 'ddd D MMMM',
-        // weekday: 'MMMM YYYY',
-        // day: 'MMMM YYYY',
-        // week: 'MMMM YYYY',
-        // month: 'YYYY',
-        // year: '',
-        // millisecond: 'HH:mm:ss',
-        second: 'HH:mm:ss',
-        minute: 'HH:mm:ss',
-        hour: '',
-        weekday: '',
-        day: '',
-        week: '',
-        month: '',
-        year: ''
-      }
-    },
-    groupTemplate: (group: DataGroup) => {
-      if (group) {
-
-        const overarchingContainer = document.createElement('div');
-        overarchingContainer.className = 'clr-row top-margin';
-
-        const containerLeft = document.createElement('div');
-        containerLeft.className = 'clr-col-6';
-
-        const containerRight = document.createElement('div');
-        containerRight.className = 'clr-col-6';
-
-
-        const categoryContainer = document.createElement('div');
-        categoryContainer.className = 'btn btn-link';
-
-
-        //const categoryInput = document.createElement('input');
-        //categoryInput.type = 'checkbox';
-        //categoryInput.id = `checkbox_as1`;
-        //categoryInput.id = `checkbox_${group.id}`;
-        const categoryLabel = document.createElement('label');
-        categoryLabel.innerHTML = group['category'];
-        categoryLabel.addEventListener('click', () => {
-          this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],group['categoryId'], this.userRole);
-        });
-
-        //categoryContainer.prepend(categoryInput);
-        categoryContainer.append(categoryLabel);
-
-        const container = document.createElement('div');
-        container.className = 'checkbox btn';
-
-        const input = document.createElement('input');
-        input.type = 'checkbox';
-        input.id = `checkbox_${group.id}`;
-        input.addEventListener('change', () => {
-          this.checkForTracking(group['categoryId']);
-          this.checkboxChange.emit({id: group.id, checked: input.checked});
-        });
-
-        const label = document.createElement('label');
-        label.setAttribute('style', 'padding-right: 2em;');
-        label.setAttribute('for', `checkbox_${group.id}`);
-        label.innerHTML = group.content;
-
-        container.prepend(input);
-        container.append(label);
-
-        containerLeft.appendChild(categoryContainer);
-        containerRight.appendChild(container);
-
-        overarchingContainer.appendChild(containerLeft);
-        overarchingContainer.appendChild(containerRight);
-        // container.append(temp);
-        return overarchingContainer;
-      }
-    },
-    multiselect: true,
-    editable: true,
-    onAdd: (item, callback) => {
-      console.log('onAdd', item);
-      callback(item); // send back adjusted new item
-      // callback(null) // cancel item creation
-    },
-    onMove: (item, callback) => {
-      console.log('onMove', item);
-      callback(item);
-    },
-    onMoving: (item, callback) => {
-      console.log('onMoving', item);
-      callback(item);
-    },
-    onUpdate: (item, callback) => {
-      console.log('onUpdate', item);
-      callback(item);
-    },
-    onRemove: (item, callback) => {
-      console.log('onRemove', item);
-      callback(item);
-    },
-    tooltipOnItemUpdateTime: {
-      template: item => {
-        const fstart = Time.formatDatetime(item.start);
-        const fend = Time.formatDatetime(item.end);
-        return `Start: ${fstart}<br>End:${fend}`;
-      }
-    },
-    tooltip: {
-      followMouse: true,
-      overflowMethod: 'cap'
-    }
-  };
 
   private timelineData: TimelineData = new TimelineData();
   private labelCategories: LabelCategoryModel[] = [];
   private customTimeId: IdType;
   private subscription: Subscription;
+  private updateSubscription: Subscription;
   private currentTime = 0;
-
   private checkboxChange = new EventEmitter<{ id: IdType, checked: boolean }>();
   private userRole: string;
 
@@ -199,6 +62,12 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.updateSubscription = this.labelsService.newSegment$().subscribe(newSubject => {
+      let hyperId = newSubject.hyperid;
+      let id = newSubject.id;
+      console.log(newSubject);
+    });
+
     this.subscription = this.projectService.getCurrentProject$()
       .subscribe(project => {
         if (project) {
@@ -224,18 +93,9 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         const index = event.index;
         if (api && index === 0) {
           const subscriptions: IMediaSubscriptions = api.subscriptions;
-
-          this.subscription.add(subscriptions.canPlay.subscribe(() => {
-            this.updateCurrentTime(Time.seconds(api.currentTime));
-          }));
-
-          this.subscription.add(subscriptions.timeUpdate.subscribe(() => {
-            this.updateCurrentTime(Time.seconds(api.currentTime));
-          }));
-
-          this.subscription.add(subscriptions.durationChange.subscribe(() => {
-            this.setMax(Time.seconds(api.duration));
-          }));
+          this.subscription.add(subscriptions.canPlay.subscribe(() => {this.updateCurrentTime(Time.seconds(api.currentTime));}));
+          this.subscription.add(subscriptions.timeUpdate.subscribe(() => {this.updateCurrentTime(Time.seconds(api.currentTime));}));
+          this.subscription.add(subscriptions.durationChange.subscribe(() => {this.setMax(Time.seconds(api.duration));}));
         }
       }));
 
@@ -253,38 +113,71 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         } else if (curr.checked) {
           this.timelineData.startRecording(curr.id, this.currentTime);
         } else if (!curr.checked) {
-          this.timelineData.stopRecording(curr.id)
-            .then((id: IdType) => {
-              const item = this.timelineData.items.get(id);
-              if (item && item.start!= item.end) {
-                const segment = {
-                  hyperid: item.id,
-                  group: item.group,
-                  start: item.start,
-                  end: item.end,
-                  authorRole: this.userRole,
-                  authorId: JSON.parse(localStorage.getItem('currentSession$'))['user']['id']
-                };
-                this.labelsService.addSegment(segment).then(() => {
-                  console.log('segment added');
-                }, () => {
-                  console.error('an error occured while adding a segment');
-                });
-              }
-            }, (msg) => {
-              console.error('an error occured while adding a segment:'+ msg);
-            });
+          this.stopRecording(curr);
         }
       }));
 
   }
 
+  private stopRecording(curr) {
+    this.timelineData.stopRecording(curr.id)
+      .then((response: { id: IdType, updateExisting: boolean }) => {
+        const item = this.timelineData.items.get(response.id);
+        if (item && item.start != item.end) {
+          let segment: any;
+          segment = {
+            hyperid: item.id,
+            group: item.group,
+            start: item.start,
+            end: item.end,
+            authorRole: this.userRole,
+            authorId: JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],
+          };
+          segment = response.updateExisting ? item : segment;
+          let checkForMerges = this.updateRequired(this.timelineData.findItemsByOptions('group', item.group), segment, response.updateExisting);
+          if (checkForMerges[0]) {
+            this.handleSegmentMerge(checkForMerges);
+          } else {
+            this.createNewSegment(segment);
+          }
+        }
+      }, (msg) => {
+        console.log('an error occured while adding a segment:' + msg);
+      });
+  }
+
+  private createNewSegment(segment: any) {
+    this.labelsService.addSegment(segment).then((response) => {
+      console.log('segment added' + response);
+      this.timelineData.removeItem(segment.hyperid);
+      segment.id = response;
+      this.timelineData.updateItem(segment);
+    }, function(err) {
+      console.log('an error occured while adding a segment');
+    });
+  }
+
+  private handleSegmentMerge(checkForMerges) {
+    this.labelsService.mergeSegments(checkForMerges[1], checkForMerges[2], checkForMerges[3]).then(() => {
+      let segment = this.timelineData.getItem(checkForMerges[1][0]);
+      segment.start = checkForMerges[2];
+      segment.end = checkForMerges[3];
+      this.timelineData.updateItem(segment);
+      for (let j = 1; j < checkForMerges[1].length; j++) {
+        this.timelineData.removeItem(checkForMerges[1][j]);
+      }
+      this.timeline.redraw();
+    }, () => {
+      console.log('an error occured while merging the segment');
+    });
+  }
+
   ngAfterViewInit() {
     const container = this.timelineVisualization.nativeElement;
     // @ts-ignore
-    this.timeline = new vis.Timeline(container, this.timelineData.items, this.timelineData.groups, this.options);
+    this.timeline = new vis.Timeline(container, this.timelineData.items, this.timelineData.groups, options);
     this.customTimeId = this.timeline.addCustomTime(Time.seconds(1), 'currentPlayingTime');
-    this.timeline.setCustomTimeTitle('', this.customTimeId);
+    this.timeline.setCustomTimeTitle('seeker', this.customTimeId);
 
 
     this.timeline.on('timechanged', properties => {
@@ -447,7 +340,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private setMax(duration: number) {
     // @ts-ignore
-    const newOptions: TimelineOptions = Object.assign({}, this.options);
+    const newOptions: TimelineOptions = Object.assign({}, options);
     newOptions.max = duration;
     this.timeline.setOptions(newOptions);
   }
@@ -464,5 +357,50 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   private checkForTracking(categoryId: string) {
     let category: LabelCategoryModel = this.labelCategories.find(value => value.id == categoryId );
     this.toolBoxService.triggerToolBox(category.isTrackable);
+  }
+
+
+  //TODO CHECK IF THIS SECTION IS ACTUALLY REQUIRED
+  private updateRequired(items: DataItem[], currentItem: any, updateExisting: boolean) {
+    if(updateExisting) return this.existingItemMerge(items, currentItem);
+    else {
+      return this.mergeItemsForNewSegment(items, currentItem, false);
+    }
+  }
+
+  private mergeSegments(currentItem: any, items: DataItem[], existingUpdate: boolean) {
+    let itemList = [];
+    let start: number = currentItem.start;
+    let end: number = currentItem.end;
+    if(existingUpdate) itemList.push(currentItem.id);
+    items.forEach(segment => {
+      let currentId = currentItem['id'] ? currentItem['id'] : currentItem['hyperid'];
+      if (currentItem != segment && currentId != segment.id && (segment.start <= currentItem.end && segment.end >= currentItem.start)) {
+        start = start < segment.start ? start : parseInt(segment.start.toString());
+        end = end < segment.end ? parseInt(segment.end.toString()) : end;
+        itemList.push(segment.id);
+      }
+    });
+    return { itemList, start, end };
+  }
+
+  private existingItemMerge(items: DataItem[], currentItem: any) {
+    if(items.length == 1) {
+      return [true, [items[0].id], currentItem.start, currentItem.end];
+    }
+    return this.mergeItemsForNewSegment(items, currentItem, true);
+  }
+
+  private mergeItemsForNewSegment(items: DataItem[], currentItem: any, updateExisting: boolean) {
+    if(items.length != 1)  {
+      let { itemList, start, end } = this.mergeSegments(currentItem, items, updateExisting);
+      if(itemList.length > 0) {
+        itemList = updateExisting? _.sortBy(itemList, function(item) { return item.id === currentItem.id ? 0 : 1;}): itemList;
+        return [true, itemList, start, end];
+      }
+      if(updateExisting)
+        return [true, [currentItem.id], currentItem.start, currentItem.end];
+    }
+    return [false];
   }
 }

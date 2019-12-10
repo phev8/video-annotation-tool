@@ -12,6 +12,12 @@ interface ILabelRemoved {
   id: string;
 }
 
+interface ISegmentUpdated {
+  updatedIds: string[];
+  newStart: number;
+  newEnd: number;
+}
+
 interface ILabelCategoryRemoved {
   id: string;
 }
@@ -32,11 +38,13 @@ interface ILabelCategoryEditName {
 export class LabelsService {
 
   private newLabelSubject = new Subject<LabelModel>();
+  private newSegmentSubject = new Subject<any>();
   private newLabelCategorySubject = new Subject<LabelCategoryModel>();
   private deleteLabelSubject = new Subject<ILabelRemoved>();
   private deleteLabelCategorySubject = new Subject<ILabelCategoryRemoved>();
   private editedLabelsSubject = new Subject<ILabelEditName>();
   private editedLabelCategoriesSubject = new Subject<ILabelCategoryEditName>();
+
 
   private lastProjectId;
 
@@ -202,6 +210,13 @@ export class LabelsService {
   // endregion
 
   // region Unicast Segments
+  newSegment$(): Observable<any> {
+    return merge(
+      this.socket.fromEvent<any>('newSegment'),
+      this.newSegmentSubject.asObservable()
+    );
+  }
+
   getSegments(ids: IdType[]) {
     this.socket.emit('getSegments', {ids});
   }
@@ -211,11 +226,11 @@ export class LabelsService {
   }
 
   addSegment(p: { hyperid: IdType; group: string; start: DateType; end: DateType, authorRole: string, authorId: string }) {
-    console.log(p);
     return new Promise(((resolve, reject) => {
-      this.socket.emit('addSegment', p, (err) => {
-        if (!err) {
-          resolve();
+      this.socket.emit('addSegment', p, function (response) {
+        if (response) {
+          resolve(response);
+          //this.newSegmentSubject.next({id: response, hyperid: p.hyperid});
         } else {
           reject();
         }
@@ -271,6 +286,20 @@ export class LabelsService {
   }
 
   // endregion
+
+
+  mergeSegments(segmentIds: any, start: any, end: any) {
+    return new Promise(((resolve, reject) => {
+      this.socket.emit('mergeSegments', {segmentIds, start, end}, (err) => {
+        if (!err) {
+          resolve();
+        } else {
+          console.log(err);
+          reject();
+        }
+      });
+    }));
+  }
 
 
 }

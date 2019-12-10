@@ -180,6 +180,7 @@ export class CanvasComponent implements OnInit {
         case 'circle':
           this.svgElement.setAttribute('cx', point.x);
           this.svgElement.setAttribute('cy', point.y);
+          break;
 
         default: console.log(this.svgElement.tagName);
       }

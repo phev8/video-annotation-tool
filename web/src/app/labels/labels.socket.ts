@@ -5,6 +5,6 @@ import { environment } from '../../environments/environment';
 @Injectable()
 export class LabelsSocket extends Socket {
   constructor() {
-    super({url: `${environment.apiUrl}/labels`, options: {}});
+    super({url: `${environment.apiUrl}/labels`, options: {'transports': ['websocket']}});
   }
 }

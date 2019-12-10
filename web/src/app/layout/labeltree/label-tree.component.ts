@@ -104,7 +104,8 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   }
 
   onLabelCategoryDelete(id: string) {
-    this.labelsService.deleteLabelCategory(id);
+    if (confirm('Are you sure you want to delete selected category?'))
+      this.labelsService.deleteLabelCategory(id);
   }
 
   onLabelNameChange(label: IFile) {

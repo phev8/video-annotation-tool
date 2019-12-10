@@ -1,7 +1,7 @@
 import { OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from '@nestjs/websockets';
 import { LabelsService } from './labels.service';
 import * as SocketIO from 'socket.io';
-import { InsertResult } from 'typeorm';
+import { InsertResult, UpdateResult } from 'typeorm';
 import { Label } from '../entities/label.entity';
 import { SegmentService } from './segment/segment.service';
 import { from, Observable} from 'rxjs';
@@ -11,7 +11,7 @@ import { ObjectID } from 'mongodb';
 import { config } from '../../config';
 import { LabelCategory } from '../entities/labelcategory.entity';
 
-@WebSocketGateway({ origins: '*:*', namespace: 'labels' })
+@WebSocketGateway({ origins: '*:*', namespace: 'labels', transports: ['websocket'], upgrade: false })
 export class LabelsGateway  {
   @WebSocketServer() io: SocketIO.Server;
 
@@ -160,9 +160,28 @@ export class LabelsGateway  {
     const hyperid = data.hyperid;
     return await this.segmentService
       .createSegment(labelId, authorId, start, end, authorClass)
-      .then(() => {
+      .then(async (value: InsertResult) => {
+        console.log(value);
+        let segment: Segment[] = await this.segmentService.getSegment(labelId, start, end, authorId);
+        if(segment)
+          socket.to(room).broadcast.emit('newSegment', { id: segment[0].id, hyperid: hyperid});
+        return value.identifiers[0].id;
+      }, function (err) {
+        console.log(err);
         return false;
-      }, () => {
+      });
+  }
+
+  @SubscribeMessage('mergeSegments')
+  async mergeSegments(socket: SocketIO.Socket, data) {
+    const room = LabelsGateway.getProjectRoom(socket);
+    return await this.segmentService
+      .mergeSegment(data.segmentIds, data.start, data.end)
+      .then(() => {
+        socket.to(room).broadcast.emit('updatedSegments', { updatedIds: data.segmentIds, newStart: data.start, newEnd: data.end });
+        return false;
+      }, function (err) {
+        console.log(err);
         return true;
       });
   }
