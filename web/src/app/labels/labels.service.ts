@@ -38,7 +38,6 @@ interface ILabelCategoryEditName {
 export class LabelsService {
 
   private newLabelSubject = new Subject<LabelModel>();
-  private newSegmentSubject = new Subject<any>();
   private newLabelCategorySubject = new Subject<LabelCategoryModel>();
   private deleteLabelSubject = new Subject<ILabelRemoved>();
   private deleteLabelCategorySubject = new Subject<ILabelCategoryRemoved>();
@@ -210,13 +209,6 @@ export class LabelsService {
   // endregion
 
   // region Unicast Segments
-  newSegment$(): Observable<any> {
-    return merge(
-      this.socket.fromEvent<any>('newSegment'),
-      this.newSegmentSubject.asObservable()
-    );
-  }
-
   getSegments(ids: IdType[]) {
     this.socket.emit('getSegments', {ids});
   }
@@ -230,7 +222,6 @@ export class LabelsService {
       this.socket.emit('addSegment', p, function (response) {
         if (response) {
           resolve(response);
-          //this.newSegmentSubject.next({id: response, hyperid: p.hyperid});
         } else {
           reject();
         }

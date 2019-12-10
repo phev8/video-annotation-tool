@@ -151,7 +151,6 @@ export class LabelsGateway  {
 
   @SubscribeMessage('addSegment')
   async addSegment(socket: SocketIO.Socket, data) {
-    const room = LabelsGateway.getProjectRoom(socket);
     const labelId = data.group;
     const authorId = data.authorId;
     const start = data.start;
@@ -161,10 +160,6 @@ export class LabelsGateway  {
     return await this.segmentService
       .createSegment(labelId, authorId, start, end, authorClass)
       .then(async (value: InsertResult) => {
-        console.log(value);
-        let segment: Segment[] = await this.segmentService.getSegment(labelId, start, end, authorId);
-        if(segment)
-          socket.to(room).broadcast.emit('newSegment', { id: segment[0].id, hyperid: hyperid});
         return value.identifiers[0].id;
       }, function (err) {
         console.log(err);
@@ -174,11 +169,9 @@ export class LabelsGateway  {
 
   @SubscribeMessage('mergeSegments')
   async mergeSegments(socket: SocketIO.Socket, data) {
-    const room = LabelsGateway.getProjectRoom(socket);
     return await this.segmentService
       .mergeSegment(data.segmentIds, data.start, data.end)
       .then(() => {
-        socket.to(room).broadcast.emit('updatedSegments', { updatedIds: data.segmentIds, newStart: data.start, newEnd: data.end });
         return false;
       }, function (err) {
         console.log(err);

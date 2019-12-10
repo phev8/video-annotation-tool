@@ -181,12 +181,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.updateSubscription = this.labelsService.newSegment$().subscribe(newSubject => {
-      let hyperId = newSubject.hyperid;
-      let id = newSubject.id;
-      console.log(newSubject);
-    });
-
     this.subscription = this.projectService.getCurrentProject$()
       .subscribe(project => {
         if (project) {
