@@ -1,4 +1,4 @@
-import { SegmentModel } from './segmentModel';
+import { SegmentModel } from './segment.model';
 import { LabelModel } from './label.model';
 
 export class LabelCategoryModel {

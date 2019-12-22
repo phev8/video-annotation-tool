@@ -5,6 +5,7 @@ import { Segment } from './src/entities/segment.entity';
 import { MongoConnectionOptions } from 'typeorm/driver/mongodb/MongoConnectionOptions';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { LabelCategory } from './src/entities/labelcategory.entity';
+import { Marker } from './src/entities/markers.entity';
 
 const env = process.env;
 
@@ -27,7 +28,7 @@ const ormConfig: TypeOrmModuleOptions | MongoConnectionOptions = {
   password: databasePassword,
   synchronize: true,
   logging: true,
-  entities: [ Project, User, Label, Segment, LabelCategory ],
+  entities: [ Project, User, Label, Segment, LabelCategory, Marker ],
   keepConnectionAlive: true,
 };
 

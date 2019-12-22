@@ -1,5 +1,5 @@
 import { RecordingEventType } from './recording.event.type';
-import { SegmentModel } from './segmentModel';
+import { SegmentModel } from './segment.model';
 
 export class RecordingEvent {
   eventType: RecordingEventType;

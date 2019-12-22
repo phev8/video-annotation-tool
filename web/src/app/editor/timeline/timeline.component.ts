@@ -18,12 +18,13 @@ import { Subscription } from 'rxjs';
 import { IMediaSubscriptions } from 'videogular2/src/core/vg-media/i-playable';
 import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 import { ProjectModel } from '../../models/project.model';
-import { Time } from './time';
+import { Time } from './utilities/time';
 import { TimelineData } from './timeline.data';
 import _ from "lodash";
 import { pairwise, startWith } from 'rxjs/operators';
 import { LabelCategoryModel } from '../../models/labelcategory.model';
 import { CurrentToolService } from '../project-toolbox.service';
+import * as hyperid from 'hyperid';
 
 @Component({
   selector: 'app-timeline',
@@ -36,6 +37,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loading = true;
   private project: ProjectModel;
+  private instance = hyperid();
 
 
   private timeline: Timeline;
@@ -130,8 +132,12 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     editable: true,
     onAdd: (item, callback) => {
       console.log('onAdd', item);
-      item.content = 'tracker';
-      callback(item); // send back adjusted new item
+      console.log(callback);
+      item.id = 'asd4234asfscsd';
+      item.content = '';
+      item.editable = false;
+      item.title = "Click to add tracking information for this instant";
+      //callback(item); // send back adjusted new item
     },
     onMove: (item, callback) => {
       console.log('onMove', item);
@@ -163,10 +169,10 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   private timelineData: TimelineData = new TimelineData();
+  //To maintain categories, since groups contain label information.
   private labelCategories: LabelCategoryModel[] = [];
   private customTimeId: IdType;
   private subscription: Subscription;
-  private updateSubscription: Subscription;
   private currentTime = 0;
 
   private checkboxChange = new EventEmitter<{ id: IdType, checked: boolean }>();
@@ -189,7 +195,9 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.labelsService.getLabelCategories()
             .then((labelCategories: LabelCategoryModel[]) => {
               labelCategories.map(labelCategory => {
-                this.labelsService.getSegments(labelCategory.labels.map(x => {return x["_id"]}));
+                let labelIds = labelCategory.labels.map(x => {return x["_id"]});
+                this.labelsService.getSegments(labelIds);
+                this.labelsService.getMarkers(labelIds);
                 this.timelineData.addGroups(labelCategory.labels.map(x => ({id: x["_id"], content: x.name, category: labelCategory.name, categoryId: labelCategory.id})));
                 this.labelCategories.push(labelCategory);
               });
@@ -248,23 +256,31 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           };
           segment = response.updateExisting ? item : segment;
           let checkForMerges = this.updateRequired(this.timelineData.findItemsByOptions('group', item.group), segment, response.updateExisting);
+          let start: number;
+          let end: number;
           if (checkForMerges[0]) {
             this.handleSegmentMerge(checkForMerges);
+            start = checkForMerges[2];
+            end = checkForMerges[3];
+            //this.addMarkersForSegment(segment, start, end);
           } else {
-            this.createNewSegment(segment);
+            start = segment.start;
+            end = segment.end;
+            this.createNewSegment(segment, start, end);
           }
         }
       }, (msg) => {
-        console.log('an error occured while adding a segment:' + msg);
+        console.log('an error occurred while adding a segment:' + msg);
       });
   }
 
-  private createNewSegment(segment: any) {
+  private createNewSegment(segment: any, start: number, end: number) {
     this.labelsService.addSegment(segment).then((response) => {
       console.log('segment added' + response);
       this.timelineData.removeItem(segment.hyperid);
       segment.id = response;
       this.timelineData.updateItem(segment);
+      this.addMarkersForSegment(segment, start, end);
     }, function(err) {
       console.log('an error occured while adding a segment');
     });
@@ -276,8 +292,10 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       segment.start = checkForMerges[2];
       segment.end = checkForMerges[3];
       this.timelineData.updateItem(segment);
+      this.addMarkersForSegment(segment, checkForMerges[2], checkForMerges[3]);
       for (let j = 1; j < checkForMerges[1].length; j++) {
         this.timelineData.removeItem(checkForMerges[1][j]);
+        this.timelineData.removeMarkersBySegmentId(checkForMerges[1][j]);
       }
       this.timeline.redraw();
     }, () => {
@@ -302,7 +320,12 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timelineData.items.on('remove', (event, properties) => {
       if (event === 'remove') {
         const ids = properties.items;
-        this.labelsService.deleteSegments(ids);
+        this.labelsService.deleteSegments(ids).then((result: string[]) => {
+          console.log("deleted segment: " + result);
+          this.timelineData.items.remove(result);
+        }, function(error) {
+          console.log("error: "+ error);
+        });
       }
     });
 
@@ -417,6 +440,46 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           })))
         )
     );
+    this.subscription.add(
+      this.labelsService.getMarkers$().subscribe(
+        marker => {
+          this.addMarkertoTimeline(marker);
+        }
+      )
+    );
+
+    this.subscription.add(
+      this.labelsService.newMarkers$().subscribe(
+        marker => {
+          this.addMarkertoTimeline(marker);
+        }
+      )
+    );
+
+    this.subscription.add(
+      this.labelsService.deleteMarkers$().subscribe(
+        ids => {
+          this.removeMarkerFromTimeline(ids);
+        }
+      )
+    );
+  }
+
+  private addMarkertoTimeline(marker) {
+    this.timelineData.items.add(marker.map(x => ({
+      id: x.id? x.id: x["_id"],
+      content: '',
+      group: x.labelId,
+      start: x.start,
+      editable: x.editable,
+      title: 'Click to add tracking data',
+      style: x.completed ? 'color: green, background-color: green' : 'color: red, background-color: red',
+      segment: x.segmentId
+    })));
+  }
+
+  private removeMarkerFromTimeline(marker) {
+    this.timelineData.removeItem(marker.map(x => x.toString()));
   }
 
   private registerHotkeys() {
@@ -486,6 +549,9 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     let start: number = currentItem.start;
     let end: number = currentItem.end;
     if(existingUpdate) itemList.push(currentItem.id);
+    else {
+      this.timelineData.items.remove(currentItem.hyperid);
+    }
     items.forEach(segment => {
       let currentId = currentItem['id'] ? currentItem['id'] : currentItem['hyperid'];
       if (currentItem != segment && currentId != segment.id && (segment.start <= currentItem.end && segment.end >= currentItem.start)) {
@@ -515,5 +581,46 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         return [true, [currentItem.id], currentItem.start, currentItem.end];
     }
     return [false];
+  }
+
+  private addMarkersForSegment(segment: any, start: number, end: number) {
+    if(segment.id) {
+      let label = this.timelineData.getGroup(segment.group);
+      let category: LabelCategoryModel = this.labelCategories.find(value => value.id == label['categoryId'] );
+      if(category.isTrackable) {
+        let samplingFrequency = TimelineComponent.getSamplingFrequency(category.samplingFrequency, category.samplingUnit);
+        let firstMarkerTime = TimelineComponent.generateFirstMarker(samplingFrequency, start);
+        let markers: {completed: boolean; start: number; labelId: any, authorId: string, authorClass: string, segmentId: any}[] = [];
+        for(let i = firstMarkerTime; i<end; i = i+samplingFrequency) {
+          markers.push({
+            labelId: segment.group,
+            start: i,
+            completed: false,
+            authorId: JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],
+            authorClass: this.userRole,
+            segmentId: segment.id
+          });
+        }
+        this.labelsService.newTrackingInstance(markers);
+      }
+    }
+  }
+
+  private static getSamplingFrequency(samplingFrequency: number, samplingUnit: string) {
+    switch (samplingUnit) {
+      case "s" :
+        return samplingFrequency * 1000;
+      case "ms" :
+        return samplingFrequency;
+      case "min" :
+        return samplingFrequency * 60 * 1000;
+    }
+  }
+
+  private static generateFirstMarker(samplingFrequency: number, start: number) {
+    if(start % samplingFrequency == 0) {
+      return start;
+    }
+    return start + samplingFrequency - (start % samplingFrequency);
   }
 }

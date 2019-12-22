@@ -1,12 +1,12 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { LabelsSocket } from './labels.socket';
 import { merge, Observable, Subject } from 'rxjs';
 import { LabelModel } from '../models/label.model';
-import { joinTestLogs } from 'protractor/built/util';
 import { DateType, IdType } from 'vis';
-import { SegmentModel } from '../models/segmentModel';
+import { SegmentModel } from '../models/segment.model';
 import { LabelCategoryModel } from '../models/labelcategory.model';
 import { LabelMetadataModel } from '../models/labeltracking.model';
+import { MarkerModel } from '../models/marker.model';
 
 interface ILabelRemoved {
   id: string;
@@ -230,9 +230,16 @@ export class LabelsService {
   }
 
   deleteSegments(ids: IdType[]) {
-    this.socket.emit('deleteSegments', {items: ids}, (response) => {
-      console.log(response);
-    });
+    return new Promise(((resolve, reject) => {
+      this.socket.emit('deleteSegments', {items: ids}, (response) => {
+        if (!response) {
+          console.log(response);
+          resolve(this.deleteMarkersForSegments(ids));
+        } else {
+          reject();
+        }
+      });
+    }));
   }
 
   // endregion
@@ -292,5 +299,39 @@ export class LabelsService {
     }));
   }
 
+  //markers sections
+  getMarkers(ids: IdType[]) {
+    this.socket.emit('getMarkers', {ids});
+  }
+
+  getMarkers$(): Observable<MarkerModel[]> {
+    return this.socket.fromEvent('getMarkers');
+  }
+
+
+  newTrackingInstance(markers: {completed: boolean; start: number; labelId: any, authorId: string, authorClass: string, segmentId: any}[]) {
+    this.socket.emit('addMarker', {markers});
+  }
+
+  newMarkers$(): Observable<any[]> {
+    return this.socket.fromEvent('addMarker');
+  }
+
+  deleteMarkersForSegments(ids: IdType[]) {
+    return new Promise(((resolve, reject) => {
+      this.socket.emit('deleteMarkers', {items: ids}, (response) => {
+        if (response) {
+          console.log(response);
+          resolve(response);
+        } else {
+          reject();
+        }
+      });
+    }));
+  }
+
+  deleteMarkers$(): Observable<any[]> {
+    return this.socket.fromEvent('deleteMarkers');
+  }
 
 }

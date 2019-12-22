@@ -1,4 +1,4 @@
-import { SegmentModel } from './segmentModel';
+import { SegmentModel } from './segment.model';
 
 export class LabelModel {
   id: string;

@@ -7,16 +7,17 @@ import { SegmentService } from './segment/segment.service';
 import { from, Observable} from 'rxjs';
 import { map, mergeAll } from 'rxjs/operators';
 import { Segment } from '../entities/segment.entity';
-import { ObjectID } from 'mongodb';
-import { config } from '../../config';
 import { LabelCategory } from '../entities/labelcategory.entity';
+import { Marker } from '../entities/markers.entity';
+import { MarkerService } from './trackers/marker/marker.service';
 
 @WebSocketGateway({ origins: '*:*', namespace: 'labels', transports: ['websocket'], upgrade: false })
 export class LabelsGateway  {
   @WebSocketServer() io: SocketIO.Server;
 
   constructor(private labelsService: LabelsService,
-              private segmentService: SegmentService) {
+              private segmentService: SegmentService,
+              private markerService: MarkerService) {
   }
 
   // region 'Project' Room join/leave
@@ -78,8 +79,6 @@ export class LabelsGateway  {
         const id = value.identifiers[0].id;
         const newLabelCategory: LabelCategory = await this.labelsService.getLabelCategory(id);
         socket.to(room).broadcast.emit('newLabelCategories', newLabelCategory);
-        /*const newLabel: Label = await this.labelsService.getLabel(newLabelCategory.labels[0]["_id"]);
-        socket.to(room).broadcast.emit('newLabels', newLabel);*/
         return newLabelCategory;
       });
   }
@@ -181,12 +180,53 @@ export class LabelsGateway  {
 
   @SubscribeMessage('deleteSegments')
   async deleteSegments(socket: SocketIO.Socket, data) {
+    const ids: string = data.items[0];
+    return await this.segmentService.deleteSegment(ids).then(() => {
+      return false;
+    }, function (err) {
+      console.log("Deleting segments error"+err);
+      return true;
+    });
+  }
+
+  @SubscribeMessage('getMarkers')
+  getMarkers(socket: SocketIO.Socket, payload): Observable<WsResponse<Marker[]>> {
+    const ids: string[] = payload.ids;
+    return from(ids.map(id => this.markerService.getMarkers(id)))
+      .pipe(
+        mergeAll(),
+        map((data: Marker[]) => {
+          return ({ event: 'getMarkers', data });
+        }),
+      );
+  }
+
+  @SubscribeMessage('addMarker')
+  addMarker(socket: SocketIO.Socket, payload): Observable<WsResponse<any[]>> {
+    const markers: {completed: boolean; start: number; labelId: any, authorId: string, authorClass: string, segmentId: any}[] = payload.markers;
+    return from(markers.map(marker => this.markerService.addMarker(marker)))
+      .pipe(
+        mergeAll(),
+        map((data: any) => {
+          if(data)
+            return ({ event: 'addMarker',  data: data["ops"]});
+        }),
+      );
+  }
+
+  @SubscribeMessage('deleteMarkers')
+  async deleteMarkers(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
-    const ids: string[] = data.items;
-    ids.forEach(async id =>
-      await this.segmentService.deleteSegment(id).then(value => {
-        return false;
-      }));
+    const ids: string = data.items[0];
+    return await this.markerService.deleteMarkers(ids, "segmentId").then((response) => {
+      if(response) {
+        socket.to(room).broadcast.emit('deleteMarkers ', { data: response });
+        return response;
+      }
+    }, function (err) {
+      console.log("Deleting Marker error"+err);
+      return true;
+    });
   }
 
 // region

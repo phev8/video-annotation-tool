@@ -12,7 +12,6 @@ import { EditorModule } from './editor/editor.module';
 import { AuthModule } from './auth/auth.module';
 import { ErrorInterceptor } from './auth/error.interceptor';
 import { JwtInterceptor } from './auth/jwt.interceptor';
-import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HotkeyModule } from 'angular2-hotkeys';
 import { CanvasModule } from './canvas/canvas.module';
 
@@ -30,7 +29,7 @@ import { CanvasModule } from './canvas/canvas.module';
     LayoutModule,
     ProjectsModule,
     EditorModule,
-    CanvasModule,
+    CanvasModule
   ],
   providers: [
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},

@@ -3,7 +3,7 @@ import { DataGroup, DataItem, DataSet, IdType } from 'vis';
 import * as hyperid from 'hyperid';
 
 import _ from "lodash";
-import { Time } from './time';
+import { Time } from './utilities/time';
 
 export class TimelineData {
   private readonly _groups: vis.DataSet<DataGroup>;
@@ -120,7 +120,7 @@ export class TimelineData {
     });
   }
 
-  async stopRecording(groupId: IdType) {
+  async  stopRecording(groupId: IdType) {
     return await new Promise((resolve, reject) => {
       if (this._map.has(groupId)) {
         const status = this._map.get(groupId);
@@ -165,7 +165,7 @@ export class TimelineData {
   findItemsByOptions(idField: string, idValue: string){
     let temp = [];
     this._items.forEach( item => {
-      if(item[idField] == idValue) {
+      if(item[idField] && item['end'] && item[idField] == idValue) {
         temp.push(item);
       }
     });
@@ -185,5 +185,21 @@ export class TimelineData {
         }
     });
     return overlappingItem;
+  }
+
+  removeMarkersBySegmentId(segmentId: string) {
+    this.findMarkersByOptions("segment", segmentId).forEach( item => {
+      this._items.remove(item.id);
+    })
+  }
+
+  findMarkersByOptions(idField: string, idValue: string){
+    let temp = [];
+    this._items.forEach( item => {
+      if(item[idField] && !item['end'] && item[idField] == idValue) {
+        temp.push(item);
+      }
+    });
+    return temp;
   }
 }
