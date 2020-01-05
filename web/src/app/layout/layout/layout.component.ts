@@ -46,7 +46,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   getWidth() {
-    return this.isNavCollapsed ? {} : { width: this.verticalNavWidth + 'rem' };
+    return this.isNavCollapsed ? { width: 'min-content'} : { width: this.verticalNavWidth + 'rem' };
   }
 
   activateTool(index: number) {

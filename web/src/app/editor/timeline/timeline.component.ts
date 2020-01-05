@@ -254,7 +254,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.timeline.on('select', properties => {
       let item = this.timelineData.items.get(properties.items)[0];
-      if(item['segment']) {
+      if(item && item['segment']) {
         let label = this.timelineData.getGroup(item.group);
         this.checkForTracking(label['categoryId']);
         this.updateCurrentTime(Number(item.start));
@@ -264,7 +264,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       else {
         this.toolBoxService.triggerToolBox(false);
-
         this.toolBoxService.triggerCanvas(null);
       }
     });

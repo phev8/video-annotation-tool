@@ -74,6 +74,11 @@ export class CanvasComponent implements OnInit {
     );
 
     this.canvasSubscription = this.toolService.getCurrentCanvas$().subscribe(next => {
+      this.completedElements = [];
+      this.svgElement = null;
+      this.polygonElements = null;
+      if(this.svgCanvas)
+        this.svgCanvas.nativeElement.innerHTML = '';
       if(next && next!='') {
         this.canvasActive = true;
         this.canvasService.getTrackingInformation(next).subscribe( (tracker:TrackerModel) => {
@@ -162,8 +167,12 @@ export class CanvasComponent implements OnInit {
     Methods for handling pen Drawing
    */
   private beginPenDraw(event: any) {
-    this.createNewSvgElement('polyline', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000'});
-    this.continuePenDraw(event);
+    if(this.completedElements.length <= 0) {
+      this.createNewSvgElement('polyline', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000'});
+      this.continuePenDraw(event);
+    } else {
+      CanvasComponent.promptDuplicationError('');
+    }
   }
 
   private continuePenDraw(event: any) {
@@ -241,9 +250,13 @@ export class CanvasComponent implements OnInit {
     Methods to handle rectangle drawing
    */
   private beginRectangleDraw(event: any) {
+    if(this.completedElements.length <= 0) {
     let point = this.generatePointOnClientElement(event);
     this.createNewSvgElement('rect', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'x': point.x, 'y': point.y, width: '10', height: 10});
     this.continueRectangleDraw(event);
+    } else {
+      CanvasComponent.promptDuplicationError('');
+    }
   }
 
   private continueRectangleDraw(event: any) {
@@ -278,9 +291,13 @@ export class CanvasComponent implements OnInit {
       Methods to handle circle tool
    */
   private beginCircleDraw(event: any) {
+    if(this.completedElements.length <= 0) {
     let point = this.generatePointOnClientElement(event);
     this.createNewSvgElement('circle', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'cx': point.x, 'cy': point.y, 'r': 0});
     this.continueCircleDraw(event);
+    } else {
+      CanvasComponent.promptDuplicationError('');
+    }
   }
 
   private continueCircleDraw(event: any) {
@@ -347,6 +364,7 @@ export class CanvasComponent implements OnInit {
     Method to handle polygons
    */
   private addPin(event: any) {
+    if(this.completedElements.length <= 0 || this.isPreviousPinPresent()) {
     let point = this.generatePointOnClientElement(event);
     if(!this.isPreviousPinPresent()) {
       this.createNewSvgElement('polygon', {'fill': this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000'});
@@ -354,6 +372,9 @@ export class CanvasComponent implements OnInit {
     }
     this.polygonElements.points.appendItem(point);
     this.addVisualPinElement(point);
+    } else {
+      CanvasComponent.promptDuplicationError('');
+    }
   }
 
   private addVisualPinElement(point: any) {
@@ -384,5 +405,9 @@ export class CanvasComponent implements OnInit {
       this.completedElements.push(createdElement.children[0]);
       this.svgCanvas.nativeElement.appendChild(createdElement.children[0]);
     });
+  }
+
+  private static promptDuplicationError(errorMessage: string) {
+    alert('A trackable already exists for this tracker, undo existing tracker to create a new one.' + errorMessage);
   }
 }

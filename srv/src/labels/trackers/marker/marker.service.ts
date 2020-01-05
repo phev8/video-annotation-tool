@@ -52,14 +52,16 @@ export class MarkerService {
 
   async autoUpdateTrackers(tracker: Tracker) {
     let labelId = tracker.labelId;
-    let trackers: Tracker[] = await this.trackerRepository.find({where: { labelId }});
+    let trackers: Tracker[] = await this.trackerRepository.find({where: { labelId: labelId }});
     trackers.forEach(item => {
-      item.trackerType = tracker.trackerType;
-      item.trackables = tracker.trackables;
-      item.firstUpdate = false;
-      item.authorId = tracker.authorId;
-      item.authorClass = tracker.authorClass;
-      this.updateTracker(item.id.toString(), item);
+      if(item.firstUpdate) {
+        item.trackerType = tracker.trackerType;
+        item.trackables = tracker.trackables;
+        item.firstUpdate = false;
+        item.authorId = tracker.authorId;
+        item.authorClass = tracker.authorClass;
+        this.updateTracker(item.id.toString(), item);
+      }
     })
   }
 }

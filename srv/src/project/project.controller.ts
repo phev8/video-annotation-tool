@@ -208,4 +208,27 @@ export class ProjectController {
     );
     csvStringify(response, { header: true }).pipe(res);
   }
+
+
+  @Get(':id/segments/json')
+  async generateAnnotations(@Param('id') projectId, @Res() res) {
+    res.setHeader('Content-Type', 'text/json');
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+    res.setHeader('Content-Disposition', `attachment; filename="download-${moment()}.json"`);
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Pragma', 'no-cache');
+
+    const labels: Label[] = await this.labelsService.getLabels(projectId, ['id', 'name']);
+    const labelledSegments: Segment[][] = await Promise.all(labels.map(x => this.segmentsService.getSegments(x.id.toHexString())));
+
+    const response = [];
+    const names = new Map<string, string>(labels.map((x: Label) => ([x.id.toHexString(), x.name] as [string, string])));
+    labelledSegments.forEach(segments => {
+        segments.forEach(segment =>
+          response.push({ name: names.get(segment.labelId), start: segment.start, end: segment.end }),
+        );
+      },
+    );
+    csvStringify(response, { header: true }).pipe(res);
+  }
 }

@@ -91,7 +91,8 @@ export class ProjectsService {
   }
 
   exportCsv(projectId: string): Observable<any> {
-    return this.http.get(`${this.projectsUrl}/${projectId}/segments/csv`, {responseType: 'text'});
+    //return this.http.get(`${this.projectsUrl}/${projectId}/segments/csv`, {responseType: 'text'});
+    return this.http.get(`${this.projectsUrl}/${projectId}/segments/json`, {responseType: 'text'});
   }
 
   getMembers(selectedProject: ProjectModel): Observable<any> {

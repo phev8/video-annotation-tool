@@ -16,7 +16,7 @@ export class CurrentToolService {
   constructor() {
     this.toolBoxEnabled = new BehaviorSubject(false);
     this.toolBoxStatus$ = this.toolBoxEnabled.asObservable();
-    this.selectedToolBox = new BehaviorSubject(0);
+    this.selectedToolBox = new BehaviorSubject(-1);
     this.selectedTool$ = this.selectedToolBox.asObservable();
     this.canvasEnabled = new BehaviorSubject('');
     this.selectedCanvas$ = this.canvasEnabled.asObservable();

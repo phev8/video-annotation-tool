@@ -13,6 +13,7 @@ import * as moment from 'moment';
 export class EditorComponent implements OnInit, OnDestroy {
   direction = 'vertical';
   projectId: string;
+  private inExportProgress: boolean;
 
   constructor(private route: ActivatedRoute,
               private projectService: CurrentProjectService,
@@ -31,14 +32,18 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   onExport() {
+    this.inExportProgress = true;
     this.projectService.exportCsv(this.projectId)
       .toPromise()
       .then(
         value => {
+          this.inExportProgress = false;
           const blob = new Blob([value], {type: 'text/csv'});
           FileSaver.saveAs(blob, `labels-${this.projectId}-${moment().toISOString()}.csv`);
         },
         reason => {
+          this.inExportProgress = false;
+          alert('Failed to export: '+ reason);
           console.error('onExport', reason);
         }
       );
