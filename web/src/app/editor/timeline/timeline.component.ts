@@ -42,8 +42,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private timeline: Timeline;
 
-  @Output() showToolBox = new EventEmitter<boolean>();
-
   // noinspection SpellCheckingInspection
   // noinspection JSUnusedGlobalSymbols
   private options = {
@@ -96,6 +94,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         const categoryLabel = document.createElement('label');
         categoryLabel.innerHTML = group['category'];
         categoryLabel.addEventListener('click', () => {
+          this.toolBoxService.triggerToolBox(false);
           this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],group['categoryId'], this.userRole);
         });
 
@@ -108,7 +107,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         input.type = 'checkbox';
         input.id = `checkbox_${group.id}`;
         input.addEventListener('change', () => {
-          this.checkForTracking(group['categoryId']);
+          this.toolBoxService.triggerToolBox(false);
           this.checkboxChange.emit({id: group.id, checked: input.checked});
         });
 
@@ -128,7 +127,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         return overarchingContainer;
       }
     },
-    multiselect: true,
+    multiselect: false,
     editable: true,
     onAdd: (item, callback) => {
       console.log('onAdd', item);
@@ -240,6 +239,74 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   }
 
+  ngAfterViewInit() {
+    const container = this.timelineVisualization.nativeElement;
+    // @ts-ignore
+    this.timeline = new vis.Timeline(container, this.timelineData.items, this.timelineData.groups, this.options);
+    this.customTimeId = this.timeline.addCustomTime(Time.seconds(1), 'currentPlayingTime');
+    this.timeline.setCustomTimeTitle('seeker', this.customTimeId);
+
+
+    this.timeline.on('timechanged', properties => {
+      const videoSeek = Time.dateToTotalCentiSeconds(properties.time);
+      this.videoService.seekTo(videoSeek);
+    });
+
+    this.timeline.on('select', properties => {
+      let item = this.timelineData.items.get(properties.items)[0];
+      if(item['segment']) {
+        let label = this.timelineData.getGroup(item.group);
+        this.checkForTracking(label['categoryId']);
+        this.updateCurrentTime(Number(item.start));
+        this.videoService.seekTo(Number(item.start)/1000);
+        this.timeline.redraw();
+        this.toolBoxService.triggerCanvas(item['trackerId']);
+      }
+      else {
+        this.toolBoxService.triggerToolBox(false);
+
+        this.toolBoxService.triggerCanvas(null);
+      }
+    });
+
+    this.timelineData.items.on('remove', (event, properties) => {
+      if (event === 'remove') {
+        const ids = properties.items;
+        this.labelsService.deleteSegments(ids).then((result: string[]) => {
+          console.log("deleted segment: " + result);
+          this.timelineData.items.remove(result);
+        }, function(error) {
+          console.log("error: "+ error);
+        });
+      }
+    });
+
+    this.loading = false;
+    this.changeDetectorRef.detectChanges();
+
+    this.registerHotkeys();
+
+    // force a timeline redraw, because sometimes it does not detect changes
+    setTimeout(() => {
+      this.timeline.redraw();
+      let elements = document.getElementsByClassName('vis-inner');
+
+      // @ts-ignore
+      for (let item of elements) {
+        item.setAttribute('style', 'display: block;');
+      }
+    }, 250);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timeline) {
+      this.timeline.destroy();
+    }
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
   private stopRecording(curr) {
     this.timelineData.stopRecording(curr.id)
       .then((response: { id: IdType, updateExisting: boolean }) => {
@@ -262,7 +329,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
             this.handleSegmentMerge(checkForMerges);
             start = checkForMerges[2];
             end = checkForMerges[3];
-            //this.addMarkersForSegment(segment, start, end);
           } else {
             start = segment.start;
             end = segment.end;
@@ -303,49 +369,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  ngAfterViewInit() {
-    const container = this.timelineVisualization.nativeElement;
-    // @ts-ignore
-    this.timeline = new vis.Timeline(container, this.timelineData.items, this.timelineData.groups, this.options);
-    this.customTimeId = this.timeline.addCustomTime(Time.seconds(1), 'currentPlayingTime');
-    this.timeline.setCustomTimeTitle('seeker', this.customTimeId);
-
-
-    this.timeline.on('timechanged', properties => {
-      const videoSeek = Time.dateToTotalCentiSeconds(properties.time);
-      this.videoService.seekTo(videoSeek);
-      // this.timeline.setCustomTimeTitle(time.formatDatetime('H:mm:ss'), id); todo
-    });
-
-    this.timelineData.items.on('remove', (event, properties) => {
-      if (event === 'remove') {
-        const ids = properties.items;
-        this.labelsService.deleteSegments(ids).then((result: string[]) => {
-          console.log("deleted segment: " + result);
-          this.timelineData.items.remove(result);
-        }, function(error) {
-          console.log("error: "+ error);
-        });
-      }
-    });
-
-    this.loading = false;
-    this.changeDetectorRef.detectChanges();
-
-    this.registerHotkeys();
-
-    // force a timeline redraw, because sometimes it does not detect changes
-    setTimeout(() => {
-      this.timeline.redraw();
-      let elements = document.getElementsByClassName('vis-inner');
-
-      // @ts-ignore
-      for (let item of elements) {
-        item.setAttribute('style', 'display: block;');
-      }
-    }, 250);
-  }
-
   updateCurrentTime(millis: number) {
     // console.log(millis);
     this.currentTime = millis;
@@ -361,15 +384,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.timelineData.updateRecordings(millis);
-  }
-
-  ngOnDestroy(): void {
-    if (this.timeline) {
-      this.timeline.destroy();
-    }
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
   }
 
   private observeLabels() {
@@ -474,7 +488,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       editable: x.editable,
       title: 'Click to add tracking data',
       style: x.completed ? 'color: green, background-color: green' : 'color: red, background-color: red',
-      segment: x.segmentId
+      segment: x.segmentId,
+      trackerId: x.trackerId
     })));
   }
 

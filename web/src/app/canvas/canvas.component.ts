@@ -3,6 +3,9 @@ import { CanvasService } from './canvas.service';
 import { Subscription } from 'rxjs';
 import { CurrentToolService } from '../editor/project-toolbox.service';
 import _ from 'lodash'
+import { CurrentProjectService } from '../editor/current-project.service';
+import { ProjectModel } from '../models/project.model';
+import { TrackerModel } from '../models/tracker.model';
 
 
 @Component({
@@ -16,36 +19,73 @@ export class CanvasComponent implements OnInit {
   private svgElement;
   private cursor;
   private completedElements;
+  private model: TrackerModel;
 
   private toolSubscription: Subscription;
+  private canvasSubscription: Subscription;
   private selectedTool: number;
   private selectedLabel: string;
+  private subscription: Subscription;
 
 
 
   private fill = '#044B94';
   private polygonElements;
+  private project: ProjectModel;
+  private canvasActive: boolean;
+  private firstTrackable: boolean;
 
   constructor(
     private canvasService: CanvasService,
     private elementRef: ElementRef,
-    private toolService: CurrentToolService) {
+    private toolService: CurrentToolService,
+    private currentProjectService: CurrentProjectService) {
   }
 
   ngOnInit() {
+    this.subscription = this.currentProjectService.getCurrentProject$()
+      .subscribe(project => {
+        if (project) {
+          this.project = project;
+        }
+      });
     this.cursor = 'crosshair';
     this.completedElements= [];
     this.selectedLabel = 'boat';
     this.toolSubscription = this.toolService.getCurrentTool$().subscribe( next => {
-      this.cursor = 'crosshair';
-      if(next == 1) {
-        this.cursor =  "grab";
+      if(next == 6) {
+        this.model.authorId = JSON.parse(localStorage.getItem('currentSession$'))['user']['id'];
+        this.model.trackerType = this.completedElements[0].tagName;
+        this.model.trackables = [];
+        this.completedElements.forEach(item => {
+          this.model.trackables.push(JSON.stringify(item.outerHTML))
+        });
+        this.canvasService.updateTrackerModel(this.model, this.completedElements);
+      } else {
+        this.cursor = 'crosshair';
+        if(next == 1) {
+          this.cursor =  "grab";
+        }
+        this.selectedTool = next;
+        this.svgElement = null;
+        this.performUndo();
       }
-      this.selectedTool = next;
-      this.svgElement = null;
-      this.performUndo();
       }
     );
+
+    this.canvasSubscription = this.toolService.getCurrentCanvas$().subscribe(next => {
+      if(next && next!='') {
+        this.canvasActive = true;
+        this.canvasService.getTrackingInformation(next).subscribe( (tracker:TrackerModel) => {
+          this.model = tracker;
+          this.firstTrackable = tracker.trackables? false: true;
+          //this.completedElements = this.model.trackables? this.model.trackables: [];
+          this.loadExistingTrackables(this.model.trackables);
+        });
+      } else {
+        this.canvasActive = false;
+      }
+    });
   }
 
   @HostListener('mousedown', ['$event'])
@@ -333,5 +373,16 @@ export class CanvasComponent implements OnInit {
         }
       }
     }
+  }
+
+  private loadExistingTrackables(trackables: string[]) {
+    if(trackables.length != 0)
+    trackables.forEach(trackable => {
+      let item = JSON.parse(trackable);
+      let createdElement = this.createSvgElement('div');
+      createdElement.innerHTML = item;
+      this.completedElements.push(createdElement.children[0]);
+      this.svgCanvas.nativeElement.appendChild(createdElement.children[0]);
+    });
   }
 }
