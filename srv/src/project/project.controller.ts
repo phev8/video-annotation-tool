@@ -18,7 +18,7 @@ import { Project } from '../entities/project.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { Directory } from '../entities/directory.entity';
 import { File } from '../entities/file.entity';
-import { createReadStream, Stats, statSync } from 'fs';
+import { createReadStream, Stats, statSync, createWriteStream } from 'fs';
 import { Request, Response } from 'express';
 import * as moment from 'moment';
 import * as csvStringify from 'csv-stringify';
@@ -30,24 +30,25 @@ import { ObjectID } from 'mongodb';
 import { config } from '../../config';
  import { LabelCategory } from '../entities/labelcategory.entity';
  import { User } from '../entities/user.entity';
-
-interface FileUpload {
-  readonly fieldname: string;
-  readonly originalname: string;
-  readonly encoding: string;
-  readonly mimetype: string;
-  readonly destination: string;
-  readonly filename: string;
-  readonly path: string;
-  readonly size: number;
-}
+ import { ProjectAnnotationResult } from '../interfaces/project.annotation';
+ import { Tracker } from '../entities/tracker.entity';
+ import { MarkerService } from '../labels/trackers/marker/marker.service';
+ import _ from "lodash";
+ import { Marker } from '../entities/markers.entity';
+ import { LabelResult } from '../interfaces/label.result';
+ import { FileUpload } from '../interfaces/file.upload';
+ import { SegmentResult } from '../interfaces/segment.result';
+ import { AnnotationResult } from '../interfaces/annotation.result';
+ import { TrackerResult } from '../interfaces/tracker.result';
+ import * as fs from 'fs';
 
 @Controller('project')
 export class ProjectController {
 
   constructor(private projectService: ProjectService,
               private labelsService: LabelsService,
-              private segmentsService: SegmentService) {
+              private segmentsService: SegmentService,
+              private markerService: MarkerService) {
   }
 
   @Post()
@@ -210,25 +211,27 @@ export class ProjectController {
   }
 
 
-  @Get(':id/segments/json')
-  async generateAnnotations(@Param('id') projectId, @Res() res) {
-    res.setHeader('Content-Type', 'text/json');
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
-    res.setHeader('Content-Disposition', `attachment; filename="download-${moment()}.json"`);
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Pragma', 'no-cache');
+  @Get(':id/annotations')
+  async generateAnnotations(@Param('id') projectId) {
+    const labelCategories: LabelCategory[] = await this.labelsService.getLabelCategories(projectId);
+    const project: Project = await this.projectService.findOne(projectId);
+    let modifiedResponse: ProjectAnnotationResult = new ProjectAnnotationResult(project.title, project.singleMedia);
 
-    const labels: Label[] = await this.labelsService.getLabels(projectId, ['id', 'name']);
-    const labelledSegments: Segment[][] = await Promise.all(labels.map(x => this.segmentsService.getSegments(x.id.toHexString())));
-
-    const response = [];
-    const names = new Map<string, string>(labels.map((x: Label) => ([x.id.toHexString(), x.name] as [string, string])));
-    labelledSegments.forEach(segments => {
-        segments.forEach(segment =>
-          response.push({ name: names.get(segment.labelId), start: segment.start, end: segment.end }),
-        );
-      },
-    );
-    csvStringify(response, { header: true }).pipe(res);
+    for (const category of labelCategories) {
+      let categoryResponse: AnnotationResult = {categoryName: category.name, labels: []};
+      for (const label of category.labels) {
+        let labelResult: LabelResult = {labelName: label.name, segments: []};
+        let segments: Segment[] = await this.segmentsService.getSegments(label["_id"].toHexString());
+        for (const segment of segments) {
+          let segmentResult: SegmentResult = {start: segment.start, end: segment.end, trackable: category.isTrackable};
+          if(category.isTrackable)
+            segmentResult.trackers = await this.markerService.fetchTrackerResults(segment.id.toHexString());
+          labelResult.segments.push(segmentResult);
+        }
+        categoryResponse.labels.push(labelResult);
+      }
+      modifiedResponse.annotations.push(categoryResponse);
+    }
+    return JSON.stringify(modifiedResponse, null, 4);
   }
 }

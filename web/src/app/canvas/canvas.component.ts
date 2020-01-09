@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular
 import { CanvasService } from './canvas.service';
 import { Subscription } from 'rxjs';
 import { CurrentToolService } from '../editor/project-toolbox.service';
-import _ from 'lodash'
+import _ from 'lodash';
 import { CurrentProjectService } from '../editor/current-project.service';
 import { ProjectModel } from '../models/project.model';
 import { TrackerModel } from '../models/tracker.model';

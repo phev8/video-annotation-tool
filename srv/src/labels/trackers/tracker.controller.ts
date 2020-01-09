@@ -43,7 +43,7 @@ export class TrackerController {
   @UseGuards(AuthGuard())
   async update(@Param('id') id, @Body() body) {
     let tracker = await this.markerService.getTracker(id);
-    if (body) {
+    if (body && body['trackables']) {
       tracker.authorId = body['authorId'];
       tracker.trackables = body['trackables'];
       tracker.trackerType = body['trackerType'];

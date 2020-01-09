@@ -38,8 +38,8 @@ export class EditorComponent implements OnInit, OnDestroy {
       .then(
         value => {
           this.inExportProgress = false;
-          const blob = new Blob([value], {type: 'text/csv'});
-          FileSaver.saveAs(blob, `labels-${this.projectId}-${moment().toISOString()}.csv`);
+          const blob = new Blob([value], {type: 'text/json'});
+          FileSaver.saveAs(blob, `labels-${this.projectId}-${moment().toISOString()}.json`);
         },
         reason => {
           this.inExportProgress = false;

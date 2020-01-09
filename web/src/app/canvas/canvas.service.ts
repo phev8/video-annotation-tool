@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { TrackerModel } from '../models/tracker.model';
-import { ProjectModel } from '../models/project.model';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/auth.service';
@@ -48,8 +47,8 @@ export class CanvasService {
     //model.trackables = completedElements;
     const url = `${this.trackerUrl}/update/${model.id}`;
     return this.http.put(url, model).subscribe(val => {
-        console.log("PUT call successful value returned in body",
-          val);
+        alert("Tracking saved successfully");
+        return val;
       },
       response => {
         console.log("PUT call in error", response);

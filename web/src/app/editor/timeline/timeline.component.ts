@@ -485,10 +485,12 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       group: x.labelId,
       start: x.start,
       editable: x.editable,
-      title: 'Click to add tracking data',
-      style: x.completed ? 'color: green, background-color: green' : 'color: red, background-color: red',
+      title: x.completed ? 'Click to update tracking data' : 'Click to add tracking data',
+      //style: x.completed ? 'cursor: pointer; color: green; background-color: green' : 'cursor: pointer; color: red; background-color: red',
+      style: x.completed ? 'cursor: pointer; color: green; background-color: green' : 'cursor: pointer; color: red; background-color: red',
       segment: x.segmentId,
-      trackerId: x.trackerId
+      trackerId: x.trackerId,
+      cursor: "pointer"
     })));
   }
 
