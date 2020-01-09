@@ -160,6 +160,17 @@ export class ProjectController {
     }
   }
 
+  @Put(':id')
+  @UseGuards(AuthGuard())
+  async updateProject(@Param('id') id, @Body() body) {
+    const project = await this.projectService.findOne(id);
+    if (body) {
+      project.videoDimensions = body['videoDimensions'];
+      await this.projectService.update(id, project);
+    }
+    return project;
+  }
+
   @Put(':id/members')
   @UseGuards(AuthGuard())
   async update(@Param('id') id, @Body() body: Project) {
@@ -213,9 +224,15 @@ export class ProjectController {
 
   @Get(':id/annotations')
   async generateAnnotations(@Param('id') projectId) {
+    //Needs refactoring
     const labelCategories: LabelCategory[] = await this.labelsService.getLabelCategories(projectId);
     const project: Project = await this.projectService.findOne(projectId);
     let modifiedResponse: ProjectAnnotationResult = new ProjectAnnotationResult(project.title, project.singleMedia);
+    if(modifiedResponse.singleMedia) {
+      let dimensions = project.videoDimensions.split(" ");
+      modifiedResponse.videoDimensionsX = +dimensions[0];
+      modifiedResponse.videoDimensionsY = +dimensions[1];
+    }
 
     for (const category of labelCategories) {
       let categoryResponse: AnnotationResult = {categoryName: category.name, labels: []};

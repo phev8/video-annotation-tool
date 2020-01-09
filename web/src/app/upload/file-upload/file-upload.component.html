@@ -1,5 +1,5 @@
 <input type="file" #file style="display: none" (change)="onFilesAdded()" [(ngModel)]="rawFiles" multiple/>
-<clr-modal [(clrModalOpen)]="opened">
+<clr-modal [clrModalOpen]="opened" (clrModalOpenChange)="openChange($event)">
   <h3 class="modal-title">Upload files</h3>
   <div class="modal-body">
 

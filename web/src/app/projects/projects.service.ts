@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError} from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
@@ -52,6 +52,11 @@ export class ProjectsService {
 
   updateProjectMembers(project: ProjectModel): Observable<any> {
     return this.http.put<void>(`${this.projectsUrl}/${project.id}/members`, project)
+      .pipe(catchError(this.handleError<any>(`insertProject ${JSON.stringify(project)}`)));
+  }
+
+  updateProject(project: ProjectModel): Observable<any> {
+    return this.http.put<void>(`${this.projectsUrl}/${project.id}`, project)
       .pipe(catchError(this.handleError<any>(`insertProject ${JSON.stringify(project)}`)));
   }
 

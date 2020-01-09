@@ -62,7 +62,6 @@ export class ProjectModalComponent implements OnInit, OnDestroy {
   }
 
   onSupervisorChange(temp) {
-    console.log(this);
     this.handleUserQuery(this.supervisorModel);
   }
 

@@ -32,4 +32,7 @@ export class Project {
 
   @Column()
   singleMedia: boolean;
+
+  @Column()
+  videoDimensions: string;
 }

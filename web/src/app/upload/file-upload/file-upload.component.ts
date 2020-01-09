@@ -1,8 +1,10 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { UploadService } from '../upload.service';
 import { forkJoin, Observable } from 'rxjs';
 import { ProjectModel } from '../../models/project.model';
 import { CurrentProjectService } from '../../editor/current-project.service';
+import { ProjectsService } from '../../projects/projects.service';
+import { nextContext } from '@angular/core/src/render3';
 
 @Component({
   selector: 'app-file-upload',
@@ -24,7 +26,9 @@ export class FileUploadComponent implements OnInit {
   rawFiles: any;
 
   constructor(private editorService: CurrentProjectService,
-              private uploadService: UploadService) {
+              private uploadService: UploadService,
+              private projectService: ProjectsService,
+              private elementRef: ElementRef) {
   }
 
   ngOnInit() {
@@ -49,6 +53,16 @@ export class FileUploadComponent implements OnInit {
 
   private openModal() {
     this.opened = true;
+  }
+
+  updateProjectDimensions() {
+    if(this.currentProject.singleMedia) {
+      let drawingBoardElement = this.elementRef.nativeElement.offsetParent.getElementsByTagName("drawing-board")[0];
+      if(drawingBoardElement) {
+        this.currentProject.videoDimensions = ""+ drawingBoardElement.offsetHeight+ " " + drawingBoardElement.offsetWidth;
+        this.projectService.updateProject(this.currentProject).subscribe(next => {});
+      }
+    }
   }
 
   closeDialog() {
@@ -84,6 +98,7 @@ export class FileUploadComponent implements OnInit {
   }
 
   onCancel() {
+    this.updateProjectDimensions();
     this.reset();
     this.closeModal();
   }
@@ -97,5 +112,13 @@ export class FileUploadComponent implements OnInit {
     this.rawFiles = null;
     this.progress = null; // fixme: memory leak?
     this.uploadSuccessful = false;
+  }
+
+  openChange(value: boolean) {
+    if (value) {
+      this.openDialog();
+    } else {
+      this.onCancel();
+    }
   }
 }
