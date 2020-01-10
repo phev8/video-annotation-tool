@@ -3,7 +3,6 @@ import { ProjectsService } from './projects.service';
 import { ProjectModel } from '../models/project.model';
 import { UserModel } from '../models/user.model';
 import { AuthService } from '../auth/auth.service';
-import { ClrLoadingState } from '@clr/angular';
 
 @Component({
   selector: 'app-projects',

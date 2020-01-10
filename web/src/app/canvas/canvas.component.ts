@@ -45,9 +45,7 @@ export class CanvasComponent implements OnInit {
   ngOnInit() {
     this.subscription = this.currentProjectService.getCurrentProject$()
       .subscribe(project => {
-        if (project) {
-          this.project = project;
-        }
+        if (project) { this.project = project; }
       });
     this.cursor = 'crosshair';
     this.completedElements= [];

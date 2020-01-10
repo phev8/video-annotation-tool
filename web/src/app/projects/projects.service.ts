@@ -6,7 +6,6 @@ import { environment } from '../../environments/environment';
 
 import { ProjectModel } from '../models/project.model';
 import { AuthService } from '../auth/auth.service';
-import { UserModel } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'

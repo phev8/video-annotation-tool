@@ -202,4 +202,17 @@ export class TimelineData {
     });
     return temp;
   }
+
+  completeMarkerItems(labelId: string) {
+    //TODO: Need to handle case where not all markers are updated.
+    let items = this.findMarkersByOptions('group', labelId);
+    items.forEach(item => {
+      if(item && item["segment"]) {
+        item.title = 'Click to update tracking data';
+        item.style = 'cursor: pointer; color: green; background-color: green';
+        this._items.update(item);
+      }
+    })
+
+  }
 }

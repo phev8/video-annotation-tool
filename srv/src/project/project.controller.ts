@@ -31,16 +31,11 @@ import { config } from '../../config';
  import { LabelCategory } from '../entities/labelcategory.entity';
  import { User } from '../entities/user.entity';
  import { ProjectAnnotationResult } from '../interfaces/project.annotation';
- import { Tracker } from '../entities/tracker.entity';
  import { MarkerService } from '../labels/trackers/marker/marker.service';
- import _ from "lodash";
- import { Marker } from '../entities/markers.entity';
  import { LabelResult } from '../interfaces/label.result';
  import { FileUpload } from '../interfaces/file.upload';
  import { SegmentResult } from '../interfaces/segment.result';
  import { AnnotationResult } from '../interfaces/annotation.result';
- import { TrackerResult } from '../interfaces/tracker.result';
- import * as fs from 'fs';
 
 @Controller('project')
 export class ProjectController {
@@ -54,27 +49,8 @@ export class ProjectController {
   @Post()
   @UseGuards(AuthGuard())
   async create(@Req() req, @Body() body) {
-    const project = new Project();
-    project.title = body.title;
-    project.description = body.description;
-    project.singleMedia = body.singleMedia;
-    project.modified = new Date();
-    project.ownerId = req.user;
-    project.contributorIds = [];
-    project.supervisorIds = [];
-
-    body.supervisorIds.map( userdetails => {
-      project.supervisorIds.push(userdetails);
-    });
-
-    body.contributorIds.map( userdetails => {
-      project.contributorIds.push(userdetails);
-    });
-
-    project.fileTree = new Directory();
-    project.fileTree.parent = null;
-    project.fileTree.children = [];
-
+    body["ownerId"] = req.user;
+    const project = new Project(body);
     const response = await this.projectService.create(project);
     return { result: response.result, id: response.insertedId };
   }
@@ -96,14 +72,7 @@ export class ProjectController {
     if(!(project.singleMedia && project.fileTree.size == 1)) {
       uploads.forEach((upload: FileUpload) => {
         if (upload.filename) {
-          const file = new File();
-
-          file.name = upload.originalname;
-          file.filename = upload.filename;
-          file.path = upload.path;
-          file.size = upload.size;
-          file.mimetype = upload.mimetype;
-
+          const file = new File(upload);
           project.fileTree.children.push(file);
         }
       });
@@ -178,13 +147,13 @@ export class ProjectController {
     let memberIds = [];
     if (body) {
       let members:User[] = body['contributorIds'];
-      for (var member of members) {
+      for (let member of members) {
         memberIds.push(ObjectID.createFromHexString(member));
       }
       project.contributorIds = memberIds;
       memberIds = [];
       members = body['supervisorIds'];
-      for (var member of members) {
+      for (let member of members) {
         memberIds.push(ObjectID.createFromHexString(member));
       }
       project.supervisorIds = memberIds;

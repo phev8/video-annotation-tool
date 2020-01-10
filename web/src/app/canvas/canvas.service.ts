@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { TrackerModel } from '../models/tracker.model';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -12,10 +12,15 @@ import { HttpClient } from '@angular/common/http';
 export class CanvasService {
 
   private trackerUrl = `${environment.apiUrl}/tracker`;
+  private updatedTracker: BehaviorSubject<string>;
+  private readonly updatedTrackerLabelId$: Observable<string>;
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient) {}
+    private http: HttpClient) {
+    this.updatedTracker = new BehaviorSubject("");
+    this.updatedTrackerLabelId$ = this.updatedTracker.asObservable();
+  }
 
   getTrackingInformation(id: string): Observable<TrackerModel> {
     const url = `${this.trackerUrl}/${id}`;
@@ -48,6 +53,7 @@ export class CanvasService {
     const url = `${this.trackerUrl}/update/${model.id}`;
     return this.http.put(url, model).subscribe(val => {
         alert("Tracking saved successfully");
+        this.updatedTracker.next(model.labelId);
         return val;
       },
       response => {
@@ -56,5 +62,9 @@ export class CanvasService {
       () => {
         console.log("The PUT observable is now completed.");
       });
+  }
+
+  getUpdatedTrackerLabelId$(): Observable<string> {
+    return this.updatedTrackerLabelId$;
   }
 }

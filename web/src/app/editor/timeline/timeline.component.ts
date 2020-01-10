@@ -25,6 +25,7 @@ import { pairwise, startWith } from 'rxjs/operators';
 import { LabelCategoryModel } from '../../models/labelcategory.model';
 import { CurrentToolService } from '../project-toolbox.service';
 import * as hyperid from 'hyperid';
+import { CanvasService } from '../../canvas/canvas.service';
 
 @Component({
   selector: 'app-timeline',
@@ -182,7 +183,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
               private videoService: VideoService,
               private hotkeyService: HotkeysService,
               private changeDetectorRef: ChangeDetectorRef,
-              private toolBoxService: CurrentToolService) {
+              private toolBoxService: CurrentToolService,
+              private canvasService: CanvasService) {
   }
 
   ngOnInit(): void {
@@ -203,6 +205,12 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
             });
         }
       });
+
+    this.subscription.add(this.canvasService.getUpdatedTrackerLabelId$().subscribe(next => {
+      if(next && next!="") {
+        this.timelineData.completeMarkerItems(next);
+      }
+    }));
 
     this.observeLabels();
     this.observeSegments();
@@ -484,9 +492,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       content: '',
       group: x.labelId,
       start: x.start,
-      editable: x.editable,
+      editable: false,
       title: x.completed ? 'Click to update tracking data' : 'Click to add tracking data',
-      //style: x.completed ? 'cursor: pointer; color: green; background-color: green' : 'cursor: pointer; color: red; background-color: red',
       style: x.completed ? 'cursor: pointer; color: green; background-color: green' : 'cursor: pointer; color: red; background-color: red',
       segment: x.segmentId,
       trackerId: x.trackerId,
