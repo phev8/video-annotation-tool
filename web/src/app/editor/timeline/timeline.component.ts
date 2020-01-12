@@ -288,6 +288,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
+    container.children[0].setAttribute("style", container.children[0].getAttribute("style").replace(" visibility: hidden;", ""));
+
     this.loading = false;
     this.changeDetectorRef.detectChanges();
 
@@ -452,19 +454,30 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(
       this.labelsService.getSegments$()
         .subscribe(
-          xs => this.timelineData.items.add(xs.map(x => ({
-            id: x.id,
-            content: '',
-            group: x.labelId,
-            start: x.start,
-            end: x.end
-          })))
+          xs => {
+            if(xs && xs.length > 0) {
+              xs.map(x => {
+                let response = ({
+                  id: x.id,
+                  content: '',
+                  group: x.labelId,
+                  start: x.start,
+                  end: x.end
+                });
+
+                if(this.timelineData.getItem(response.id)) {
+                  this.timelineData.updateItem(response);
+                } else
+                  this.timelineData.items.add(response);
+              });
+            }
+          }
         )
     );
     this.subscription.add(
       this.labelsService.getMarkers$().subscribe(
         marker => {
-          this.addMarkertoTimeline(marker);
+          if(marker && marker.length > 0) this.addMarkertoTimeline(marker);
         }
       )
     );
@@ -472,7 +485,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(
       this.labelsService.newMarkers$().subscribe(
         marker => {
-          this.addMarkertoTimeline(marker);
+          if(marker && marker.length > 0) this.addMarkertoTimeline(marker);
         }
       )
     );
@@ -487,18 +500,27 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private addMarkertoTimeline(marker) {
-    this.timelineData.items.add(marker.map(x => ({
-      id: x.id? x.id: x["_id"],
-      content: '',
-      group: x.labelId,
-      start: x.start,
-      editable: false,
-      title: x.completed ? 'Click to update tracking data' : 'Click to add tracking data',
-      style: x.completed ? 'cursor: pointer; color: green; background-color: green' : 'cursor: pointer; color: red; background-color: red',
-      segment: x.segmentId,
-      trackerId: x.trackerId,
-      cursor: "pointer"
-    })));
+    marker.map(x => {
+      if(x) {
+        const id = x.id? x.id: x["_id"];
+        const response = ({
+          id: x.id? x.id: x["_id"],
+          content: '',
+          group: x.labelId,
+          start: x.start,
+          editable: false,
+          title: x.completed ? 'Click to update tracking data' : 'Click to add tracking data',
+          style: x.completed ? 'cursor: pointer; color: green; background-color: green' : 'cursor: pointer; color: red; background-color: red',
+          segment: x.segmentId,
+          trackerId: x.trackerId,
+          cursor: "pointer"
+        });
+        if(this.timelineData.getItem(id)) {
+          this.timelineData.updateItem(response);
+        } else this.timelineData.items.add(response);
+      }
+    });
+
   }
 
   private removeMarkerFromTimeline(marker) {

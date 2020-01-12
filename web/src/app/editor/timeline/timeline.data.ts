@@ -29,13 +29,19 @@ export class TimelineData {
   }
 
   addGroup(group: DataGroup) {
+    if(this._groups.get(group.id)) {
+      this._groups.remove(group.id);
+    }
     this._groups.add(group);
     this._map.set(group.id, {id: undefined, recording: false, update: false});
   }
 
   addGroups(groups: DataGroup[]) {
-    this._groups.add(groups);
     groups.forEach(x => {
+      if(this._groups.get(x.id)) {
+        this._groups.remove(x.id);
+      }
+      this._groups.add(x);
       this._map.set(x.id, {id: undefined, recording: false, update: false});
     });
   }
@@ -79,6 +85,21 @@ export class TimelineData {
 
   get map() {
     return this._map;
+  }
+
+  itemsAdd(xs) {
+    xs.map(x => {
+      let resp = ({
+        id: x.id,
+        content: '',
+        group: x.labelId,
+        start: x.start,
+        end: x.end
+      });
+      if(!this.getItem(x.id)) {
+        this.items.add(resp);
+      }
+    });
   }
 
 

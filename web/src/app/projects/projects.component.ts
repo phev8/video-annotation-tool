@@ -3,6 +3,7 @@ import { ProjectsService } from './projects.service';
 import { ProjectModel } from '../models/project.model';
 import { UserModel } from '../models/user.model';
 import { AuthService } from '../auth/auth.service';
+import { CurrentToolService } from '../editor/project-toolbox.service';
 
 @Component({
   selector: 'app-projects',
@@ -19,7 +20,8 @@ export class ProjectsComponent implements OnInit {
   error = false;
 
   constructor(private projectsService: ProjectsService,
-              private authService: AuthService) {
+              private authService: AuthService,
+              private toolBoxService: CurrentToolService) {
   }
 
   ngOnInit() {
@@ -28,6 +30,9 @@ export class ProjectsComponent implements OnInit {
           this.projects = projects;
         }
       );
+
+    this.toolBoxService.triggerToolBox(false);
+    this.toolBoxService.triggerCanvas(null);
   }
 
   refresh() {

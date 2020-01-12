@@ -32,7 +32,7 @@ export class CanvasComponent implements OnInit {
   private fill = '#044B94';
   private polygonElements;
   private project: ProjectModel;
-  private canvasActive: boolean;
+  private canvasActive: boolean = false;
   private firstTrackable: boolean;
 
   constructor(
@@ -52,13 +52,17 @@ export class CanvasComponent implements OnInit {
     this.selectedLabel = 'boat';
     this.toolSubscription = this.toolService.getCurrentTool$().subscribe( next => {
       if(next == 6) {
-        this.model.authorId = JSON.parse(localStorage.getItem('currentSession$'))['user']['id'];
-        this.model.trackerType = this.completedElements[0].tagName;
-        this.model.trackables = [];
-        this.completedElements.forEach(item => {
-          this.model.trackables.push(JSON.stringify(item.outerHTML))
-        });
-        this.canvasService.updateTrackerModel(this.model, this.completedElements);
+        if(this.completedElements.length > 0) {
+          this.model.authorId = JSON.parse(localStorage.getItem('currentSession$'))['user']['id'];
+          this.model.trackerType = this.completedElements[0].tagName;
+          this.model.trackables = [];
+          this.completedElements.forEach(item => {
+            this.model.trackables.push(JSON.stringify(item.outerHTML))
+          });
+          this.canvasService.updateTrackerModel(this.model, this.completedElements);
+        } else {
+          alert("No tracking information has been added for the current marker");
+        }
       } else {
         this.cursor = 'crosshair';
         if(next == 1) {
@@ -72,21 +76,23 @@ export class CanvasComponent implements OnInit {
     );
 
     this.canvasSubscription = this.toolService.getCurrentCanvas$().subscribe(next => {
-      this.completedElements = [];
-      this.svgElement = null;
-      this.polygonElements = null;
-      if(this.svgCanvas)
-        this.svgCanvas.nativeElement.innerHTML = '';
-      if(next && next!='') {
-        this.canvasActive = true;
-        this.canvasService.getTrackingInformation(next).subscribe( (tracker:TrackerModel) => {
-          this.model = tracker;
-          this.firstTrackable = tracker.trackables? false: true;
-          //this.completedElements = this.model.trackables? this.model.trackables: [];
-          this.loadExistingTrackables(this.model.trackables);
-        });
-      } else {
-        this.canvasActive = false;
+      if(this.project && this.project.singleMedia) {
+        this.completedElements = [];
+        this.svgElement = null;
+        this.polygonElements = null;
+        if(this.svgCanvas)
+          this.svgCanvas.nativeElement.innerHTML = '';
+        if(next && next!='') {
+          this.canvasActive = true;
+          this.canvasService.getTrackingInformation(next).subscribe( (tracker:TrackerModel) => {
+            this.model = tracker;
+            this.firstTrackable = tracker.trackables? false: true;
+            //this.completedElements = this.model.trackables? this.model.trackables: [];
+            this.loadExistingTrackables(this.model.trackables);
+          });
+        } else {
+          this.canvasActive = false;
+        }
       }
     });
   }
@@ -342,6 +348,10 @@ export class CanvasComponent implements OnInit {
     for(let key in attributes) {
       this.svgElement.setAttribute(key, attributes[key]);
     }
+    let title = this.createSvgElement("title");
+    title.innerHTML = this.selectedLabel;
+    this.svgElement.appendChild(title);
+    this.svgElement.setAttribute("title", this.selectedLabel);
     this.svgCanvas.nativeElement.appendChild(this.svgElement);
   }
 
@@ -401,7 +411,8 @@ export class CanvasComponent implements OnInit {
       let createdElement = this.createSvgElement('div');
       createdElement.innerHTML = item;
       this.completedElements.push(createdElement.children[0]);
-      this.svgCanvas.nativeElement.appendChild(createdElement.children[0]);
+      if(this.svgCanvas)
+        this.svgCanvas.nativeElement.appendChild(createdElement.children[0]);
     });
   }
 

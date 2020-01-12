@@ -55,8 +55,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.toolStatus[index] = true;
     this.iconStyle[index] = 'is-highlight fit-content-width';
     this.toolService.updateSelectedTool(index);
-    if(index == 3) {
-      this.activateTool(0);
+    if(index == 3 || index == 6) {
+      this.activateTool(1);
     }
   }
 }

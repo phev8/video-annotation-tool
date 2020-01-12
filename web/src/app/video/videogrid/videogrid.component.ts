@@ -32,7 +32,7 @@ export class VideogridComponent implements OnInit, OnDestroy {
   loading = true;
 
   // 'main' video index
-  @ViewChildren(VideoComponent) videos: QueryList<VideoComponent>;e
+  @ViewChildren(VideoComponent) videos: QueryList<VideoComponent>;
   ratio = '2:1';
 
   constructor(private videoService: VideoService,
