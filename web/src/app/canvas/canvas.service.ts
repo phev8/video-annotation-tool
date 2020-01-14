@@ -48,8 +48,7 @@ export class CanvasService {
     };
   }
 
-  updateTrackerModel(model: TrackerModel, completedElements: any) {
-    //model.trackables = completedElements;
+  updateTrackerModel(model: TrackerModel) {
     const url = `${this.trackerUrl}/update/${model.id}`;
     return this.http.put(url, model).subscribe(val => {
         alert("Tracking saved successfully");

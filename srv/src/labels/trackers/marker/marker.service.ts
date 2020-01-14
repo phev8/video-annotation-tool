@@ -82,9 +82,22 @@ export class MarkerService {
         item.firstUpdate = false;
         item.authorId = tracker.authorId;
         item.authorClass = tracker.authorClass;
+        item.labelName = tracker.labelName;
+        item.selectedColor = tracker.selectedColor;
         this.updateTracker(item.id.toString(), item);
       }
     })
+  }
+
+  async updateTrackerColor(labelId: string, newColor: string) {
+    let trackers: Tracker[] = await this.trackerRepository.find({where: { labelId: labelId }});
+    trackers.forEach(item => {
+        let newTrackables = [];
+        item.trackables.forEach( trackable => newTrackables.push(trackable.replace(item.selectedColor, newColor)));
+        item.trackables = newTrackables;
+        item.selectedColor = newColor;
+        this.updateTracker(item.id.toString(), item);
+    });
   }
 
   async updateMarker(id: string, marker: QueryDeepPartialEntity<Marker>) {

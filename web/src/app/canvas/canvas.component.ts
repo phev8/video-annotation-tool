@@ -49,20 +49,10 @@ export class CanvasComponent implements OnInit {
       });
     this.cursor = 'crosshair';
     this.completedElements= [];
-    this.selectedLabel = 'boat';
+    this.selectedLabel = '';
     this.toolSubscription = this.toolService.getCurrentTool$().subscribe( next => {
       if(next == 6) {
-        if(this.completedElements.length > 0) {
-          this.model.authorId = JSON.parse(localStorage.getItem('currentSession$'))['user']['id'];
-          this.model.trackerType = this.completedElements[0].tagName;
-          this.model.trackables = [];
-          this.completedElements.forEach(item => {
-            this.model.trackables.push(JSON.stringify(item.outerHTML))
-          });
-          this.canvasService.updateTrackerModel(this.model, this.completedElements);
-        } else {
-          alert("No tracking information has been added for the current marker");
-        }
+        this.saveTrackingInformation();
       } else {
         this.cursor = 'crosshair';
         if(next == 1) {
@@ -72,29 +62,60 @@ export class CanvasComponent implements OnInit {
         this.svgElement = null;
         this.performUndo();
       }
-      }
-    );
+    });
 
     this.canvasSubscription = this.toolService.getCurrentCanvas$().subscribe(next => {
       if(this.project && this.project.singleMedia) {
-        this.completedElements = [];
-        this.svgElement = null;
-        this.polygonElements = null;
-        if(this.svgCanvas)
-          this.svgCanvas.nativeElement.innerHTML = '';
-        if(next && next!='') {
-          this.canvasActive = true;
-          this.canvasService.getTrackingInformation(next).subscribe( (tracker:TrackerModel) => {
-            this.model = tracker;
-            this.firstTrackable = tracker.trackables? false: true;
-            //this.completedElements = this.model.trackables? this.model.trackables: [];
-            this.loadExistingTrackables(this.model.trackables);
-          });
-        } else {
-          this.canvasActive = false;
-        }
+        this.loadExistingCanvas(next);
       }
     });
+
+    this.canvasSubscription.add(this.toolService.getCurrentColor$().subscribe(next => {
+      if(next) {
+        this.fill = next;
+        this.changeColorOnElements();
+      }
+    }));
+  }
+
+  private loadExistingCanvas(next) {
+    this.completedElements = [];
+    this.svgElement = null;
+    this.polygonElements = null;
+    if (this.svgCanvas)
+      this.svgCanvas.nativeElement.innerHTML = '';
+    if (next && next != '') {
+      let trackerInfo = next.split(';');
+      this.canvasActive = true;
+      this.selectedLabel = trackerInfo[1];
+      this.canvasService.getTrackingInformation(trackerInfo[0]).subscribe((tracker: TrackerModel) => {
+        this.model = tracker;
+        this.firstTrackable = tracker.trackables ? false : true;
+        if (tracker.selectedColor) {
+          this.fill = tracker.selectedColor;
+          this.toolService.updateSelectedColor(tracker.selectedColor);
+        }
+        this.loadExistingTrackables(this.model.trackables);
+      });
+    } else {
+      this.canvasActive = false;
+    }
+  }
+
+  private saveTrackingInformation() {
+    if (this.completedElements.length > 0) {
+      this.model.authorId = JSON.parse(localStorage.getItem('currentSession$'))['user']['id'];
+      this.model.trackerType = this.completedElements[0].tagName;
+      this.model.labelName = this.selectedLabel;
+      this.model.trackables = [];
+      this.model.selectedColor = this.fill;
+      this.completedElements.forEach(item => {
+        this.model.trackables.push(JSON.stringify(item.outerHTML));
+      });
+      this.canvasService.updateTrackerModel(this.model);
+    } else {
+      alert('No tracking information has been added for the current marker');
+    }
   }
 
   @HostListener('mousedown', ['$event'])
@@ -405,18 +426,45 @@ export class CanvasComponent implements OnInit {
   }
 
   private loadExistingTrackables(trackables: string[]) {
-    if(trackables.length != 0)
-    trackables.forEach(trackable => {
-      let item = JSON.parse(trackable);
-      let createdElement = this.createSvgElement('div');
-      createdElement.innerHTML = item;
-      this.completedElements.push(createdElement.children[0]);
-      if(this.svgCanvas)
-        this.svgCanvas.nativeElement.appendChild(createdElement.children[0]);
-    });
+    if(trackables.length != 0) {
+      let isPolygon = false;
+      trackables.forEach(trackable => {
+        let item = JSON.parse(trackable);
+        let createdElement = this.createSvgElement('div');
+        createdElement.innerHTML = item;
+        if(createdElement.children[0].tagName == "polygon") {
+          isPolygon = true;
+          createdElement.children[0]["points"].clear();
+          this.polygonElements = createdElement.children[0];
+        }
+        if(createdElement.children[0].tagName == "circle" && isPolygon) {
+          let point = this.svgCanvas.nativeElement.createSVGPoint();
+          point.x = createdElement.children[0].getAttribute('cx');
+          point.y = createdElement.children[0].getAttribute('cy');
+          this.polygonElements.points.appendItem(point);
+        }
+        this.completedElements.push(createdElement.children[0]);
+        if(this.svgCanvas)
+          this.svgCanvas.nativeElement.appendChild(createdElement.children[0]);
+      });
+    }
   }
 
   private static promptDuplicationError(errorMessage: string) {
     alert('A trackable already exists for this tracker, undo existing tracker to create a new one.' + errorMessage);
+  }
+
+  /*
+    Method to replace the fill color on existing elements when
+    a color change is triggered by the toolbox.
+   */
+  private changeColorOnElements() {
+    if(this.svgCanvas && this.canvasActive) {
+      for(let child of this.svgCanvas.nativeElement.children) {
+        if(child.getAttribute("fill")) {
+          child.setAttribute("fill", this.fill);
+        }
+      }
+    }
   }
 }

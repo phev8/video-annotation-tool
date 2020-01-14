@@ -8,5 +8,7 @@ export class TrackerModel {
     public trackables: string[],
     public labelId: string,
     public firstUpdate: string,
+    public labelName: string,
+    public selectedColor: string,
   ) {}
 }

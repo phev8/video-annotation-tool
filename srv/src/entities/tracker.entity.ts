@@ -24,6 +24,12 @@ export class Tracker {
   @Column()
   firstUpdate: boolean;
 
+  @Column()
+  labelName: string;
+
+  @Column()
+  selectedColor: string;
+
   constructor(labelId: string) {
     this.trackables = [];
     this.firstUpdate = true;

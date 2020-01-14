@@ -268,7 +268,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         this.updateCurrentTime(Number(item.start));
         this.videoService.seekTo(Number(item.start)/1000);
         this.timeline.redraw();
-        this.toolBoxService.triggerCanvas(item['trackerId']);
+        this.toolBoxService.triggerCanvas(item['trackerId']+";"+this.timelineData.getGroup(item.group).content);
       }
       else {
         this.toolBoxService.triggerToolBox(false);
@@ -462,7 +462,8 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
                   content: '',
                   group: x.labelId,
                   start: x.start,
-                  end: x.end
+                  end: x.end,
+                  stack: false
                 });
 
                 if(this.timelineData.getItem(response.id)) {
@@ -510,10 +511,11 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
           start: x.start,
           editable: false,
           title: x.completed ? 'Click to update tracking data' : 'Click to add tracking data',
-          style: x.completed ? 'cursor: pointer; color: green; background-color: green' : 'cursor: pointer; color: red; background-color: red',
+          style: x.completed ? 'cursor: pointer; color: green; background-color: green; top: 0px' : 'cursor: pointer; color: red; background-color: red; top: 0px',
           segment: x.segmentId,
           trackerId: x.trackerId,
-          cursor: "pointer"
+          cursor: "pointer",
+          stack: false
         });
         if(this.timelineData.getItem(id)) {
           this.timelineData.updateItem(response);

@@ -48,6 +48,13 @@ export class TrackerController {
       tracker.trackables = body['trackables'];
       tracker.trackerType = body['trackerType'];
       tracker.authorClass = body['authorClass'];
+      tracker.labelName = body['labelName'];
+      if(tracker.selectedColor != body['selectedColor']) {
+        await this.markerService.updateTrackerColor(tracker.labelId, body['selectedColor']).catch(function(error) {
+          console.log("Updating Tracker Color Error: "+ error);
+        });
+      }
+      tracker.selectedColor = body['selectedColor'];
       if(tracker.firstUpdate) {
         await this.markerService.autoUpdateTrackers(tracker).catch(function(error) {
           console.log("error: "+ error);

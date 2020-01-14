@@ -14,6 +14,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   verticalNavVisible = false;
   verticalNavWidth = 13;
   toolStatus: boolean[];
+  fillColor: string = '#044B94';
 
   private subscription: Subscription;
   private navSubscription: Subscription;
@@ -39,6 +40,12 @@ export class LayoutComponent implements OnInit, OnDestroy {
     );
     this.toolStatus = new Array(10).fill(false);
     this.iconStyle = new Array(10).fill('fit-content-width');
+
+    this.navSubscription.add(this.toolService.getCurrentColor$().subscribe(next => {
+      if(next) {
+        this.fillColor = next;
+      }
+    }));
   }
 
   ngOnDestroy(): void {
@@ -58,5 +65,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
     if(index == 3 || index == 6) {
       this.activateTool(1);
     }
+  }
+
+  changeColor(change) {
+    this.toolService.updateSelectedColor(change);
+    console.log(change);
   }
 }
