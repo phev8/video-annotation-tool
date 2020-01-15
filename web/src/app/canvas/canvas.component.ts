@@ -69,6 +69,7 @@ export class CanvasComponent implements OnInit {
   private addToolServiceSubscriptions() {
     this.toolSubscription = this.toolService.getCurrentTool$().subscribe(next => {
       if (next == ToolkitModel.SAVE) {
+        if(this.completedElements.length > 0)
         this.saveTrackingInformation();
       } else {
         this.cursor = 'crosshair';

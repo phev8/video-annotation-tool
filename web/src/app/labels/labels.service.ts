@@ -176,9 +176,9 @@ export class LabelsService {
    * Delete the label by id
    * @param id of this label
    */
-  deleteLabel(id: string) {
+  deleteLabel(id: string, categoryId?: string) {
     return new Promise((resolve, reject) => {
-      this.socket.emit('deleteLabel', {id}, (err) => {
+      this.socket.emit('deleteLabel', {id: id, cid: categoryId}, (err) => {
         if (!err) {
           resolve();
           this.deleteLabelSubject.next({id});

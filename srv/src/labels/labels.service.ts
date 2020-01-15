@@ -3,14 +3,17 @@ import { DeleteResult, InsertResult, MongoRepository, UpdateResult } from 'typeo
 import { Label } from '../entities/label.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LabelCategory } from '../entities/labelcategory.entity';
-import * as SocketIO from 'socket.io';
 import { LabelCategoryDto } from '../dto/label.category.dto';
+import { SegmentService } from './segment/segment.service';
+import { MarkerService } from './trackers/marker/marker.service';
 
 @Injectable()
 export class LabelsService {
   constructor(@InjectRepository(Label)
               private readonly labelRepository: MongoRepository<Label>, @InjectRepository(LabelCategory)
-              private readonly labelCategoryRepository: MongoRepository<LabelCategory>) {
+              private readonly labelCategoryRepository: MongoRepository<LabelCategory>,
+              private segmentService: SegmentService,
+              private markerService: MarkerService) {
   }
 
   async createLabel(projectId: string, authorId: string, categoryId: string, authorClass: string): Promise<Label> {
@@ -73,14 +76,29 @@ export class LabelsService {
     return await this.labelCategoryRepository.findOne(id);
   }
 
-  async deleteLabel(id: string): Promise<DeleteResult> {
-    return await this.labelRepository.delete(id);
+  /**
+   * Deletes the label, modifies label category to remove the deleted label from
+   * its list of labels.
+   * @param id : string - Label Id
+   * @param categoryId : string - Label category Id
+   */
+  async deleteLabel(id: string, categoryId?: string): Promise<DeleteResult> {
+    let response = await this.labelRepository.delete(id);
+    if(categoryId) {
+      let category: LabelCategory = await this.labelCategoryRepository.findOne(categoryId);
+      let labels = [];
+      category.labels.forEach(label => { let labelId = label["id"]? label["id"]: label["_id"]; if(labelId!= id ) labels.push(label);});
+      await this.labelCategoryRepository.update(categoryId, {labels: labels});
+    }
+    await this.segmentService.deleteSegmentsForLabel(id).then(result => {});
+    return  response;
   }
 
-  async deleteLabelCategory(socket: SocketIO.Socket, id: string, room: any): Promise<DeleteResult> {
+  async deleteLabelCategory(id: string): Promise<DeleteResult> {
     let category: LabelCategory = await this.labelCategoryRepository.findOne(id);
     for(var j=0 ; j< category.labels.length; j++) {
       category.labels[j]["id"] = category.labels[j]["_id"];
+      await this.segmentService.deleteSegmentsForLabel(category.labels[j]["id"].toString()).then(result => {});
       await this.labelRepository.remove(category.labels[j]);
     }
     return await this.labelCategoryRepository.delete(id);
@@ -88,12 +106,8 @@ export class LabelsService {
 
   async  deleteProjectLabelCategories(projectId: string) {
     let categories: LabelCategory[] = await this.getLabelCategories(projectId);
-    for(var i = 0 ; i < categories.length; i++) {
-      for(var j=0 ; j< categories[i].labels.length; j++) {
-        categories[i].labels[j]["id"] = categories[i].labels[j]["_id"];
-        await this.labelRepository.remove(categories[i].labels[j]);
-      }
-      await this.labelCategoryRepository.remove(categories[i]);
+    for(let category of categories) {
+      this.deleteLabelCategory(category.id.toString()).then(result => {console.log("Deleted Category : "+ category.name)})
     }
   }
 }

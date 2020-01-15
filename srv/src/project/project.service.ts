@@ -35,6 +35,6 @@ export class ProjectService {
   }
 
   async delete(id: string) {
-    return await this.projectRepository.delete(id);
+    return await this.projectRepository.delete(id).then( result => { console.log("Deleted Project: id = " + id )});
   }
 }

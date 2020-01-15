@@ -164,7 +164,7 @@ export class ProjectController {
   @Delete(':id')
   @UseGuards(AuthGuard())
   async delete(@Param('id') projectId) {
-    await this.labelsService.deleteProjectLabelCategories(projectId);
+    await this.labelsService.deleteProjectLabelCategories(projectId).then(result => {});
     return await this.projectService.delete(projectId);
   }
 

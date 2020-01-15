@@ -46,4 +46,21 @@ export class SegmentService {
     }
     return await this.segmentRepository.update(updatedSegmentId.toString(), { start: start, end: end });
   }
+
+  /**
+   * Method is called when a label or label category is deleted.
+   * It removes all segments, markers and trackers associated with that label.
+   * @param labelId : string
+   */
+  async deleteSegmentsForLabel(labelId: string) {
+    let segments: Segment[] = await this.getSegments(labelId);
+    for(let i=0; i< segments.length; i++) {
+      await this.markerService.deleteMarkers(segments[i].id.toString(), "segmentId").then(result=> {console.log("Deleted Markers for segment: "+ segments[i].id.toString() )}).catch(function(err) {
+        console.log("DELETE ERROR : " +err);
+      });
+      await this.deleteSegment(segments[i].id.toString()).then(result=> {console.log("Deleted segment: "+ segments[i].id.toString() )}).catch(function(err) {
+        console.log("DELETE ERROR : " +err);
+      });
+    }
+  }
 }

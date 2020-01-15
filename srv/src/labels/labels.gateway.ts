@@ -86,7 +86,7 @@ export class LabelsGateway  {
   @SubscribeMessage('deleteLabel')
   async deleteLabel(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
-    return await this.labelsService.deleteLabel(data.id)
+    return await this.labelsService.deleteLabel(data.id, data.cid)
       .then(() => {
         socket.to(room).broadcast.emit('removedLabels', { id: data.id });
         return false;
@@ -96,7 +96,7 @@ export class LabelsGateway  {
   @SubscribeMessage('deleteLabelCategory')
   async deleteLabelCategory(socket: SocketIO.Socket, data) {
     const room = LabelsGateway.getProjectRoom(socket);
-    return await this.labelsService.deleteLabelCategory(socket, data.id, room)
+    return await this.labelsService.deleteLabelCategory(data.id)
       .then(() => {
         socket.to(room).broadcast.emit('removedLabelCategories', { id: data.id });
         return false;

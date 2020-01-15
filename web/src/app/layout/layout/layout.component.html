@@ -25,7 +25,7 @@
         <clr-icon shape="pencil" [className]="iconStyle[0]" title="Select to create a unbounded tracker" (click)="activateTool(0)"></clr-icon>
         <clr-icon shape="undo" [className]="iconStyle[3]" title="Undo" (click)="activateTool(3)"></clr-icon>
         <clr-icon shape="floppy" [className]="iconStyle[6]" title="Save tracking data" (click)="activateTool(6)"></clr-icon>
-        <div class="fit-content-width align-color-picker"><input  title="Select tracker color" type="color" class="dot" [style.background]="fillColor" [(ngModel)]="fillColor" (ngModelChange)="changeColor($event)" /></div>
+        <div class="fit-content-width align-color-picker pointer"><input  title="Select tracker color" type="color" class="dot pointer" [style.background]="fillColor" [(ngModel)]="fillColor" (ngModelChange)="changeColor($event)" /></div>
       </div>
 
     </clr-vertical-nav>

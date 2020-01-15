@@ -50,11 +50,12 @@ export class ProjectsComponent implements OnInit {
   }
 
   onDelete(id: string) {
-    this.projectsService.deleteProject(id)
-      .subscribe(temp => {
-        this.projectsService.reload();
-        }
-      );
+    if(confirm("Are you sure you want to delete the selected project?"))
+      this.projectsService.deleteProject(id)
+        .subscribe(temp => {
+          this.projectsService.reload();
+          }
+        );
   }
 
   invite() {

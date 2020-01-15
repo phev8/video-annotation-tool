@@ -39,7 +39,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       }
     );
     this.toolStatus = new Array(10).fill(false);
-    this.iconStyle = new Array(10).fill('fit-content-width');
+    this.iconStyle = new Array(10).fill('fit-content-width pointer');
 
     this.navSubscription.add(this.toolService.getCurrentColor$().subscribe(next => {
       if(next) {
@@ -58,9 +58,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   activateTool(index: number) {
     this.toolStatus = this.toolStatus.map(x => false);
-    this.iconStyle = this.iconStyle.map(x => 'fit-content-width');
+    this.iconStyle = this.iconStyle.map(x => 'fit-content-width pointer');
     this.toolStatus[index] = true;
-    this.iconStyle[index] = 'is-highlight fit-content-width';
+    this.iconStyle[index] = 'is-highlight fit-content-width pointer';
     this.toolService.updateSelectedTool(index);
     if(index == 3 || index == 6) {
       this.activateTool(1);

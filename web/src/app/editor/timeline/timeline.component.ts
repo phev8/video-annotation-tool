@@ -79,21 +79,30 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     groupTemplate: (group: DataGroup) => {
       if (group) {
-
         const overarchingContainer = document.createElement('div');
         overarchingContainer.className = 'clr-row top-margin';
 
         const containerLeft = document.createElement('div');
-        containerLeft.className = 'clr-col-6';
+        containerLeft.className = 'clr-col-4';
 
         const containerRight = document.createElement('div');
         containerRight.className = 'clr-col-6';
+
+        const trashContainer = document.createElement('div');
+        trashContainer.className = 'clr-col-2';
+        trashContainer.setAttribute("style", "padding-left: 0; padding-top: 0.5rem; cursor: pointer;");
+        trashContainer.innerHTML = "<clr-icon shape=\"trash\" class='is-highlight' title='Delete "+group['content']+"'></clr-icon>";
+        trashContainer.addEventListener('click', () => {
+          this.removeLabelInstance(group);
+        });
 
         const categoryContainer = document.createElement('div');
         categoryContainer.className = 'btn btn-link';
 
         const categoryLabel = document.createElement('label');
         categoryLabel.innerHTML = group['category'];
+        categoryLabel.title = "Click to create a new instance of this category";
+        categoryLabel.setAttribute("style", "cursor: pointer;");
         categoryLabel.addEventListener('click', () => {
           this.toolBoxService.triggerToolBox(false);
           this.labelsService.addLabel(JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],group['categoryId'], this.userRole);
@@ -103,6 +112,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
         const container = document.createElement('div');
         container.className = 'checkbox btn';
+        container.title = "Click to start recording occurrences of this label";
 
         const input = document.createElement('input');
         input.type = 'checkbox';
@@ -125,6 +135,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
         overarchingContainer.appendChild(containerLeft);
         overarchingContainer.appendChild(containerRight);
+        overarchingContainer.appendChild(trashContainer);
         return overarchingContainer;
       }
     },
@@ -167,6 +178,18 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       overflowMethod: 'cap'
     }
   };
+
+  /**
+   * Method handles the deletion of the label from the timeline. Takes into consideration
+   * if a label category needs to be deleted when all its labels are removed.
+   * @param group
+   */
+  private removeLabelInstance(group: DataGroup) {
+    if (confirm('Are you sure you want to delete the label ' + group['content']))
+      this.labelsService.deleteLabel(group['id'].toString(), group['categoryId']).then(resolved => {
+        alert('successfully removed' + group['content']);
+      });
+  }
 
   private timelineData: TimelineData = new TimelineData();
   //To maintain categories, since groups contain label information.
@@ -304,7 +327,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       for (let item of elements) {
         item.setAttribute('style', 'display: block;');
       }
-    }, 250);
+    }, 400);
   }
 
   ngOnDestroy(): void {
@@ -419,6 +442,11 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(this.labelsService.removedLabels$().subscribe(removed => {
       if (removed) {
         this.timelineData.removeGroup(removed.id);
+        let category: LabelCategoryModel = this.labelCategories.find( item => _.some(item.labels, {_id: removed.id}));
+        category.labels = category.labels.filter(label => label["_id"] != removed.id);
+        if(category.labels.length == 0) {
+          this.labelsService.deleteLabelCategory(category.id).then(result => console.log(result));
+        }
       }
     }));
 
