@@ -35,7 +35,7 @@ export class CanvasComponent implements OnInit {
   private fill = '#044B94';
   private polygonElements;
   private project: ProjectModel;
-  private canvasActive: boolean = false;
+  canvasActive: boolean = false;
   private firstTrackable: boolean;
 
   constructor(

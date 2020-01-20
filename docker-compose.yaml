@@ -20,7 +20,7 @@ services:
     ports:
       - "27017:27017"
   backend-tier:
-    image: 'etherealyn/vat-backend:v0.3.3'
+    image: 'backend'
     build: ./srv
     networks:
       - app-tier
@@ -36,7 +36,7 @@ services:
     depends_on:
       - mongodb
   frontend-tier:
-    image: 'etherealyn/vat-frontend:v0.3.1'
+    image: 'frontend'
     build: ./web
     networks:
       - app-tier

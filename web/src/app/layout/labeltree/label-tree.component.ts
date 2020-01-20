@@ -21,7 +21,7 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
   };
 
   private project: ProjectModel;
-  private labelTreeModal: boolean;
+  labelTreeModal: boolean;
   private userRole: string;
   private subscription: Subscription;
 

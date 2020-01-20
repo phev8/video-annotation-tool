@@ -13,7 +13,7 @@ import * as moment from 'moment';
 export class EditorComponent implements OnInit, OnDestroy {
   direction = 'vertical';
   projectId: string;
-  private inExportProgress: boolean;
+  inExportProgress: boolean;
 
   constructor(private route: ActivatedRoute,
               private projectService: CurrentProjectService,
