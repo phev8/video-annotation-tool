@@ -1,24 +1,27 @@
-# Signal Annotation Tool
+# Video Annotation Tool
 
-* [Signal Annotation Tool](https://github.com/phev8/signal-annotation-tool) (this repository)
-* [Signal Annotation Tool (Client)](https://github.com/etherealyn/signal-annotation-tool-client) 
-* [Signal Annotation Tool (Server)](https://github.com/etherealyn/signal-annotation-tool-server) 
+* [Video Annotation Tool](https://github.com/phev8/video-annotation-tool.git) (this repository)
 
 ## Quickstart
 
-### Prerequisites:
+### 0. Prerequisites:
 
 * [git](https://git-scm.com/downloads) 
 * [Docker](https://docs.docker.com/install/)
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
+Additionally if the installation is occurring in a windows system, ensure that git checks out files with unix style endings by running the following:
+
+```bash
+$ git config --global core.autocrlf false
+```
+
 
 ### 1. Clone the repository
 
-This repository serves as a parent module for our client and server implementation. `git clone`, therefore, requires `--recurse-submodules` flag.  
-
+This repository serves as a parent module for our client and server implementation. 
 ```bash
-$ git clone --recurse-submodules https://github.com/phev8/signal-annotation-tool
+$ git clone -b smart-labels https://github.com/phev8/video-annotation-tool.git
 ```
 
 ### 2. Edit .env
@@ -26,28 +29,29 @@ $ git clone --recurse-submodules https://github.com/phev8/signal-annotation-tool
 Change `SAT_HOSTNAME` entry in the `.env`.
 
 ```bash
-$ cd signal-annotation-tool
+$ cd video-annotation-tool
 $ nano .env
 ```
 
 ```dotenv
-SAT_HOSTNAME=example.com
+SAT_HOSTNAME=localhost
 ```
 
 ### 3. Pull containers and bring them up (launch):
 
 ```bash
-$ cd signal-annotation-tool
-$ (sudo) docker-compose pull
-$ (sudo) docker-compose up
+$ cd video-annotation-tool
+$ (sudo) docker-compose up --build
 ```
+This process will take some time and will install the required node modules and will build a running mongodb instance, a backend tier and a front-end tier.
+
 When the process is finished, open your browser and go to `localhost:4200`.
 
-Alternatively you can build containers locally:
+## Initial Set-up
 
-```bash
-docker-compose up --build
-```
+### Project creation
+
+
 
 ## Troubleshooting
 
