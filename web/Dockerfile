@@ -3,7 +3,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run ng build -- --prod
+RUN npm run ng build --prod
 
 FROM nginx:stable-alpine
 

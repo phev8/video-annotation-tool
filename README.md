@@ -37,6 +37,8 @@ $ nano .env
 SAT_HOSTNAME=localhost
 ```
 
+In case of windows systems, you might have to set this to the ip of the running docker daemon.
+
 ### 3. Pull containers and bring them up (launch):
 
 ```bash
@@ -46,6 +48,8 @@ $ (sudo) docker-compose up --build
 This process will take some time and will install the required node modules and will build a running mongodb instance, a backend tier and a front-end tier.
 
 When the process is finished, open your browser and go to `localhost:4200`.
+
+If running on a windows instance, you might have to connect to the `<docker-host-ip>:4200`
 
 ## Initial Set-up
 
