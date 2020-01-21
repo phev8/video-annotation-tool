@@ -53,7 +53,7 @@ If running on a windows instance, you might have to connect to the `<docker-host
 
 ## Initial Set-up
 
-### Project creation
+Kindy refer to the getting-started.doc for walkthroughs on getting started and creating a project for labelling.
 
 
 
