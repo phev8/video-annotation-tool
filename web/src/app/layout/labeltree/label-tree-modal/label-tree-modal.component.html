@@ -28,7 +28,7 @@
       <label class="margin-top">Sampling Frequency</label>
       <div class="clr-control-container margin-top">
         <div class="clr-input-wrapper">
-          <input type="number" id="basic" placeholder="Enter value here" class="clr-input" [(ngModel)]="model.samplingFrequency"  [ngModelOptions]="{standalone: true}" [required]="model.isTrackingEnabled">
+          <input type="number" id="basic" required  placeholder="Enter value here" class="clr-input" [(ngModel)]="model.samplingFrequency" name="frequency">
 
           <div class="clr-select-wrapper">
           <select id="select-basic" class="clr-select" [(ngModel)]="model.samplingUnit"  [ngModelOptions]="{standalone: true}">

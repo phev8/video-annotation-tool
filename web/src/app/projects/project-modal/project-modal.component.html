@@ -8,7 +8,8 @@
     <form (ngSubmit)="onSubmit(projectForm.form)" #projectForm="ngForm" class="compact">
       <div class="form-group">
         <label for="title">Title</label>
-        <input type="text" class="form-control" id="title" required [(ngModel)]="model.title" name="title"
+        <input type="text" class="form-control" id="title"
+               [(ngModel)]="model.title" name="title"
                #name="ngModel">
         <div [hidden]="name.valid || name.pristine"
              class="alert alert-danger">
