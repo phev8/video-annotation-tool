@@ -235,6 +235,12 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }));
 
+    this.subscription.add(this.toolBoxService.getCurrentItemStatus$().subscribe(next => {
+      if(!next) {
+        this.timeline.setSelection(null);
+      }
+    }));
+
     this.observeLabels();
     this.observeSegments();
 
@@ -292,6 +298,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         this.videoService.seekTo(Number(item.start)/1000);
         this.timeline.redraw();
         this.toolBoxService.triggerCanvas(item['trackerId']+";"+this.timelineData.getGroup(item.group).content);
+        this.toolBoxService.updateItemSelectStatus(true);
       }
       else {
         this.toolBoxService.triggerToolBox(false);

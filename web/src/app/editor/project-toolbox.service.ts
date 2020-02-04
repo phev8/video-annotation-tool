@@ -14,6 +14,8 @@ export class CurrentToolService {
   private readonly selectedCanvas$: Observable<string>;
   private toolBoxColor: BehaviorSubject<string>;
   private readonly selectedColor$: Observable<string>;
+  private itemsSelected: BehaviorSubject<boolean>;
+  private readonly itemSelectStatus$: Observable<boolean>;
 
   constructor() {
     this.toolBoxEnabled = new BehaviorSubject(false);
@@ -24,6 +26,8 @@ export class CurrentToolService {
     this.selectedCanvas$ = this.canvasEnabled.asObservable();
     this.toolBoxColor = new BehaviorSubject('#044B94');
     this.selectedColor$ = this.toolBoxColor.asObservable();
+    this.itemsSelected = new BehaviorSubject(true);
+    this.itemSelectStatus$ = this.itemsSelected.asObservable();
   }
 
   triggerCanvas(trackerId: string) {
@@ -43,6 +47,10 @@ export class CurrentToolService {
     this.toolBoxColor.next(change);
   }
 
+  updateItemSelectStatus(status: boolean) {
+    this.itemsSelected.next(status);
+  }
+
   getCurrentColor$():  Observable<string> {
     return this.selectedColor$;
   }
@@ -57,5 +65,9 @@ export class CurrentToolService {
 
   getCurrentCanvas$():  Observable<string> {
     return this.selectedCanvas$;
+  }
+
+  getCurrentItemStatus$(): Observable<boolean> {
+    return this.itemSelectStatus$;
   }
 }

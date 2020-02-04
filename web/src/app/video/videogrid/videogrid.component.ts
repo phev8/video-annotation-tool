@@ -8,6 +8,8 @@ import { VideoService } from '../video.service';
 import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 import { Subscription } from 'rxjs';
 import { VideoComponent } from '../video/video.component';
+import {CurrentToolService} from "../../editor/project-toolbox.service";
+import {CanvasService} from "../../canvas/canvas.service";
 
 @Component({
   selector: 'app-videogrid',
@@ -37,7 +39,10 @@ export class VideogridComponent implements OnInit, OnDestroy {
 
   constructor(private videoService: VideoService,
               private editorService: CurrentProjectService,
-              private hotkeysService: HotkeysService, private elRef: ElementRef) {
+              private hotkeysService: HotkeysService,
+              private elRef: ElementRef,
+              private toolBoxService: CurrentToolService,
+              private canvasService: CanvasService) {
     this.registerHotkeys();
   }
 
@@ -123,6 +128,9 @@ export class VideogridComponent implements OnInit, OnDestroy {
     // if (this.guard % 2 === 0) {
     //   /** This funny logic is due to a bug on Webkit-based browsers, leading to change firing twice */
     //   this.guard += 1;
+    this.toolBoxService.triggerToolBox(false);
+    this.toolBoxService.triggerCanvas(null);
+    this.toolBoxService.updateItemSelectStatus(false);
     this.apis.forEach((api: VgAPI) => {
       api.seekTime(value);
     });
@@ -132,6 +140,9 @@ export class VideogridComponent implements OnInit, OnDestroy {
   }
 
   onPlayPause() {
+    this.toolBoxService.triggerToolBox(false);
+    this.toolBoxService.triggerCanvas(null);
+    this.toolBoxService.updateItemSelectStatus(false);
     if (!this.isPlaying) {
       this.onPlay();
     } else {
