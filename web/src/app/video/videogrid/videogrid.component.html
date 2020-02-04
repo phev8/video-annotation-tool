@@ -29,7 +29,7 @@
 
     <div class="currentTime"><span>{{ (getCurrentTime() * 1000) | vgUtc:'hh:mm:ss' }}</span></div>
     <div style='width: 80%; height: 100%; text-align: center'>
-      <input id="timeSelector" type="range" min="0" max="{{getDuration()}}" class="slider" [(ngModel)]="currentTimes[0]" (ngModelChange)="seekTime($event)" value="0">
+      <input id="timeSelector" type="range" min="0" max="{{getDuration()}}" class="slider" [(ngModel)]="currentTimes[0]" (ngModelChange)="resetCanvas();seekTime($event);" value="0">
       <!--<output for="timeSelector">{{currentTime | number:'1.0-0'}}%</output>-->
     </div>
     <div class="currentTime" style="margin-right: 8px"><span>{{ ((getDuration() - getCurrentTime()) * 1000) | vgUtc:'hh:mm:ss' }}</span></div>

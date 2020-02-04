@@ -128,9 +128,6 @@ export class VideogridComponent implements OnInit, OnDestroy {
     // if (this.guard % 2 === 0) {
     //   /** This funny logic is due to a bug on Webkit-based browsers, leading to change firing twice */
     //   this.guard += 1;
-    this.toolBoxService.triggerToolBox(false);
-    this.toolBoxService.triggerCanvas(null);
-    this.toolBoxService.updateItemSelectStatus(false);
     this.apis.forEach((api: VgAPI) => {
       api.seekTime(value);
     });
@@ -140,6 +137,7 @@ export class VideogridComponent implements OnInit, OnDestroy {
   }
 
   onPlayPause() {
+    console.log("Play pause?");
     this.toolBoxService.triggerToolBox(false);
     this.toolBoxService.triggerCanvas(null);
     this.toolBoxService.updateItemSelectStatus(false);
@@ -229,21 +227,25 @@ export class VideogridComponent implements OnInit, OnDestroy {
     }, undefined, `Follow the mouse cursor to listen to the audio`);
 
     const back = new Hotkey('left', (): boolean => {
+      this.resetCanvas();
       this.seekTime(this.getCurrentTime() - 5);
       return false;
     }, undefined, '5 seconds back');
 
     const windback = new Hotkey('shift+left', (): boolean => {
+      this.resetCanvas();
       this.seekTime(this.getCurrentTime() - 15);
       return false;
     }, undefined, '15 seconds back');
 
     const forward = new Hotkey('right', (): boolean => {
+      this.resetCanvas();
       this.seekTime(this.getCurrentTime() + 5);
       return false;
     }, undefined, '5 seconds forward');
 
     const windforward = new Hotkey('shift+right', (): boolean => {
+      this.resetCanvas();
       this.seekTime(this.getCurrentTime() + 15);
       return false;
     }, undefined, '15 seconds forward');
@@ -254,5 +256,11 @@ export class VideogridComponent implements OnInit, OnDestroy {
 
   onResize($event) {
     this.ngOnInit();
+  }
+
+  resetCanvas() {
+    this.toolBoxService.triggerToolBox(false);
+    this.toolBoxService.triggerCanvas(null);
+    this.toolBoxService.updateItemSelectStatus(false);
   }
 }
