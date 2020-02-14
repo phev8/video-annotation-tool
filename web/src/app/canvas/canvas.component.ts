@@ -74,6 +74,9 @@ export class CanvasComponent implements OnInit {
       } else {
         this.cursor = 'crosshair';
         if (next == ToolkitModel.MOVE) {
+          if(this.polygonElements) {
+            this.makePolygonPointsDraggable();
+          }
           this.cursor = 'grab';
         }
         this.selectedTool = next;
@@ -420,10 +423,15 @@ export class CanvasComponent implements OnInit {
       this.cursor = "grabbing";
       this.svgElement = event.target;
       this.svgElement.setAttribute('style', "{cursor: grabbing}");
-      if(this.svgElement.tagName == "polyline") {
+      if(this.svgElement.tagName == "polyline" || this.svgElement.tagName == "polygon") {
         let point = this.generatePointOnClientElement(event);
         this.svgElement.setAttribute('origin-x', point.x);
         this.svgElement.setAttribute('origin-y', point.y);
+      }
+      if(this.svgElement.tagName == "circle" && this.polygonElements) {
+        let point = this.generatePointOnClientElement(event);
+        this.svgElement.setAttribute('origin-x', this.svgElement.getAttribute('cx'));
+        this.svgElement.setAttribute('origin-y', this.svgElement.getAttribute('cy'));
       }
     }
   }
@@ -443,6 +451,9 @@ export class CanvasComponent implements OnInit {
           this.svgElement.setAttribute('cx', point.x);
           this.svgElement.setAttribute('cy', point.y);
           break;
+        case "polygon":
+          this.movePolygon(point);
+          break;
 
         default: console.log(this.svgElement.tagName);
       }
@@ -452,9 +463,14 @@ export class CanvasComponent implements OnInit {
   private endSelection(event: any) {
     if (this.svgElement) {
       this.moveSelectedElement(event);
+      if(this.polygonElements && this.svgElement.tagName == 'circle') {
+        let point = this.generatePointOnClientElement(event);
+        this.movePolygonCircle(point);
+      }
       if(this.svgElement.tagName != "polyline")
         this.svgElement.removeAttribute('style');
       this.svgElement = null;
+
     }
     this.cursor = "grab";
   }
@@ -469,6 +485,34 @@ export class CanvasComponent implements OnInit {
       }
   }
 
+  private movePolygon(point: any) {
+    if(this.svgElement) {
+      let xTranslate = point.x - this.svgElement.getAttribute('origin-x');
+      let yTranslate = point.y - this.svgElement.getAttribute('origin-y');
+      _.each(this.svgElement.points, function (value, key) { value.x += xTranslate; value.y += yTranslate; });
+      _.each(this.completedElements, function (value, key) {
+        if(value.tagName == 'circle') {
+          value.setAttribute('cx', parseFloat(value.getAttribute('cx')) + xTranslate);
+          value.setAttribute('cy', parseFloat(value.getAttribute('cy')) + yTranslate);
+        }
+      });
+      this.svgElement.setAttribute('origin-x', point.x);
+      this.svgElement.setAttribute('origin-y', point.y);
+    }
+  }
+
+  private movePolygonCircle(point: any) {
+    let xOriginal = this.svgElement.getAttribute('origin-x');
+    let yOriginal = this.svgElement.getAttribute('origin-y');
+    _.each(this.polygonElements.points, function (value, key) {
+      if(value.x == xOriginal && value.y == yOriginal ) {
+        console.log("First one in");
+        value.x = point.x;
+        value.y = point.y;
+      }
+    });
+
+  }
   // ============================================== UNDO AND DELETION RELATED METHODS ======================================================================================
   /**
    * Methods to handle undo, special condition to undo pins since each pin or point requires
@@ -599,5 +643,10 @@ export class CanvasComponent implements OnInit {
         }
       }
     }
+  }
+
+  private makePolygonPointsDraggable() {
+    for(let circle of this.elementRef.nativeElement.getElementsByTagName('circle'))
+      circle.setAttribute('cursor', 'move');
   }
 }

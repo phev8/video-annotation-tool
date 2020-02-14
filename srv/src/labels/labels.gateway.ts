@@ -209,7 +209,7 @@ export class LabelsGateway  {
         mergeAll(),
         map((data: any) => {
           if(data) {
-            this.markerService.addMarkerDataToTracker(data['ops'][0].trackerId, data["ops"][0]._id.toString()).then(r => {console.log("Result : " + r)});
+            this.markerService.addMarkerDataToTracker(data['ops'][0].trackerId, data["ops"][0]._id.toString()).then(r => {});
             return ({ event: 'addMarker',  data: data["ops"]});
           }
         }),
