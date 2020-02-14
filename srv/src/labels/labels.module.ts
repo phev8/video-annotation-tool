@@ -1,4 +1,4 @@
-import { Module, MulterModule } from '@nestjs/common';
+import {HttpModule, HttpService, Module, MulterModule} from '@nestjs/common';
 import { LabelsGateway } from './labels.gateway';
 import { LabelsService } from './labels.service';
 import { Label } from '../entities/label.entity';
@@ -12,6 +12,7 @@ import { Tracker } from '../entities/tracker.entity';
 import { TrackerController } from './trackers/tracker.controller';
 import { PassportModule } from '@nestjs/passport';
 import { config } from '../../config';
+import {ObjectTrackingService} from "./trackers/object.tracking.service";
 
 @Module({
   imports: [
@@ -20,10 +21,11 @@ import { config } from '../../config';
     MulterModule.register({
       dest: config.multerDest,
     }),
+    HttpModule
   ],
-  providers: [LabelsGateway, LabelsService, SegmentService, MarkerService],
+  providers: [LabelsGateway, LabelsService, SegmentService, MarkerService, ObjectTrackingService],
   controllers: [TrackerController],
-  exports: [LabelsService, SegmentService, MarkerService],
+  exports: [LabelsService, SegmentService, MarkerService, ObjectTrackingService],
 })
 export class LabelsModule {
 }

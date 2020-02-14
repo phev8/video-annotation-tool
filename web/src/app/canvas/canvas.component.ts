@@ -179,7 +179,7 @@ export class CanvasComponent implements OnInit {
       this.completedElements.forEach(item => {
         this.model.trackables.push(JSON.stringify(item.outerHTML));
       });
-      this.canvasService.updateTrackerModel(this.model);
+      this.canvasService.updateTrackerModel(this.model, this.project.videoDimensions, this.project.fileTree.children[0].filename);
     } else {
       alert('No tracking information has been added for the current marker');
     }

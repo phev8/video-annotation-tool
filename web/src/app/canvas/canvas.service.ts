@@ -48,7 +48,9 @@ export class CanvasService {
     };
   }
 
-  updateTrackerModel(model: TrackerModel) {
+  updateTrackerModel(model: TrackerModel, videoDimensions: string, filename: string) {
+    model['videoDimensions'] = videoDimensions;
+    model['filename'] = filename;
     const url = `${this.trackerUrl}/update/${model.id}`;
     return this.http.put(url, model).subscribe(val => {
         alert("Tracking saved successfully");

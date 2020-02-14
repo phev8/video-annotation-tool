@@ -28,6 +28,9 @@ export class Tracker {
   labelName: string;
 
   @Column()
+  markerId: string;
+
+  @Column()
   selectedColor: string;
 
   constructor(labelId: string) {

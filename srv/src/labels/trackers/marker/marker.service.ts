@@ -9,6 +9,7 @@ import { RectangleTracker } from '../../../interfaces/rectangle.tracker';
 import { CircleTracker } from '../../../interfaces/circle.tracker';
 import { PolyTracker } from '../../../interfaces/poly.tracker';
 import { Point } from '../../../interfaces/point';
+import {parseString} from 'xml2js'
 
 
 @Injectable()
@@ -29,6 +30,10 @@ export class MarkerService {
 
   async getTracker(id: string): Promise<Tracker> {
     return await this.trackerRepository.findOne(id);
+  }
+
+  async getMarker(id: string): Promise<Marker> {
+    return await this.markerRepository.findOne(id);
   }
 
   async addMarker(marker: { completed: boolean; start: number; labelId: any; authorId: string; authorClass: string, segmentId: any }) {
@@ -73,8 +78,10 @@ export class MarkerService {
     let trackers: Tracker[] = await this.trackerRepository.find({where: { labelId: labelId }});
     trackers.forEach(item => {
       this.getMarkerByTracker(item.id.toHexString()).then( marker => {
-        marker.completed = true;
-        this.updateMarker(marker.id.toString(), marker);
+        if(marker) {
+          marker.completed = true;
+          this.updateMarker(marker.id.toString(), marker);
+        }
       });
       if(item.firstUpdate) {
         item.trackerType = tracker.trackerType;
@@ -116,7 +123,7 @@ export class MarkerService {
     return trackers;
   }
 
-  private static getTrackableResult(trackables: string[], trackerType: string) {
+  public static getTrackableResult(trackables: string[], trackerType: string) {
     if(trackerType)
       switch (trackerType) {
         case "rect": return this.getRectangleTracker(trackables);
@@ -146,5 +153,59 @@ export class MarkerService {
       points.push({x: currentPoint[0], y: currentPoint[1]});
     }
     return {start: points[0], end: trackerType == "polygon"? points[0]: points[points.length-1], points: points};
+  }
+
+  async addMarkerDataToTracker(trackerId: string, markerId: string) {
+    this.getTracker(trackerId).then(tracker => {
+      tracker.markerId = markerId;
+      this.updateTracker(trackerId, tracker).then(result => {console.log(result)});
+    });
+  }
+
+  async findTimesForTracking(markerId: string) {
+    const marker: Marker = await this.getMarker(markerId);
+    const markers: Marker[] = await this.markerRepository.find({ where: { segmentId: marker.segmentId } });
+    let searchedMarkers: Marker[] = [];
+    let requiredTimes: number[] = [];
+    markers.forEach( mark => {
+      if(mark.start != marker.start) {
+        requiredTimes.push(mark.start);
+        searchedMarkers.push(mark);
+      }
+    });
+    return { 'initialTrackerTime': marker.start, 'requiredTimes': requiredTimes, 'markers': searchedMarkers};
+  }
+
+  async updateTrackerPrediction(tracker: Tracker, data: any, markers: Marker[]) {
+    if(tracker.trackerType == 'rect') {
+      let trackable  = tracker.trackables;
+      for (const marker of markers) {
+        if(this.isPredictionSuccessful(data[''+ marker.start])) {
+          const track: Tracker = await this.getTracker(marker.trackerId);
+          track.trackerType = tracker.trackerType;
+          //TODO: Restructure the response from video analyzer to give responses by timeslot at the key
+          trackable = MarkerService.updatePredictedTracker(trackable, data[''+ marker.start]);
+          track.trackables = trackable;
+          this.updateTracker(marker.trackerId.toString(), track);
+        }
+      }
+    }
+    return 'completed'
+  }
+
+  private static updatePredictedTracker(trackable: string[], predictedData: any) {
+    console.log(predictedData);
+    const tuple = predictedData['trackerDim'].toString().replace('(','').replace(')','').split(',');
+    trackable[0] = trackable[0].split(' x=\\"')[0] + ' x=\\"' + tuple[0] + '\\'+ trackable[0].split(' x=\\"')[1].substring(trackable[0].split(' x=\\"')[1].indexOf('\\') + 1);
+    trackable[0] = trackable[0].split(' y=\\"')[0] + ' y=\\"' + tuple[1] + '\\' + trackable[0].split(' y=\\"')[1].substring(trackable[0].split(' y=\\"')[1].indexOf('\\') + 1);
+    trackable[0] = trackable[0].split(' width=\\"')[0] + ' width=\\"' + tuple[2] + '\\'+ trackable[0].split(' width=\\"')[1].substring(trackable[0].split(' width=\\"')[1].indexOf('\\') + 1);
+    trackable[0] = trackable[0].split(' height=\\"')[0] + ' height=\\"' + tuple[3] + '\\'+ trackable[0].split(' height=\\"')[1].substring(trackable[0].split(' height=\\"')[1].indexOf('\\') + 1);
+    return trackable;
+  }
+
+  private isPredictionSuccessful(markerPredictionInfo: any) {
+    if(markerPredictionInfo && markerPredictionInfo['status'])
+      return markerPredictionInfo['status'] == '200';
+    return false;
   }
 }
