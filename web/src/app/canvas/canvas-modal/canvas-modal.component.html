@@ -1,0 +1,20 @@
+<clr-modal [(clrModalOpen)]="modalOpen">
+  <h3 class="modal-title">{{title}}</h3>
+
+  <div class="modal-body">
+      <div>
+        <label for="title">{{description}}</label>
+      </div>
+
+      <div class="margin-left">
+        <span *ngIf="inProgress" class="spinner">
+            Loading...
+        </span>
+      </div>
+  </div>
+
+  <div class="modal-footer">
+    <!--<button type="button" class="btn btn-outline" (click)="modalOpen = false">Cancel</button>-->
+    <button (click)="closeLoading()" type="submit" class="btn btn-success"  [disabled]="inProgress">Proceed</button>
+  </div>
+</clr-modal>

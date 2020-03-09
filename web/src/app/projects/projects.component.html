@@ -1,4 +1,4 @@
-<app-project-form xmlns="http://www.w3.org/1999/html"></app-project-form>
+<app-project-form [freshStart]="projects.length == 0" xmlns="http://www.w3.org/1999/html"></app-project-form>
 
 <!--<div *ngIf="isLoading">-->
 <!--<span class="spinner spinner-md">Loading...</span>-->
@@ -31,10 +31,10 @@
     </clr-dg-footer>
   </clr-datagrid>
 
-  <div *ngIf="!isDatagridView">
+  <div *ngIf="!isDatagridView" class="padding-1-rem">
     <div class="clr-row">
       <div class="clr-col max-width-35 min-width-25" *ngFor="let project of projects">
-        <div class="card">
+        <div class="card card2">
           <div class="card-header">
             <span>{{project.title}}</span><span><button (click)="onDelete(project.id)" class="btn btn-link right"><clr-icon shape="trash"></clr-icon></button></span>
           </div>

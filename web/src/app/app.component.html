@@ -1,3 +1,19 @@
 <app-layout>
+  <clr-alerts>
+    <clr-alert *ngFor="let alert of alerts"
+               [clrAlertType]="alert.type"
+               [clrAlertAppLevel]="true" [clrAlertClosed]="close">
+      <div class="alert-item">
+        <div class="alert-icon-wrapper">
+          <clr-icon class="alert-icon" [attr.shape]="alert.shape"></clr-icon>
+        </div>
+        <span class="alert-text">{{alert.text}}</span>
+        <div class="alert-actions"
+             *ngIf="alert.action">
+          <button class="btn alert-action">{{alert.action}}</button>
+        </div>
+      </div>
+    </clr-alert>
+  </clr-alerts>
   <router-outlet></router-outlet>
 </app-layout>

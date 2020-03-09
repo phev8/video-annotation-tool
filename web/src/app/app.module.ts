@@ -14,6 +14,8 @@ import { ErrorInterceptor } from './auth/error.interceptor';
 import { JwtInterceptor } from './auth/jwt.interceptor';
 import { HotkeyModule } from 'angular2-hotkeys';
 import { CanvasModule } from './canvas/canvas.module';
+import {AlertService} from "./alert.service";
+
 
 @NgModule({
   declarations: [
@@ -34,6 +36,7 @@ import { CanvasModule } from './canvas/canvas.module';
   providers: [
     {provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true},
     {provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true},
+    AlertService
   ],
   bootstrap: [ AppComponent ]
 })

@@ -13,7 +13,7 @@
     <clr-tree-node *ngFor="let labelCategory of annotationsFolder.files; let i = index">
 
       <div class="clr-treenode-link">
-        <input type="text" [(ngModel)]="labelCategory.name" (change)="onLabelCategoryNameChange(labelCategory)"/>
+        <input style="width: inherit" type="text" [(ngModel)]="labelCategory.name" (change)="onLabelCategoryNameChange(labelCategory)"/>
       </div>
       <div>
         <button class="btn btn-link btn-icon" (click)="onLabelCategoryDelete(labelCategory.id)">

@@ -7,6 +7,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { LabelCategory } from './src/entities/labelcategory.entity';
 import { Marker } from './src/entities/markers.entity';
 import { Tracker } from './src/entities/tracker.entity';
+import {Pollingstatus} from "./src/entities/pollingstatus.entity";
 
 const env = process.env;
 
@@ -30,7 +31,7 @@ const ormConfig: TypeOrmModuleOptions | MongoConnectionOptions = {
   password: databasePassword,
   synchronize: true,
   logging: true,
-  entities: [ Project, User, Label, Segment, LabelCategory, Marker, Tracker ],
+  entities: [ Project, User, Label, Segment, LabelCategory, Marker, Tracker, Pollingstatus ],
   keepConnectionAlive: true,
 };
 

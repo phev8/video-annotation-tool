@@ -30,6 +30,7 @@ export class VideogridComponent implements OnInit, OnDestroy {
   private playbackValues: string[] = ['0.25', '0.5', '0.75', '1.0', '1.25', '1.50', '1.75', '2.0', '3.0'];
   private subscription: Subscription;
   private mainIndex = 0;
+  private dimensions: string = '';
   private singleMedia: boolean;
   loading = true;
 
@@ -59,7 +60,7 @@ export class VideogridComponent implements OnInit, OnDestroy {
             videos.push({source: child.filename});
           }
         }));
-
+        this.dimensions = project.videoDimensions;
         this._videoSources = videos;
         this.durations = new Array<number>(videos.length);
         this.currentTimes = new Array<number>(videos.length);
@@ -92,10 +93,14 @@ export class VideogridComponent implements OnInit, OnDestroy {
       const height = x.target.videoHeight;
 
       if (height > width) {
-        this.ratio = '1:2';
+        if(this.dimensions && this.dimensions != '') this.ratio = '' + this.dimensions.split(' ')[0];
+        else this.ratio = '1:2';
       }
 
-      if(this.singleMedia) this.ratio = "" + (this.elRef.nativeElement.parentElement.clientHeight - 50);
+      if(this.singleMedia) {
+        if(this.dimensions && this.dimensions != '') this.ratio = '' + this.dimensions.split(' ')[0];
+        else this.ratio = "" + (this.elRef.nativeElement.parentElement.clientHeight - 50);
+      }
     }));
   }
 

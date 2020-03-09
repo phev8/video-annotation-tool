@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {Component, ElementRef, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { Router, RouterEvent } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CurrentToolService } from '../../editor/project-toolbox.service';
@@ -9,6 +9,8 @@ import { CurrentToolService } from '../../editor/project-toolbox.service';
   styleUrls: [ './layout.component.scss' ]
 })
 export class LayoutComponent implements OnInit, OnDestroy {
+
+  @ViewChild('collapsible_nav') collapsibleNav: ElementRef;
 
   isNavCollapsed = false;
   verticalNavVisible = false;
@@ -39,7 +41,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       }
     );
     this.toolStatus = new Array(10).fill(false);
-    this.iconStyle = new Array(10).fill('fit-content-width pointer');
+    this.iconStyle = new Array(10).fill('fit-content-width pointer hover-effect');
 
     this.navSubscription.add(this.toolService.getCurrentColor$().subscribe(next => {
       if(next) {
@@ -48,12 +50,16 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }));
   }
 
+  ngAfterViewInit() {
+    //this.updateCollapsed(null);
+  }
+
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
 
   getWidth() {
-    return this.isNavCollapsed ? { width: 'min-content'} : { width: this.verticalNavWidth + 'rem' };
+    return { width: 'max-content'};
   }
 
   activateTool(index: number) {
@@ -70,5 +76,15 @@ export class LayoutComponent implements OnInit, OnDestroy {
   changeColor(change) {
     this.toolService.updateSelectedColor(change);
     console.log(change);
+  }
+
+  updateCollapsed($event: any) {
+    if(this.collapsibleNav.nativeElement.getElementsByTagName('clr-vertical-nav')[0]) {
+      //this.collapsibleNav.nativeElement.getElementsByTagName('clr-vertical-nav')[0].setAttribute('style', "width: max-content");
+      const element = document.querySelector('[aria-label="Toggle navigation group"]');
+      if(element) {
+        element.setAttribute('style', 'display: none');
+      }
+    }
   }
 }

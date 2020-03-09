@@ -309,8 +309,8 @@ export class LabelsService {
   }
 
 
-  newTrackingInstance(markers: {completed: boolean; start: number; labelId: any, authorId: string, authorClass: string, segmentId: any}[]) {
-    this.socket.emit('addMarker', {markers});
+  newTrackingInstance(markers: { completed: boolean; start: number; labelId: any; authorId: string; authorClass: string; segmentId: any }[], firstMarkerTime: number) {
+    this.socket.emit('addMarker', {markers, firstMarkerTime});
   }
 
   newMarkers$(): Observable<any[]> {

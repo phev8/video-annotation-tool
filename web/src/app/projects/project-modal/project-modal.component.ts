@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import _ from "lodash";
@@ -16,6 +16,10 @@ import { MemberModel } from '../../models/member.model';
   styleUrls: [ './project-modal.component.scss' ]
 })
 export class ProjectModalComponent implements OnInit, OnDestroy {
+
+  @Input()
+  freshStart: boolean;
+
   model;
   supervisorModel: MemberModel;
   contributorModel: MemberModel;

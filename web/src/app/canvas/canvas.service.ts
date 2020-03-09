@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import {BehaviorSubject, from, Observable, of, timer} from 'rxjs';
 import { TrackerModel } from '../models/tracker.model';
-import { catchError } from 'rxjs/operators';
+import {catchError, concatMap, filter, map, take} from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { HttpClient } from '@angular/common/http';
+import {AlertService} from "../alert.service";
+import { merge } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +19,8 @@ export class CanvasService {
 
   constructor(
     private authService: AuthService,
-    private http: HttpClient) {
+    private http: HttpClient,
+    private alertService: AlertService) {
     this.updatedTracker = new BehaviorSubject("");
     this.updatedTrackerLabelId$ = this.updatedTracker.asObservable();
   }
@@ -52,20 +55,27 @@ export class CanvasService {
     model['videoDimensions'] = videoDimensions;
     model['filename'] = filename;
     const url = `${this.trackerUrl}/update/${model.id}`;
-    return this.http.put(url, model).subscribe(val => {
-        alert("Tracking saved successfully");
-        this.updatedTracker.next(model.labelId);
-        return val;
-      },
-      response => {
-        console.log("PUT call in error", response);
-      },
-      () => {
-        console.log("The PUT observable is now completed.");
-      });
+    return this.http.put(url, model);
   }
 
   getUpdatedTrackerLabelId$(): Observable<string> {
     return this.updatedTrackerLabelId$;
+  }
+
+  startPolling(pollingId: string) {
+    const url = `${this.trackerUrl}/polling/${pollingId}`;
+    /*
+    const getRequest = this.http.get(url);
+    return this.http.get()*/
+    return timer(0, 1000)
+      .pipe(concatMap(() => from(this.http.get(url))
+        .pipe(map(response => response)))
+      )
+      .pipe(filter(backendData => (backendData["completed"] === true)))
+      .pipe(take(1));
+  }
+
+  updateTracker(labelId: string) {
+    this.updatedTracker.next(labelId);
   }
 }

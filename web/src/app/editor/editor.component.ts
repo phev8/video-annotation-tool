@@ -4,6 +4,7 @@ import { CurrentProjectService } from './current-project.service';
 import { LabelsService } from '../labels/labels.service';
 import * as FileSaver from 'file-saver';
 import * as moment from 'moment';
+import {AlertService} from "../alert.service";
 
 @Component({
   selector: 'app-editor',
@@ -17,7 +18,8 @@ export class EditorComponent implements OnInit, OnDestroy {
 
   constructor(private route: ActivatedRoute,
               private projectService: CurrentProjectService,
-              private labelService: LabelsService) {
+              private labelService: LabelsService,
+              private alertService: AlertService) {
   }
 
   ngOnInit() {
@@ -43,7 +45,12 @@ export class EditorComponent implements OnInit, OnDestroy {
         },
         reason => {
           this.inExportProgress = false;
-          alert('Failed to export: '+ reason);
+          this.alertService.createNewAlert({
+            type: 'danger',
+            text: 'Failed to export: '+ reason,
+            action: ''
+          });
+          //alert('Failed to export: '+ reason);
           console.error('onExport', reason);
         }
       );

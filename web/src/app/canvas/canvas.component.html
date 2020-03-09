@@ -1,4 +1,4 @@
 <svg #svg_canvas class="drawing-container" [style.cursor]="cursor" *ngIf="canvasActive">
-
-
+  
 </svg>
+<app-canvas-form [modalOpen]="modalOpen" [description]="description" [pollingId]="pollingId" [title]="title" (closeModal)="modalClosed($event)"></app-canvas-form>

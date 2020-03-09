@@ -1,11 +1,12 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { CanvasService } from './canvas.service';
-import { Subscription } from 'rxjs';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import { CurrentToolService } from '../editor/project-toolbox.service';
 import _ from 'lodash';
 import { CurrentProjectService } from '../editor/current-project.service';
 import { ProjectModel } from '../models/project.model';
 import { TrackerModel } from '../models/tracker.model';
+import {AlertService} from "../alert.service";
 const ToolkitModel = { PENCIL: 0, MOVE: 1, RECTANGLE: 2, UNDO: 3, CIRCLE: 4, PIN: 5, SAVE: 6,};
 
 /**
@@ -24,6 +25,10 @@ export class CanvasComponent implements OnInit {
   private cursor;
   private completedElements;
   private model: TrackerModel;
+  private modalOpen: boolean;
+  private description: string;
+  private title: string;
+  private pollingId: string;
 
   private toolSubscription: Subscription;
   private selectedTool: number;
@@ -42,7 +47,9 @@ export class CanvasComponent implements OnInit {
     private canvasService: CanvasService,
     private elementRef: ElementRef,
     private toolService: CurrentToolService,
-    private currentProjectService: CurrentProjectService) {
+    private currentProjectService: CurrentProjectService,
+    private alertService: AlertService) {
+    this.closeCanvasModal();
   }
 
   /**
@@ -70,7 +77,13 @@ export class CanvasComponent implements OnInit {
     this.toolSubscription = this.toolService.getCurrentTool$().subscribe(next => {
       if (next == ToolkitModel.SAVE) {
         if(this.completedElements.length > 0)
-        this.saveTrackingInformation();
+          this.saveTrackingInformation();
+        else
+          this.alertService.createNewAlert({
+            type: 'warning',
+            text: 'No tracking information has been added for the current marker',
+            action: ''
+          });
       } else {
         this.cursor = 'crosshair';
         if (next == ToolkitModel.MOVE) {
@@ -182,9 +195,26 @@ export class CanvasComponent implements OnInit {
       this.completedElements.forEach(item => {
         this.model.trackables.push(JSON.stringify(item.outerHTML));
       });
-      this.canvasService.updateTrackerModel(this.model, this.project.videoDimensions, this.project.fileTree.children[0].filename);
+      this.canvasService.updateTrackerModel(this.model, this.project.videoDimensions, this.project.fileTree.children[0].filename).subscribe(val => {
+          this.alertService.createNewAlert({
+            type: 'success',
+            text: 'Tracking saved successfully',
+            action: ''
+          });
+          this.canvasService.updateTracker(this.model.labelId);
+          if(val && val != '') {
+            this.openLoadingModal(val.toString());
+          }
+        },
+        error => {console.log("PUT call in error", error);},
+        () => {console.log("The PUT observable is now completed.");});
     } else {
-      alert('No tracking information has been added for the current marker');
+      this.alertService.createNewAlert({
+        type: 'warning',
+        text: 'No tracking information has been added for the current marker',
+        action: ''
+      });
+      //alert('No tracking information has been added for the current marker');
     }
   }
 
@@ -290,7 +320,7 @@ export class CanvasComponent implements OnInit {
       this.createNewSvgElement('rect', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'x': point.x, 'y': point.y, width: '10', height: 10});
       this.continueRectangleDraw(event);
     } else {
-      CanvasComponent.promptDuplicationError('');
+      this.promptDuplicationError('');
     }
   }
 
@@ -331,7 +361,7 @@ export class CanvasComponent implements OnInit {
       this.createNewSvgElement('circle', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000', 'cx': point.x, 'cy': point.y, 'r': 0});
       this.continueCircleDraw(event);
     } else {
-      CanvasComponent.promptDuplicationError('');
+      this.promptDuplicationError('');
     }
   }
 
@@ -363,7 +393,7 @@ export class CanvasComponent implements OnInit {
       this.createNewSvgElement('polyline', {'fill':this.fill, 'fill-opacity': '0.3', 'shape-rendering': 'geometricPrecision', 'stroke-linejoin': 'round', 'stroke': '#000000'});
       this.continuePenDraw(event);
     } else {
-      CanvasComponent.promptDuplicationError('');
+      this.promptDuplicationError('');
     }
   }
 
@@ -397,7 +427,7 @@ export class CanvasComponent implements OnInit {
       this.polygonElements.points.appendItem(point);
       this.addVisualPinElement(point);
     } else {
-      CanvasComponent.promptDuplicationError('');
+      this.promptDuplicationError('');
     }
   }
 
@@ -627,8 +657,12 @@ export class CanvasComponent implements OnInit {
     return document.createElementNS("http://www.w3.org/2000/svg", tagName);
   }
 
-  private static promptDuplicationError(errorMessage: string) {
-    alert('A trackable already exists for this tracker, undo existing tracker to create a new one.' + errorMessage);
+  private promptDuplicationError(errorMessage: string) {
+    this.alertService.createNewAlert({
+      type: 'danger',
+      text: 'A trackable already exists for this tracker, undo existing tracker to create a new one.' + errorMessage,
+      action: ''
+    });
   }
 
   /*
@@ -648,5 +682,41 @@ export class CanvasComponent implements OnInit {
   private makePolygonPointsDraggable() {
     for(let circle of this.elementRef.nativeElement.getElementsByTagName('circle'))
       circle.setAttribute('cursor', 'move');
+  }
+
+
+  // ============================================== CANVAS MODAL METHODS ======================================================================================
+
+  /**
+   * Opens the modal that display loading the predictions for the tracking.
+   *
+   * @param val : string Consists of the polling Id that is checked to see if predictions are completed
+   */
+  private openLoadingModal(val: string) {
+    this.pollingId = val;
+    this.title = 'Tracking Object';
+    this.description = 'Predicting location of tracked object across the segment';
+    this.modalOpen = true;
+  }
+
+  /**
+   * Listener for the closure of the modal
+   *
+   * @param closed : boolean
+   */
+  modalClosed(closed: boolean) {
+    if(closed) {
+      this.closeCanvasModal();
+    }
+  }
+
+  /**
+   * Method to clear parameters involved in opening a modal
+   */
+  private closeCanvasModal() {
+    this.modalOpen = false;
+    this.description = '';
+    this.title = '';
+    this.pollingId = '';
   }
 }

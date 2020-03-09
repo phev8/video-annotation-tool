@@ -21,11 +21,12 @@ import { ProjectModel } from '../../models/project.model';
 import { Time } from './utilities/time';
 import { TimelineData } from './timeline.data';
 import _ from "lodash";
-import { pairwise, startWith } from 'rxjs/operators';
+import {first, pairwise, startWith} from 'rxjs/operators';
 import { LabelCategoryModel } from '../../models/labelcategory.model';
 import { CurrentToolService } from '../project-toolbox.service';
 import * as hyperid from 'hyperid';
 import { CanvasService } from '../../canvas/canvas.service';
+import {AlertService} from "../../alert.service";
 
 @Component({
   selector: 'app-timeline',
@@ -42,6 +43,16 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   private timeline: Timeline;
+
+  constructor(private projectService: CurrentProjectService,
+              private labelsService: LabelsService,
+              private videoService: VideoService,
+              private hotkeyService: HotkeysService,
+              private changeDetectorRef: ChangeDetectorRef,
+              private toolBoxService: CurrentToolService,
+              private canvasService: CanvasService,
+              private alertService: AlertService) {
+  }
 
   // noinspection SpellCheckingInspection
   // noinspection JSUnusedGlobalSymbols
@@ -187,7 +198,11 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   private removeLabelInstance(group: DataGroup) {
     if (confirm('Are you sure you want to delete the label ' + group['content']))
       this.labelsService.deleteLabel(group['id'].toString(), group['categoryId']).then(resolved => {
-        alert('successfully removed' + group['content']);
+        this.alertService.createNewAlert({
+          type: 'success',
+          text: 'Successfully removed' + group['content'],
+          action: ''
+        });
       });
   }
 
@@ -201,14 +216,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   private checkboxChange = new EventEmitter<{ id: IdType, checked: boolean }>();
   private userRole: string;
 
-  constructor(private projectService: CurrentProjectService,
-              private labelsService: LabelsService,
-              private videoService: VideoService,
-              private hotkeyService: HotkeysService,
-              private changeDetectorRef: ChangeDetectorRef,
-              private toolBoxService: CurrentToolService,
-              private canvasService: CanvasService) {
-  }
+
 
   ngOnInit(): void {
     this.subscription = this.projectService.getCurrentProject$()
@@ -521,7 +529,10 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription.add(
       this.labelsService.newMarkers$().subscribe(
         marker => {
-          if(marker && marker.length > 0) this.addMarkertoTimeline(marker);
+          if(marker && marker["data"]) {
+            this.addMarkertoTimeline(marker["data"]);
+            this.queryTracker(marker["firstMarkerTime"], marker["data"][0]["segmentId"], '');
+          } else if(marker && marker.length > 0) this.addMarkertoTimeline(marker);
         }
       )
     );
@@ -683,8 +694,25 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
             segmentId: segment.id
           });
         }
-        this.labelsService.newTrackingInstance(markers);
+        this.labelsService.newTrackingInstance(markers, firstMarkerTime);
+
       }
+    }
+  }
+
+  private queryTracker(firstMarkerTime, segmentId, labelName) {
+    if(confirm("Would you like to add tracking information for this segment?")) {
+      this.timelineData.findMarkersByOptions("segment", segmentId).forEach( item => {
+        if(item.start == firstMarkerTime) {
+          this.timeline.setSelection(item.id);
+          this.toolBoxService.triggerToolBox(true);
+          this.updateCurrentTime(Number(item.start));
+          this.videoService.seekTo(Number(item.start)/1000);
+          this.timeline.redraw();
+          this.toolBoxService.triggerCanvas(item['trackerId']+";"+this.timelineData.getGroup(item.group).content);
+          this.toolBoxService.updateItemSelectStatus(true);
+        }
+      })
     }
   }
 

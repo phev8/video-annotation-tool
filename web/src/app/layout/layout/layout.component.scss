@@ -18,3 +18,21 @@
 .pointer {
   cursor: pointer;
 }
+
+.hover-effect:hover {
+  background: rgba(255,255,255,1);
+  color: dodgerblue;
+}
+
+
+.clr-footer {
+  background: #002538;
+  height: 60px;
+  line-height: 60px;
+  padding: 0 24px;
+  margin-bottom: 0;
+}
+
+.top-padding-0 {
+  padding: 0 !important;
+}

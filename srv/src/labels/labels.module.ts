@@ -13,19 +13,21 @@ import { TrackerController } from './trackers/tracker.controller';
 import { PassportModule } from '@nestjs/passport';
 import { config } from '../../config';
 import {ObjectTrackingService} from "./trackers/object.tracking.service";
+import {Pollingstatus} from "../entities/pollingstatus.entity";
+import {PollerService} from "./trackers/poller.service";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Label, Segment, LabelCategory, Marker, Tracker]),
+    TypeOrmModule.forFeature([Label, Segment, LabelCategory, Marker, Tracker, Pollingstatus]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     MulterModule.register({
       dest: config.multerDest,
     }),
     HttpModule
   ],
-  providers: [LabelsGateway, LabelsService, SegmentService, MarkerService, ObjectTrackingService],
+  providers: [LabelsGateway, LabelsService, SegmentService, MarkerService, ObjectTrackingService, PollerService],
   controllers: [TrackerController],
-  exports: [LabelsService, SegmentService, MarkerService, ObjectTrackingService],
+  exports: [LabelsService, SegmentService, MarkerService, ObjectTrackingService, PollerService],
 })
 export class LabelsModule {
 }

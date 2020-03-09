@@ -13,7 +13,7 @@ export class ObjectTrackingService {
     }
 
     async trackObjects(tracker: Tracker, videoId: string, dimensions: string[], filename: string, timeList: { requiredTimes: number[]; initialTrackerTime: number }): Promise<Observable<any>> {
-        const request = {filename: filename, videoX: dimensions[0], videoY: dimensions[1], trackerType: tracker.trackerType,
+        const request = {filename: filename, videoX: dimensions[1], videoY: dimensions[0], trackerType: tracker.trackerType,
             trackerDimensions: MarkerService.getTrackableResult(tracker.trackables, tracker.trackerType), initialTrackerTime: timeList.initialTrackerTime,
             requiredTimes: timeList.requiredTimes
         };

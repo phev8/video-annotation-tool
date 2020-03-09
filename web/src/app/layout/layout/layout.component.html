@@ -2,16 +2,18 @@
   <app-header>
   </app-header>
 
-  <div class="content-container">
-    <div class="content-area">
+  <div class="content-container" #collapsible_nav>
+    <div class="content-area top-padding-0">
       <ng-content></ng-content>
     </div>
 
     <clr-vertical-nav
       *ngIf="verticalNavVisible"
-      [clrVerticalNavCollapsible]="false"
+      [clrVerticalNavCollapsible]="true"
       [(clrVerticalNavCollapsed)]="isNavCollapsed"
-      [ngStyle]="getWidth()">
+      (clrVerticalNavCollapsedChange) = "updateCollapsed($event)"
+      onload="this.updateCollapsed()"
+      >
 
       <div *ngIf="!isNavCollapsed">
         <app-filetree></app-filetree>
@@ -25,10 +27,12 @@
         <clr-icon shape="pencil" [className]="iconStyle[0]" title="Select to create a unbounded tracker" (click)="activateTool(0)"></clr-icon>
         <clr-icon shape="undo" [className]="iconStyle[3]" title="Undo" (click)="activateTool(3)"></clr-icon>
         <clr-icon shape="floppy" [className]="iconStyle[6]" title="Save tracking data" (click)="activateTool(6)"></clr-icon>
-        <div class="fit-content-width align-color-picker pointer"><input  title="Select tracker color" type="color" class="dot pointer" [style.background]="fillColor" [(ngModel)]="fillColor" (ngModelChange)="changeColor($event)" /></div>
+        <div class="fit-content-width align-color-picker pointer hover-effect"><input  title="Select tracker color" type="color" class="dot pointer" [style.background]="fillColor" [(ngModel)]="fillColor" (ngModelChange)="changeColor($event)" /></div>
       </div>
 
     </clr-vertical-nav>
   </div>
+   <div *ngIf="router.url == '/projects'" class="clr-footer">
 
+   </div>
 </clr-main-container>

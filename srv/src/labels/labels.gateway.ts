@@ -207,9 +207,12 @@ export class LabelsGateway  {
     return from(markers.map(marker => this.markerService.addMarker(marker)))
       .pipe(
         mergeAll(),
-        map((data: any) => {
+        map((data: any, index) => {
           if(data) {
             this.markerService.addMarkerDataToTracker(data['ops'][0].trackerId, data["ops"][0]._id.toString()).then(r => {});
+            if(index == markers.length -1) {
+              return ({ event: 'addMarker',  data: {data: data["ops"], firstMarkerTime: payload.firstMarkerTime}});
+            }
             return ({ event: 'addMarker',  data: data["ops"]});
           }
         }),

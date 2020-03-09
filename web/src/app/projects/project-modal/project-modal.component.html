@@ -1,4 +1,66 @@
-<button class="btn btn-primary" (click)="modalOpen = true">New Project</button>
+<button  *ngIf="!freshStart" class="btn btn-icon btn-primary add-button" (click)="modalOpen = true"  aria-label="Create New Project">
+  <clr-icon shape="plus"></clr-icon>
+</button>
+<div *ngIf="freshStart" class="full-screen clr-row  margin-right-left-none">
+    <div class="grey-card set-card-borders">
+      <div class="clr-row margin-right-left-none">
+        <div class="clr-col-5">
+          <span class="invite-text">Lets get started.</span>
+        </div>
+
+        <div class="clr-col-2">
+          <div class="card-start card-img">
+            <img src="assets/playButton.png" (click)="modalOpen = true">
+          </div>
+        </div>
+
+        <div class="clr-col-4">
+          <div class="project-text-div">
+            <span class="project-text">Click the icon to create a project to upload videos and begin annotating them.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div *ngIf="freshStart" class="clr-row margin-top margin-right-left-none">
+    <div class="clr-col max-width-35 min-width-25 margin-left-25">
+      <div class="card card-color info-card border-shadow-none">
+        <div class="card-img">
+          <img src="assets/video.png">
+        </div>
+        <div class="card-block">
+          <div class="card-text info-text">
+            <strong>Manage multiple projects, label videos, and track objects across frames of the video.</strong><br>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clr-col max-width-35 margin-between-info min-width-25">
+      <div class="card card-color info-card border-shadow-none">
+        <div class="card-img">
+          <img src="assets/people.png">
+        </div>
+        <div class="card-block">
+          <div class="card-text info-text">
+            <strong>Collaborate with multiple contributors and simultaneously annotate videos. </strong><br>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clr-col max-width-35 margin-between-info min-width-25">
+      <div class="card card-color info-card border-shadow-none">
+        <div class="card-img">
+          <img src="assets/json.png">
+        </div>
+        <div class="card-block">
+          <div class="card-text info-text">
+            <strong>Export annotation results in a json format that can be easily used to in training models.</strong><br>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
 
 <clr-modal [(clrModalOpen)]="modalOpen">
 
