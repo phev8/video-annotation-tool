@@ -334,4 +334,24 @@ export class LabelsService {
     return this.socket.fromEvent('deleteMarkers');
   }
 
+  newSegments$(): Observable<any> {
+    return this.socket.fromEvent('newSegmentCreated');
+  }
+
+  deletedSegments$(): Observable<any> {
+    return this.socket.fromEvent('segmentDeleted');
+  }
+
+  mergedSegments$(): Observable<any> {
+    return this.socket.fromEvent('mergedSegments');
+  }
+
+  newMarkersCreated$(): Observable<any> {
+    return this.socket.fromEvent('newMarkersCreated');
+  }
+
+  systemRecommendations$(): Observable<any[]> {
+    return this.socket.fromEvent('yoloRecommendations');
+  }
+
 }

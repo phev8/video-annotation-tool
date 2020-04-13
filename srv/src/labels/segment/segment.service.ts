@@ -63,4 +63,17 @@ export class SegmentService {
       });
     }
   }
+
+    async findCoincidingSegment(labelId: any, start: any, end: any, authorId: string, samplingRate: any): Promise<Segment> {
+      let segments: Segment[] = await this.getSegments(labelId);
+      for(let i = 0; i<segments.length; i++){
+        if(start <= segments[i]["end"]) {
+          return segments[i];
+        }
+        if((segments[i]["end"] + samplingRate) >= start) {
+          return segments[i];
+        }
+      }
+      return null;
+    }
 }

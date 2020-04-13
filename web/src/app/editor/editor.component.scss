@@ -67,3 +67,39 @@ as-split {
   text-align:center;
   //box-shadow: 2px 2px 3px #999;
 }
+
+.usergrid {
+  position: fixed;
+  z-index: 1;
+  bottom:0;
+  Width: 100%;
+}
+
+.colordial {
+  height: 1.3rem;
+  width: 1.3rem;
+  display: block;
+  //background: #833eb1;
+  color: #fff;
+  line-height: 1.3rem;
+  border-radius: 49%;
+  font-size: .7rem;
+  font-weight: 100;
+  letter-spacing: .02em;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.scroll {
+  max-height: 8rem;
+  overflow-y: scroll;
+}
+
+.margin-top-02-rem {
+  margin-top: 0.2rem;
+}
+
+.system-color {
+  background:  #09a3b6;
+}

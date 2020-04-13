@@ -1,20 +1,22 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CurrentProjectService } from './current-project.service';
 import { LabelsService } from '../labels/labels.service';
 import * as FileSaver from 'file-saver';
 import * as moment from 'moment';
 import {AlertService} from "../alert.service";
+import {UserModel} from "../models/user.model";
 
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements OnInit, OnDestroy {
+export class EditorComponent implements OnInit, OnDestroy, AfterViewInit {
   direction = 'vertical';
   projectId: string;
   inExportProgress: boolean;
+  users: UserModel[] = [];
 
   constructor(private route: ActivatedRoute,
               private projectService: CurrentProjectService,
@@ -27,6 +29,16 @@ export class EditorComponent implements OnInit, OnDestroy {
     this.projectId = this.route.snapshot.paramMap.get('id');
     this.projectService.loadProject(this.projectId);
     this.labelService.joinProject(this.projectId);
+
+    this.projectService.getCurrentProject$().subscribe(project => {
+      if(project) {
+        this.users = this.projectService.getUsers(project);
+      }
+    });
+  }
+
+
+  ngAfterViewInit(): void {
   }
 
   ngOnDestroy(): void {

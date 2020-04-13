@@ -34,6 +34,30 @@ export class LabelsService {
     return await this.labelCategoryRepository.insert(labelCategory);
   }
 
+  async createSystemGeneratedLabelCategory(projectId: string, authorId: string, authorClass: string, labelCategoryWrapper: LabelCategoryDto) {
+    let labelCategories: LabelCategory[] = await this.getSystemGeneratedCategories(projectId, authorId, labelCategoryWrapper.categoryName);
+    if(labelCategories.length == 0) {
+      let response = await this.createLabelCategory(projectId, authorId, authorClass, labelCategoryWrapper);
+      return await this.getLabelCategory(response.identifiers[0].id.toString());
+    }
+    return labelCategories[0];
+    //return await this.createLabel(projectId,authorId, labelCategories[0].id.toString(), authorClass);
+  }
+
+  async getSystemGeneratedCategories(projectId: string, authorId: string, categoryName: string, select?: (keyof LabelCategory)[]) {
+    const labelCategories: LabelCategory[] = await this.getLabelCategories(projectId);
+    if(labelCategories && labelCategories.length!= 0) {
+      let selectedCategories: LabelCategory[] = [];
+      labelCategories.forEach(categories => {
+        if(categories.authorId.toString() == authorId && categories.name == categoryName) {
+          return selectedCategories.push(categories);
+        }
+      });
+      return selectedCategories;
+    }
+    return [];
+  }
+
   async updateLabelName(labelId: string, change: string): Promise<UpdateResult> {
     return await this.labelRepository.update(labelId, {name: change});
   }

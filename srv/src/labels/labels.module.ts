@@ -27,7 +27,7 @@ import {PollerService} from "./trackers/poller.service";
   ],
   providers: [LabelsGateway, LabelsService, SegmentService, MarkerService, ObjectTrackingService, PollerService],
   controllers: [TrackerController],
-  exports: [LabelsService, SegmentService, MarkerService, ObjectTrackingService, PollerService],
+  exports: [LabelsService, SegmentService, MarkerService, ObjectTrackingService, PollerService, LabelsGateway],
 })
 export class LabelsModule {
 }

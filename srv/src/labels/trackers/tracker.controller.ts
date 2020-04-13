@@ -72,7 +72,7 @@ export class TrackerController {
     return JSON.stringify({ completed: true, polling_id: id, error: polling_status.error, errorMessage: polling_status.errorMessage});
   }
 
-  private static setTrackerFields(tracker: Tracker, body) {
+  static setTrackerFields(tracker: Tracker, body) {
     tracker.authorId = body['authorId'];
     tracker.trackables = body['trackables'];
     tracker.trackerType = body['trackerType'];

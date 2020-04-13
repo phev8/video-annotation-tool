@@ -27,6 +27,7 @@ import { CurrentToolService } from '../project-toolbox.service';
 import * as hyperid from 'hyperid';
 import { CanvasService } from '../../canvas/canvas.service';
 import {AlertService} from "../../alert.service";
+import {UserModel} from "../../models/user.model";
 
 @Component({
   selector: 'app-timeline',
@@ -40,6 +41,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
   private project: ProjectModel;
   private instance = hyperid();
+  private users: UserModel[] = [];
 
 
   private timeline: Timeline;
@@ -234,6 +236,7 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.labelCategories.push(labelCategory);
               });
             });
+          this.users = this.projectService.getUsers(project);
         }
       });
 
@@ -318,7 +321,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
       if (event === 'remove') {
         const ids = properties.items;
         this.labelsService.deleteSegments(ids).then((result: string[]) => {
-          console.log("deleted segment: " + result);
           this.timelineData.items.remove(result);
         }, function(error) {
           console.log("error: "+ error);
@@ -368,6 +370,9 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
             authorRole: this.userRole,
             authorId: JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],
           };
+
+          let user = this.users.find(item => item.id == JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
+          if(user) {response['style'] = 'background: ' + user["color"]; response['title'] = user['username'];}
           segment = response.updateExisting ? item : segment;
           let checkForMerges = this.updateRequired(this.timelineData.findItemsByOptions('group', item.group), segment, response.updateExisting);
           let start: number;
@@ -401,19 +406,28 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private handleSegmentMerge(checkForMerges) {
     this.labelsService.mergeSegments(checkForMerges[1], checkForMerges[2], checkForMerges[3]).then(() => {
-      let segment = this.timelineData.getItem(checkForMerges[1][0]);
-      segment.start = checkForMerges[2];
-      segment.end = checkForMerges[3];
-      this.timelineData.updateItem(segment);
+      let segment = this.updateSegmentTimes(checkForMerges);
       this.addMarkersForSegment(segment, checkForMerges[2], checkForMerges[3]);
-      for (let j = 1; j < checkForMerges[1].length; j++) {
-        this.timelineData.removeItem(checkForMerges[1][j]);
-        this.timelineData.removeMarkersBySegmentId(checkForMerges[1][j]);
-      }
-      this.timeline.redraw();
+      this.removeMergedSegmentsAndMarkers(checkForMerges);
     }, () => {
       console.log('an error occured while merging the segment');
     });
+  }
+
+  private removeMergedSegmentsAndMarkers(checkForMerges) {
+    for (let j = 1; j < checkForMerges[1].length; j++) {
+      this.timelineData.removeItem(checkForMerges[1][j]);
+      this.timelineData.removeMarkersBySegmentId(checkForMerges[1][j]);
+    }
+    this.timeline.redraw();
+  }
+
+  private updateSegmentTimes(checkForMerges) {
+    let segment = this.timelineData.getItem(checkForMerges[1][0]);
+    segment.start = checkForMerges[2];
+    segment.end = checkForMerges[3];
+    this.timelineData.updateItem(segment);
+    return segment;
   }
 
   updateCurrentTime(millis: number) {
@@ -491,6 +505,35 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       })
     );
+
+    this.subscription.add(this.labelsService.newSegments$().subscribe( response => {
+      if(response) {
+        if(!this.timelineData.getItem(response.id) && !this.timelineData.getItem(response.data.hyperid)) {
+          response.data.id = response.id;
+          this.timelineData.items.add(response.data);
+        }
+      }
+    }));
+
+    this.subscription.add(this.labelsService.mergedSegments$().subscribe( response => {
+      if(response) {
+        this.updateSegmentTimes([response.data.segmentIds, response.data.start, response.data.end]);
+        this.removeMergedSegmentsAndMarkers([response.data.segmentIds, response.data.start, response.data.end]);
+      }
+    }));
+
+    this.subscription.add(this.labelsService.newMarkersCreated$().subscribe( response => {
+      if(response) {
+        this.addMarkertoTimeline(response["data"]);
+      }
+    }));
+
+    this.subscription.add(this.labelsService.deletedSegments$().subscribe( response => {
+      if(response) {
+        this.timelineData.removeItem(response.data);
+        this.timelineData.removeMarkersBySegmentId(response.data);
+      }
+    }));
   }
 
   private observeSegments() {
@@ -506,9 +549,13 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
                   group: x.labelId,
                   start: x.start,
                   end: x.end,
-                  stack: false
+                  stack: false,
                 });
-
+                let user = this.users.find(item => item.id == x.authorId);
+                if(user) {response['style'] = 'background: ' + user["color"]; response['title'] = user['username'];}
+                else {
+                  response['style'] = 'background: #09a3b6'; response['title'] = "System Recommendation";
+                }
                 if(this.timelineData.getItem(response.id)) {
                   this.timelineData.updateItem(response);
                 } else
@@ -714,6 +761,12 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       })
     }
+  }
+
+  private fetchSamplingRate(segment) {
+    let label = this.timelineData.getGroup(segment.group);
+    let category: LabelCategoryModel = this.labelCategories.find(value => value.id == label['categoryId'] );
+    return [category.samplingFrequency];
   }
 
   private static getSamplingFrequency(samplingFrequency: number, samplingUnit: string) {

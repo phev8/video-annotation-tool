@@ -36,6 +36,7 @@ import { config } from '../../config';
  import { FileUpload } from '../interfaces/file.upload';
  import { SegmentResult } from '../interfaces/segment.result';
  import { AnnotationResult } from '../interfaces/annotation.result';
+ import {RecommendationService} from "../recommendations/recommendation.service";
 
 @Controller('project')
 export class ProjectController {
@@ -43,7 +44,8 @@ export class ProjectController {
   constructor(private projectService: ProjectService,
               private labelsService: LabelsService,
               private segmentsService: SegmentService,
-              private markerService: MarkerService) {
+              private markerService: MarkerService,
+              private recommendationService: RecommendationService) {
   }
 
   @Post()
@@ -77,7 +79,12 @@ export class ProjectController {
         }
       });
     }
-    return await this.projectService.update(project.id.toHexString(), project);
+    let response = {};
+    if(project.singleMedia) {
+      response['pollingId'] = await this.recommendationService.fetchYoloRecommendations(project, config.trackerUrl);
+    }
+    await this.projectService.update(project.id.toHexString(), project);
+    return response;
   }
 
   @Get('all/:ownerId')
@@ -190,7 +197,6 @@ export class ProjectController {
     csvStringify(response, { header: true }).pipe(res);
   }
 
-
   @Get(':id/annotations')
   async generateAnnotations(@Param('id') projectId) {
     //Needs refactoring
@@ -219,5 +225,13 @@ export class ProjectController {
       modifiedResponse.annotations.push(categoryResponse);
     }
     return JSON.stringify(modifiedResponse, null, 4);
+  }
+
+  @Post('recommendations/:projectId')
+  @UseGuards(AuthGuard())
+  async fetchRecommendations(@Param('projectId') id, @Req() req, @Body() body) {
+    const project = await this.projectService.findOne(id);
+    await this.recommendationService.fetchYoloRecommendations(project, config.trackerUrl);
+    return "done";
   }
 }

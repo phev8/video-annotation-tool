@@ -27,3 +27,12 @@
     <app-timeline></app-timeline>
   </as-split-area>
 </as-split>
+<div class="usergrid">
+  <div class="clr-row">
+    <div class="clr-col-10"></div>
+    <div class="clr-col-2 scroll">
+        <div *ngFor="let user of users" class="margin-top-02-rem"><div class="colordial" [style.background]="user['color']" title="{{user.username}}">{{user.username.charAt(0)}}</div></div>
+        <div class="margin-top-02-rem"><div class="colordial system-color" title="System Recommendation">S</div></div>
+    </div>
+  </div>
+</div>

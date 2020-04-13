@@ -81,6 +81,12 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
         }
       }
     }));
+
+    this.subscription.add(this.labelsService.systemRecommendations$().subscribe( response => {
+      if(confirm('New system generated annotations for the current project are ready!')) {
+      }
+      location.reload();
+    }));
   }
 
   addNewLabel() {

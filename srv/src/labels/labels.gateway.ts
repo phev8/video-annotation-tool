@@ -5,7 +5,7 @@ import { InsertResult, UpdateResult } from 'typeorm';
 import { Label } from '../entities/label.entity';
 import { SegmentService } from './segment/segment.service';
 import { from, Observable} from 'rxjs';
-import { map, mergeAll } from 'rxjs/operators';
+import {finalize, map, mergeAll} from 'rxjs/operators';
 import { Segment } from '../entities/segment.entity';
 import { LabelCategory } from '../entities/labelcategory.entity';
 import { Marker } from '../entities/markers.entity';
@@ -151,6 +151,7 @@ export class LabelsGateway  {
   @SubscribeMessage('addSegment')
   async addSegment(socket: SocketIO.Socket, data) {
     const labelId = data.group;
+    const roomId = LabelsGateway.getProjectRoom(socket);
     const authorId = data.authorId;
     const start = data.start;
     const end = data.end;
@@ -159,6 +160,7 @@ export class LabelsGateway  {
     return await this.segmentService
       .createSegment(labelId, authorId, start, end, authorClass)
       .then(async (value: InsertResult) => {
+        this.io.to(roomId).emit('newSegmentCreated', {data: data, id: value.identifiers[0].id});
         return value.identifiers[0].id;
       }, function (err) {
         console.log(err);
@@ -168,9 +170,11 @@ export class LabelsGateway  {
 
   @SubscribeMessage('mergeSegments')
   async mergeSegments(socket: SocketIO.Socket, data) {
+    const room = LabelsGateway.getProjectRoom(socket);
     return await this.segmentService
       .mergeSegment(data.segmentIds, data.start, data.end)
       .then(() => {
+        this.io.to(room).emit("mergedSegments", {data: data});
         return false;
       }, function (err) {
         console.log(err);
@@ -182,6 +186,8 @@ export class LabelsGateway  {
   async deleteSegments(socket: SocketIO.Socket, data) {
     const ids: string = data.items[0];
     return await this.segmentService.deleteSegment(ids).then(() => {
+      const room = LabelsGateway.getProjectRoom(socket);
+      this.io.to(room).emit("segmentDeleted", {data: ids});
       return false;
     }, function (err) {
       console.log("Deleting segments error"+err);
@@ -209,7 +215,9 @@ export class LabelsGateway  {
         mergeAll(),
         map((data: any, index) => {
           if(data) {
+            const room = LabelsGateway.getProjectRoom(socket);
             this.markerService.addMarkerDataToTracker(data['ops'][0].trackerId, data["ops"][0]._id.toString()).then(r => {});
+            this.io.to(room).emit("newMarkersCreated", {data: data["ops"]});
             if(index == markers.length -1) {
               return ({ event: 'addMarker',  data: {data: data["ops"], firstMarkerTime: payload.firstMarkerTime}});
             }
@@ -232,6 +240,11 @@ export class LabelsGateway  {
       console.log("Deleting Marker error"+err);
       return true;
     });
+  }
+
+  async triggerYoloGeneratedLabels(projectId: string) {
+    this.io.to(projectId).emit('yoloRecommendations', {data: []});
+    //this.io.sockets.to(projectId).emit('yoloRecommendations', {data: []});
   }
 
 // region

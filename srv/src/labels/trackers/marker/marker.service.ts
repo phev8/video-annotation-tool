@@ -45,8 +45,18 @@ export class MarkerService {
     return;
   }
 
-  async findMarkers(data: any[]) {
-    return await this.markerRepository.findByIds(data);
+  async findMarkers(ids: any[]) {
+    return await this.markerRepository.findByIds(ids);
+  }
+
+  async findMarkerByTime(segmentId: string, start: number) {
+    let markers: Marker[] =  await this.markerRepository.find({ where: { segmentId } });
+    for(let i=0; i< markers.length; i++) {
+      if(markers[i].start == start) {
+        return markers[i];
+      }
+    }
+    return null;
   }
 
   async deleteMarkers(segmentId: string, type: string) {

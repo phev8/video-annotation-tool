@@ -83,4 +83,8 @@ export class FiletreeComponent implements OnInit, OnDestroy {
   openUploadDialog() {
     this.uploadDialog.openDialog();
   }
+
+  predict() {
+    this.editorService.predictRecommendation(this.project);
+  }
 }

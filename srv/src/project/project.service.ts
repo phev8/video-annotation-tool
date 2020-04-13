@@ -1,15 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import {HttpService, Injectable} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from '../entities/project.entity';
 import { FindOneOptions, MongoRepository } from 'typeorm';
 import { ObjectID } from 'mongodb';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import {PollerService} from "../labels/trackers/poller.service";
+import {LabelsGateway} from "../labels/labels.gateway";
 
 @Injectable()
 export class ProjectService {
   constructor(
     @InjectRepository(Project)
-    private readonly projectRepository: MongoRepository<Project>) {
+    private readonly projectRepository: MongoRepository<Project>,
+    private pollerService: PollerService,
+    private httpService: HttpService,
+    private labelsGateways: LabelsGateway) {
   }
 
   async findAll(userId: string): Promise<Project[]> {
@@ -36,5 +41,13 @@ export class ProjectService {
 
   async delete(id: string) {
     return await this.projectRepository.delete(id).then( result => { console.log("Deleted Project: id = " + id )});
+  }
+
+  private predictionError(err, pollerId: string) {
+    this.pollerService.updatePoll(pollerId, {completed: true, error: true, errorMessage: err}).then(result => {
+      console.log(result)
+    }, err => {
+      console.log(err);
+    });
   }
 }

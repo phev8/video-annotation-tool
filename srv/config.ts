@@ -41,5 +41,6 @@ export const config = {
   multerDest,
   apiKeyExpiresIn: 8 * 60 * 60,
   typeOrmConfig: ormConfig,
-  trackerUrl
+  trackerUrl,
+  systemColor: "#09a3b6"
 };
