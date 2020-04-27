@@ -106,6 +106,6 @@ export class ProjectsService {
 
   getRecommendations(project: ProjectModel) {
     return this.http.post(`${this.projectsUrl}/recommendations/${project.id}`, null)
-      .pipe(catchError(this.handleError<any>(`insertProject ${JSON.stringify(project)}`)));
+      .pipe(catchError(this.handleError<any>(`recommendation failed ${JSON.stringify(project)}`)));
   }
 }

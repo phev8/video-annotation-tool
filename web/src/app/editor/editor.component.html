@@ -4,20 +4,20 @@
 <as-split [direction]="direction">
   <as-split-area size="60">
     <div class="float">
-    <button
+    <!-- <button
       class="btn btn-warning btn-sm"
       (click)=" direction = (direction === 'horizontal') ? 'vertical' : 'horizontal'">
       {{ 'Toggle direction: "' + direction + '"' }}
-    </button>
+    </button> -->
 
       <button
         class="btn btn-primary btn-sm"
-        title="Download labelled segments as CSV"
+        title="Download labelled segments as a JSON"
         (click)="onExport()">
         <span *ngIf="inExportProgress" class="spinner spinner-inline">
             Loading...
         </span>
-        <label *ngIf="!inExportProgress">JSON</label>
+        <label *ngIf="!inExportProgress" class="pointer">JSON</label>
       </button>
 
     </div>

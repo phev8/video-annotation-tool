@@ -33,9 +33,13 @@ export class Tracker {
   @Column()
   selectedColor: string;
 
-  constructor(labelId: string) {
+  @Column()
+  segmentId: string;
+
+  constructor(labelId: string, segmentId: any) {
     this.trackables = [];
     this.firstUpdate = true;
     this.labelId = labelId;
+    this.segmentId = segmentId;
   }
 }

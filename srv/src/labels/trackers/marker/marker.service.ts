@@ -39,7 +39,7 @@ export class MarkerService {
   async addMarker(marker: { completed: boolean; start: number; labelId: any; authorId: string; authorClass: string, segmentId: any }) {
     let markers: Marker[] = await this.markerRepository.find({ where: {segmentId: marker.segmentId, start: marker.start} });
     if(markers && markers.length == 0) {
-      let trackerId  = await this.trackerRepository.insertOne(new Tracker(marker.labelId));
+      let trackerId  = await this.trackerRepository.insertOne(new Tracker(marker.labelId, marker.segmentId));
       return await this.markerRepository.insertOne(new Marker(marker.labelId, marker.authorId, marker.start, marker.authorClass, marker.completed, trackerId.insertedId.toString(), marker.segmentId));
     }
     return;
@@ -84,8 +84,8 @@ export class MarkerService {
   }
 
   async autoUpdateTrackers(tracker: Tracker) {
-    let labelId = tracker.labelId;
-    let trackers: Tracker[] = await this.trackerRepository.find({where: { labelId: labelId }});
+    let segmentId = tracker.segmentId;
+    let trackers: Tracker[] = await this.trackerRepository.find({where: { segmentId: segmentId }});
     trackers.forEach(item => {
       this.getMarkerByTracker(item.id.toHexString()).then( marker => {
         if(marker) {
@@ -178,7 +178,7 @@ export class MarkerService {
     let searchedMarkers: Marker[] = [];
     let requiredTimes: number[] = [];
     markers.forEach( mark => {
-      if(mark.start != marker.start) {
+      if(mark.start > marker.start) {
         requiredTimes.push(mark.start);
         searchedMarkers.push(mark);
       }

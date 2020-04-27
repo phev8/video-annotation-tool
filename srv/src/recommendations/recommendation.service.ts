@@ -13,6 +13,7 @@ import {MarkerService} from "../labels/trackers/marker/marker.service";
 import {TrackerController} from "../labels/trackers/tracker.controller";
 import {config} from "../../config";
 import {Segment} from "../entities/segment.entity";
+import {InsertResult} from "typeorm";
 
 @Injectable()
 export class RecommendationService {
@@ -27,26 +28,30 @@ export class RecommendationService {
   }
 
   async fetchYoloRecommendations(project: Project, trackerUrl: string) {
-    const poller_Id = (await this.pollerService.createPoll(false)).identifiers[0].id;
-    const request = {filename: project.fileTree.children[0].filename};
-    (await this.httpService.post(trackerUrl + '/video/recommend', request)).subscribe(response => {
-      if (response) {
-        //TODO INSERT SOME SHIT HERE TO CONVERT THE RESPONSE TO USABLE STUFF
-        if(response.data && response.data != {}) {
-          let structuredResponse = this.processRecommendations(response.data, project);
-          this.storeAnnotations(structuredResponse, project).then(response => {
-            this.labelsGateways.triggerYoloGeneratedLabels(project.id.toString());
+    this.pollerService.createPoll(false).then(result => {
+      const poller_Id = result.identifiers[0].id;
+      console.log(
+          "Created Poll id = " + poller_Id.toString()+ " for Project: id - "+ project.id.toString() + "; name :"+ project.title);
+      const request = {filename: project.fileTree.children[0].filename};
+      this.httpService.post(trackerUrl + '/video/recommend', request).subscribe(response => {
+        if (response) {
+          console.log(JSON.stringify(response.data));
+          if(response.data && response.data != {} && !response.data.status) {
+            let structuredResponse = this.processRecommendations(response.data, project);
+            this.storeAnnotations(structuredResponse, project).then(response => {
+              this.labelsGateways.triggerYoloGeneratedLabels(project.id.toString());
+            });
+          }
+          this.pollerService.updatePoll(poller_Id, { completed: true}).then(result => {
+            console.log('Poll completed : PollId - ' + poller_Id);
           });
         }
-        console.log(JSON.stringify(response.data));
-        this.pollerService.updatePoll(poller_Id, { completed: true}).then(result => {
-          console.log('Poll completed : PollId - ' + poller_Id);
-        });
-      }
+      }, error => {
+        this.predictionError(error, poller_Id.toString());
+      });
     }, error => {
-      this.predictionError(error, poller_Id.toHexString());
+      console.log("Failed to create Poll for Project: id - "+ project.id.toString() + "; name :"+ project.title);
     });
-    return poller_Id;
   }
 
   private predictionError(err, pollerId: string) {
@@ -169,5 +174,9 @@ export class RecommendationService {
           x+"\\\" y=\\\""+y+"\\\" width=\\\""+width+"\\\" height=\\\""+height+"\\\" title=\\\""+labelName+"\\\"><title>"+labelName+"</title></rect>\"");
     }
     return trackables;
+  }
+
+  async fetchPollStatus(id: string) {
+    return this.pollerService.findPoll(id);
   }
 }

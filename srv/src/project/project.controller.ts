@@ -79,18 +79,13 @@ export class ProjectController {
         }
       });
     }
-    let response = {};
-    if(project.singleMedia) {
-      response['pollingId'] = await this.recommendationService.fetchYoloRecommendations(project, config.trackerUrl);
-    }
-    await this.projectService.update(project.id.toHexString(), project);
-    return response;
+    return await this.projectService.update(project.id.toHexString(), project);
   }
 
-  @Get('all/:ownerId')
+  @Get('all/:userId')
   @UseGuards(AuthGuard())
-  async findAll(@Param('ownerId') ownerId): Promise<Project[]> {
-    return await this.projectService.findAll(ownerId);
+  async findAll(@Param('userId') userId): Promise<Project[]> {
+    return await this.projectService.findAll(userId);
   }
 
   @Get(':id')
@@ -231,7 +226,15 @@ export class ProjectController {
   @UseGuards(AuthGuard())
   async fetchRecommendations(@Param('projectId') id, @Req() req, @Body() body) {
     const project = await this.projectService.findOne(id);
-    await this.recommendationService.fetchYoloRecommendations(project, config.trackerUrl);
-    return "done";
+    if(project.singleMedia)
+      await this.recommendationService.fetchYoloRecommendations(project, config.trackerUrl);
+    return { message: "Not a single media project"};
   }
+
+  @Get('poll/:id')
+  @UseGuards(AuthGuard())
+  async getPollStatus(@Param('id') id) {
+    return await this.recommendationService.fetchPollStatus(id);
+  }
+
 }

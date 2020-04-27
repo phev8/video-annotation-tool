@@ -53,9 +53,9 @@ export class TrackerController {
         });
       }
       tracker.selectedColor = body['selectedColor'];
-      if(tracker.firstUpdate) {
+      //if(tracker.firstUpdate) {
         poll_id = await this.autoUpdateTrackingData(tracker, body['videoDimensions'], body['filename']);
-      }
+      //}
       tracker.firstUpdate = false;
       await this.markerService.updateTracker(id, tracker);
     }

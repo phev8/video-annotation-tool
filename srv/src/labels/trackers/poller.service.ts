@@ -20,14 +20,17 @@ export class PollerService {
     }
 
     async updatePoll(id: string, poll: any) {
+        const errorMessage = poll.errorMessage? poll.errorMessage.message? poll.errorMessage.message: poll.errorMessage: "";
         const polling = await this.pollingRepository.findOne(id);
         if(polling) {
-            polling.errorMessage = poll.errorMessage;
-            polling.error = poll.error;
-            polling.completed = poll.completed;
-            return await this.pollingRepository.save(polling);
+            await this.pollingRepository.update(polling.id.toString(), {completed: true});
+            if(errorMessage && errorMessage!= "") {
+                console.log("POLL STATUS UPDATE ==" + "id: " + id + "; completed: "+ true+ "; error: "+ true+ "; errorMessage: "+ errorMessage);
+                await this.pollingRepository.update(polling.id.toString(), {errorMessage: errorMessage});
+                return await this.pollingRepository.update(polling.id.toString(), {error: true});
+            }
+            console.log("POLL STATUS UPDATE ==" + "id: " + id + "; completed: "+ true+ "; error: "+ false);
         }
-        //return await this.pollingRepository.update(id, poll);
     }
 
 }

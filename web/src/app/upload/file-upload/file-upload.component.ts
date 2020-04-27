@@ -55,18 +55,24 @@ export class FileUploadComponent implements OnInit {
     this.opened = true;
   }
 
-  updateProjectDimensions() {
+  updateProjectDimensions(uploadComplete: boolean) {
     if(this.currentProject.singleMedia) {
       let drawingBoardElement = this.elementRef.nativeElement.offsetParent.getElementsByTagName("drawing-board")[0];
       if(drawingBoardElement) {
         this.currentProject.videoDimensions = ""+ drawingBoardElement.offsetHeight+ " " + drawingBoardElement.offsetWidth;
-        this.projectService.updateProject(this.currentProject).subscribe(next => {});
+        this.projectService.updateProject(this.currentProject).subscribe(next => {
+          if(uploadComplete)
+            this.fetchRecommendations();
+        });
       }
     }
   }
 
   closeDialog() {
     if (this.uploadSuccessful) {
+      if(this.currentProject.singleMedia) {
+        this.updateProjectDimensions(true);
+      }
       this.reset();
       this.closeModal();
       return;
@@ -98,9 +104,15 @@ export class FileUploadComponent implements OnInit {
   }
 
   onCancel() {
-    this.updateProjectDimensions();
+    this.updateProjectDimensions(false);
     this.reset();
     this.closeModal();
+  }
+
+  private fetchRecommendations() {
+    if (this.currentProject.singleMedia) {
+      this.editorService.predictRecommendation(this.currentProject);
+    }
   }
 
   private closeModal() {
