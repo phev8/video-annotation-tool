@@ -1,6 +1,7 @@
 FROM node:8.10 as builder
 WORKDIR /usr/src/app
 COPY package*.json ./
+RUN rm -rf node_modules/
 RUN npm install
 COPY . .
 RUN npm run ng build --prod
