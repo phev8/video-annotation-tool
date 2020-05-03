@@ -17,7 +17,7 @@ export class ObjectTrackingService {
             trackerDimensions: MarkerService.getTrackableResult(tracker.trackables, tracker.trackerType), initialTrackerTime: timeList.initialTrackerTime,
             requiredTimes: timeList.requiredTimes
         };
-        const url = 'http://localhost:5000/video/tracking';
+        const url = config.videoserviceUrl+'/video/tracking';
         return this.httpService.post(url, request);
     }
 }
