@@ -14,7 +14,7 @@ const env = process.env;
 const expressPort: number = env.EXPRESS_PORT ? Number(env.EXPRESS_PORT) : 3000;
 const origins: string = env.CORS ? env.CORS : 'http://localhost:4200';
 const multerDest: string = env.MULTER_DEST ? env.MULTER_DEST : 'uploads';
-const trackerUrl: string = 'http://localhost:5000';
+const videoserviceUrl: string = env.VIDEOSERVICE_URL ? env.VIDEOSERVICE_URL : 'http://localhost:5000';
 
 const databaseHost: string = env.DB_HOST ? env.DB_HOST : 'localhost';
 const databasePort: number = env.DB_PORT ? Number(env.DB_PORT) : 27017;
@@ -41,6 +41,6 @@ export const config = {
   multerDest,
   apiKeyExpiresIn: 8 * 60 * 60,
   typeOrmConfig: ormConfig,
-  trackerUrl,
+  videoserviceUrl: videoserviceUrl,
   systemColor: "#09a3b6"
 };

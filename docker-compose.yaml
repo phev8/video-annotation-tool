@@ -33,6 +33,7 @@ services:
       - MULTER_DEST=/videos
       - DB_HOST=mongodb
       - DB_PORT=27017
+      - VIDEOSERVICE_URL=http://$VIDEO_SERVICE_HOSTNAME:$VIDEO_SERVICE_PORT
     depends_on:
       - mongodb
   frontend-tier:

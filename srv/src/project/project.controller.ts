@@ -227,7 +227,7 @@ export class ProjectController {
   async fetchRecommendations(@Param('projectId') id, @Req() req, @Body() body) {
     const project = await this.projectService.findOne(id);
     if(project.singleMedia)
-      await this.recommendationService.fetchYoloRecommendations(project, config.trackerUrl);
+      await this.recommendationService.fetchYoloRecommendations(project, config.videoserviceUrl);
     return { message: "Not a single media project"};
   }
 
