@@ -7,7 +7,7 @@ declare const module: any;
 const bootstrap = async () => {
   const app = await NestFactory.create(ApplicationModule);
 
-  app.enableCors({ origin: config.origins });
+  app.enableCors();
 
   await app.listen(config.expressPort);
 

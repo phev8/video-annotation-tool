@@ -12,7 +12,7 @@ import {Pollingstatus} from "./src/entities/pollingstatus.entity";
 const env = process.env;
 
 const expressPort: number = env.EXPRESS_PORT ? Number(env.EXPRESS_PORT) : 3000;
-const origins: string = env.CORS ? env.CORS : 'http://localhost:4200';
+const origins: string[] = env.CORS ? env.CORS.split(';') : ['http://localhost:4200', 'http://localhost:5000'];
 const multerDest: string = env.MULTER_DEST ? env.MULTER_DEST : 'uploads';
 const videoserviceUrl: string = env.VIDEOSERVICE_URL ? env.VIDEOSERVICE_URL : 'http://localhost:5000';
 

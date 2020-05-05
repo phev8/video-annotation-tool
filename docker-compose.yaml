@@ -29,7 +29,7 @@ services:
     volumes:
       - video_data:/videos
     environment:
-      - CORS=http://$SAT_HOSTNAME:4200
+      - CORS=http://$SAT_HOSTNAME:4200;http://$VIDEO_SERVICE_HOSTNAME:$VIDEO_SERVICE_PORT
       - MULTER_DEST=/videos
       - DB_HOST=mongodb
       - DB_PORT=27017

@@ -26,18 +26,26 @@ $ git clone -b smart-labels https://github.com/phev8/video-annotation-tool.git
 
 ### 2. Edit .env
 
-Change `SAT_HOSTNAME` entry in the `.env`.
+Change `SAT_HOSTNAME` entry in the `.env` to the IP of the docker daemon.
+This can be obtained by running the command 
+```bash
+docker run --net=host codenvy/che-ip
+```
 
+You can open the environment file to update the field `SAT_HOSTNAME` to the correct IP. Additionally also set up the IP of the 
+daemon that is running the Video Analyzer service by specifying it in the field `VIDEO_SERVICE_HOSTNAME`
 ```bash
 $ cd video-annotation-tool
 $ nano .env
 ```
 
+For example:
 ```dotenv
-SAT_HOSTNAME=localhost
+SAT_HOSTNAME=172.17.0.1
+VIDEO_SERVICE_HOSTNAME=172.17.0.1
+VIDEO_SERVICE_PORT=5000
 ```
 
-In case of windows systems, you might have to set this to the ip of the running docker daemon.
 
 ### 3. Pull containers and bring them up (launch):
 
@@ -47,13 +55,11 @@ $ (sudo) docker-compose up --build
 ```
 This process will take some time and will install the required node modules and will build a running mongodb instance, a backend tier and a front-end tier.
 
-When the process is finished, open your browser and go to `localhost:4200`.
-
-If running on a windows instance, you might have to connect to the `<docker-host-ip>:4200`
+When the process is finished, open your browser and go to  `<docker-host-ip>:4200`
 
 ## Initial Set-up
 
-Kindy refer to the getting-started.doc for walkthroughs on getting started and creating a project for labelling.
+Kindly refer to the getting-started.doc for a walk-through on getting started and creating a project for labelling.
 
 
 
@@ -68,6 +74,10 @@ If you had a previous version running in your system you might want to remove pr
 
 ```bash
 $ docker-compose down
+```
+Lastly, the entire system can be deleted for re-creation using the command
+```bash
+$ docker system prune --all
 ```
 
 ---
