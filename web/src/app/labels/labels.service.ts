@@ -354,4 +354,8 @@ export class LabelsService {
     return this.socket.fromEvent('yoloRecommendations');
   }
 
+  recommendationChange$(): Observable<any[]> {
+    return this.socket.fromEvent('recommendationChange');
+  }
+
 }

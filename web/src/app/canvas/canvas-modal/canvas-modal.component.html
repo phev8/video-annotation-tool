@@ -1,15 +1,17 @@
 <clr-modal [(clrModalOpen)]="modalOpen">
   <h3 class="modal-title">{{title}}</h3>
 
-  <div class="modal-body">
+  <div class="modal-body" [ngClass]="inProgress? 'set-height': ''">
       <div>
         <label for="title">{{description}}</label>
       </div>
 
-      <div class="margin-left">
-        <span *ngIf="inProgress" class="spinner">
-            Loading...
-        </span>
+      <div class="table-display">
+        <div class="table-cell-display">
+          <span *ngIf="inProgress" class="spinner">
+              Loading...
+          </span>
+        </div>
       </div>
   </div>
 

@@ -8,6 +8,7 @@ import { IFile } from '../../interfaces/IFile';
 import { IDirectory } from '../../interfaces/IDirectory';
 import { FileModel } from '../../models/file.model';
 import { FileUploadComponent } from '../../upload/file-upload/file-upload.component';
+import {IRecommendStatus} from "../../interfaces/iRecommendStatus";
 
 @Component({
   selector: 'app-filetree',
@@ -85,6 +86,23 @@ export class FiletreeComponent implements OnInit, OnDestroy {
   }
 
   predict() {
-    this.editorService.predictRecommendation(this.project);
+    if (this.project.singleMedia) {
+       this.editorService.predictRecommendation(this.project).subscribe( response => {
+         const statusResponse: IRecommendStatus = {status: response.status, message: response.message, pollId: response.pollId};
+         console.log(statusResponse);
+         if (statusResponse.status === 1) {
+           alert(response.message + '\nKindly wait for the recommendations to complete.');
+         } else if (statusResponse.status === 0) {
+           alert(response.message + '\nKindly retry after some time or contact support for help.');
+         } else {
+           alert(response.message + '\nRecommendations have been generated.');
+           if (confirm('Regenerate Recommendations ?')) {
+             this.editorService.repredictRecommendations(this.project.id).subscribe( response => {
+               alert(response.message);
+             });
+           }
+         }
+       });
+    }
   }
 }

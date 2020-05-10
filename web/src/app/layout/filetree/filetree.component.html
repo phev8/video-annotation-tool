@@ -1,8 +1,10 @@
-<div style="margin-left: 12px" *ngIf="project">
-  <strong>{{project.title}}</strong><br>
-  {{project.description}}
+<div style="margin-left: 12px" class="parent" *ngIf="project">
+  <div class="child">
+    <strong>{{project.title}}</strong><br>
+    {{project.description}}
+  </div>
+  <div class="child aliggnright" *ngIf="project.singleMedia && project.fileTree.children[0]"><button class="btn btn-icon btn-link inherit-margin-right" (click)="predict()" title="Click to Generate System Recommendations"><clr-icon shape="computer"></clr-icon></button></div>
 </div>
- <!-- <div><button class="btn" (click)="predict()">Predict</button></div> -->
 <hr>
 <div style="display:table;margin:0 auto;" *ngIf="loading">
   <span class="spinner spinner-md">

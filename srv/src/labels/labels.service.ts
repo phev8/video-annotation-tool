@@ -88,6 +88,16 @@ export class LabelsService {
       });
   }
 
+  async getLabelCategoriesByAuthor(projectId: string, authorId: string, select?: (keyof LabelCategory)[]): Promise<LabelCategory[]> {
+    let categories: LabelCategory[] =  await this.labelCategoryRepository
+        .find({
+          select,
+          where: { projectId },
+        });
+    categories = categories.filter(x => x.authorId.toString() === authorId);
+    return categories;
+  }
+
   async deleteLabels(labelId: string) {
     return await this.labelRepository.delete(labelId);
   }
@@ -119,8 +129,8 @@ export class LabelsService {
   }
 
   async deleteLabelCategory(id: string): Promise<DeleteResult> {
-    let category: LabelCategory = await this.labelCategoryRepository.findOne(id);
-    for(var j=0 ; j< category.labels.length; j++) {
+    const category: LabelCategory = await this.labelCategoryRepository.findOne(id);
+    for (let j = 0 ; j < category.labels.length; j++) {
       category.labels[j]["id"] = category.labels[j]["_id"];
       await this.segmentService.deleteSegmentsForLabel(category.labels[j]["id"].toString()).then(result => {});
       await this.labelRepository.remove(category.labels[j]);
@@ -129,9 +139,16 @@ export class LabelsService {
   }
 
   async  deleteProjectLabelCategories(projectId: string) {
-    let categories: LabelCategory[] = await this.getLabelCategories(projectId);
-    for(let category of categories) {
-      this.deleteLabelCategory(category.id.toString()).then(result => {console.log("Deleted Category : "+ category.name)})
+    const categories: LabelCategory[] = await this.getLabelCategories(projectId);
+    for (const category of categories) {
+      this.deleteLabelCategory(category.id.toString()).then(result => {console.log('Deleted Category : ' + category.name); });
+    }
+  }
+
+  async  deleteLabelCategoriesByAuthorId(projectId: string, authorId: string) {
+    const categories: LabelCategory[] = await this.getLabelCategoriesByAuthor(projectId, authorId);
+    for (const category of categories) {
+      this.deleteLabelCategory(category.id.toString()).then(result => {console.log('Deleted Category : ' + category.name); });
     }
   }
 }

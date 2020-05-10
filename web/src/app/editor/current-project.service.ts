@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ProjectsService } from '../projects/projects.service';
 import { ProjectModel } from '../models/project.model';
-import {UserModel} from "../models/user.model";
+import {UserModel} from '../models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -73,7 +73,7 @@ export class CurrentProjectService {
       member['color'] = this.colors[i];
       i++;
       response.push(member);
-      if(i >= this.colors.length) i=0;
+      if (i >= this.colors.length) { i = 0; }
     });
     project.contributorIds.forEach(member => {
       member['color'] = this.colors[i];
@@ -90,8 +90,10 @@ export class CurrentProjectService {
   }
 
   predictRecommendation(project: ProjectModel) {
-    this.projectsService.getRecommendations(project).subscribe(response => {
-      return response;
-    });
+    return this.projectsService.getRecommendations(project);
+  }
+
+  repredictRecommendations(projectId: string) {
+    return this.projectsService.recreateRecommendations(projectId);
   }
 }

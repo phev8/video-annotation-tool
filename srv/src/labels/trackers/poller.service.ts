@@ -1,8 +1,8 @@
-import {Injectable} from "@nestjs/common";
-import {InjectRepository} from "@nestjs/typeorm";
-import {MongoRepository} from "typeorm";
-import {Pollingstatus} from "../../entities/pollingstatus.entity";
-import {QueryDeepPartialEntity} from "typeorm/query-builder/QueryPartialEntity";
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {MongoRepository} from 'typeorm';
+import {Pollingstatus} from '../../entities/pollingstatus.entity';
+import {QueryDeepPartialEntity} from 'typeorm/query-builder/QueryPartialEntity';
 
 @Injectable()
 export class PollerService {
@@ -10,9 +10,9 @@ export class PollerService {
                 private readonly pollingRepository: MongoRepository<Pollingstatus>) {
     }
 
-    createPoll(completed: boolean) {
+    async createPoll(completed: boolean) {
         const polling_status = new Pollingstatus(completed);
-        return this.pollingRepository.insert(polling_status);
+        return await this.pollingRepository.insert(polling_status);
     }
 
     async findPoll(id: string) {
@@ -20,17 +20,21 @@ export class PollerService {
     }
 
     async updatePoll(id: string, poll: any) {
-        const errorMessage = poll.errorMessage? poll.errorMessage.message? poll.errorMessage.message: poll.errorMessage: "";
+        const errorMessage = poll.errorMessage ? poll.errorMessage.message ? poll.errorMessage.message : poll.errorMessage : '';
         const polling = await this.pollingRepository.findOne(id);
-        if(polling) {
+        if (polling) {
             await this.pollingRepository.update(polling.id.toString(), {completed: true});
-            if(errorMessage && errorMessage!= "") {
-                console.log("POLL STATUS UPDATE ==" + "id: " + id + "; completed: "+ true+ "; error: "+ true+ "; errorMessage: "+ errorMessage);
+            // tslint:disable-next-line:triple-equals
+            if (errorMessage && errorMessage != '') {
+                console.log('POLL STATUS UPDATE ==' + 'id: ' + id + '; completed: ' + true + '; error: ' + true + '; errorMessage: ' + errorMessage);
                 await this.pollingRepository.update(polling.id.toString(), {errorMessage: errorMessage});
                 return await this.pollingRepository.update(polling.id.toString(), {error: true});
             }
-            console.log("POLL STATUS UPDATE ==" + "id: " + id + "; completed: "+ true+ "; error: "+ false);
+            console.log('POLL STATUS UPDATE ==' + 'id: ' + id + '; completed: ' + true + '; error: ' + false);
         }
     }
 
+    async removePoll(poll_Id: string) {
+        return await this.pollingRepository.delete(poll_Id);
+    }
 }

@@ -121,48 +121,75 @@ export class MarkerService {
     return await this.markerRepository.update(id, marker);
   }
 
-  async fetchTrackerResults(segmentId: string): Promise<TrackerResult[]> {
+  async fetchTrackerResults(segmentId: string, videoWidth: number, videoHeight: number): Promise<TrackerResult[]> {
     let trackers: TrackerResult[] = [];
     let markers: Marker[] = await this.getSegmentMarkers(segmentId);
     for (const marker of markers) {
       if(marker.completed) {
         let tracker: Tracker = await this.getTracker(marker.trackerId);
-        trackers.push({timeInstance: marker.start, trackerType: tracker.trackerType, trackerDimensions: MarkerService.getTrackableResult(tracker.trackables, tracker.trackerType)});
+        trackers.push({timeInstance: marker.start, trackerType: tracker.trackerType, trackerDimensions: MarkerService.getTrackableResult(tracker.trackables, tracker.trackerType, videoWidth, videoHeight)});
       }
     }
     return trackers;
   }
 
-  public static getTrackableResult(trackables: string[], trackerType: string) {
-    if(trackerType)
+  /**
+   * Used for generating dimensions for the regions of interest of each label instance. Called in two places, one in annotation export
+   * and the other while sending requests for tracking. Export of annotations require dimensions in ratios, hence the parameters videoWidth
+   * and videoHeight. This is NOT NEEDED for tracking which relies on actual co-ordinates.
+   * @param trackables
+   * @param trackerType
+   * @param videoWidth
+   * @param videoHeight
+   */
+  public static getTrackableResult(trackables: string[], trackerType: string, videoWidth?: number, videoHeight?: number) {
+    if (trackerType)
       switch (trackerType) {
-        case "rect": return this.getRectangleTracker(trackables);
-        case "circle": return this.getCircleTracker(trackables);
+        case "rect": return this.getRectangleTracker(trackables, videoWidth, videoHeight);
+        case "circle": return this.getCircleTracker(trackables, videoWidth, videoHeight);
         case "polyline":
-        case "polygon":  return this.getPolyTracker(trackables, trackerType);
+        case "polygon":  return this.getPolyTracker(trackables, trackerType, videoWidth, videoHeight);
       }
     return {};
   }
 
-  private static getRectangleTracker(trackables: string[]): RectangleTracker {
-    let rectangleData = JSON.parse(trackables[0]);
-    return {height: parseFloat(rectangleData.split(" height=\"")[1].split("\"")[0]), width: parseFloat(rectangleData.split(" width=\"")[1].split("\"")[0]), x: parseFloat(rectangleData.split(" x=\"")[1].split("\"")[0]), y: parseFloat(rectangleData.split(" y=\"")[1].split("\"")[0])};
-  }
-
-  private static getCircleTracker(trackables: string[]): CircleTracker {
-    let circleData = JSON.parse(trackables[0]);
-    return {radius: parseFloat(circleData.split(" r=\"")[1].split("\"")[0]), x: parseFloat(circleData.split(" cx=\"")[1].split("\"")[0]), y: parseFloat(circleData.split(" cy=\"")[1].split("\"")[0])};
-  }
-
-  private static getPolyTracker(trackables: string[], trackerType: string): PolyTracker {
-    let polylineData = JSON.parse(trackables[0]);
-    let points: Point[] = [];
-    let arr = polylineData.split(" points=\"")[1].split("\"")[0].split(" ");
-    while(arr.length) {
-      let currentPoint = arr.splice(0,2);
-      points.push({x: currentPoint[0], y: currentPoint[1]});
+  private static getRectangleTracker(trackables: string[], videoWidth: number, videoHeight: number): RectangleTracker {
+    const rectangleData = JSON.parse(trackables[0]);
+    let rectangleResponse = {
+      height: parseFloat(rectangleData.split(" height=\"")[1].split("\"")[0]),
+      width: parseFloat(rectangleData.split(" width=\"")[1].split("\"")[0]),
+      x: parseFloat(rectangleData.split(" x=\"")[1].split("\"")[0]),
+      y: parseFloat(rectangleData.split(" y=\"")[1].split("\"")[0])
+    };
+    if (videoHeight && videoWidth) {
+      rectangleResponse = { height: rectangleResponse.height / videoHeight, width: rectangleResponse.width / videoWidth, x: rectangleResponse.x / videoWidth, y: rectangleResponse.y / videoHeight};
     }
-    return {start: points[0], end: trackerType == "polygon"? points[0]: points[points.length-1], points: points};
+    return rectangleResponse;
+  }
+
+  private static getCircleTracker(trackables: string[], videoWidth: number, videoHeight: number): CircleTracker {
+    const circleData = JSON.parse(trackables[0]);
+    let circleResponse = {radius: parseFloat(circleData.split(" r=\"")[1].split("\"")[0]), x: parseFloat(circleData.split(" cx=\"")[1].split("\"")[0]), y: parseFloat(circleData.split(" cy=\"")[1].split("\"")[0])};
+    if (videoHeight && videoWidth) {
+        circleResponse = { radius: circleResponse.radius / videoWidth, x: circleResponse.x / videoWidth, y: circleResponse.y / videoHeight};
+    }
+    return circleResponse;
+  }
+
+  private static getPolyTracker(trackables: string[], trackerType: string, videoWidth: number, videoHeight: number): PolyTracker {
+    const polylineData = JSON.parse(trackables[0]);
+    const points: Point[] = [];
+    const arr = polylineData.split(" points=\"")[1].split("\"")[0].split(' ');
+    while (arr.length) {
+      let currentPoint = arr.splice(0, 1);
+      currentPoint = currentPoint[0].split(',');
+      if (videoHeight && videoWidth) {
+        points.push({x: Number(currentPoint[0]) / videoWidth, y: Number(currentPoint[1]) / videoHeight});
+      } else {
+        points.push({x: Number(currentPoint[0]), y: Number(currentPoint[1])});
+      }
+    }
+    return {start: points[0], end: trackerType == 'polygon' ? points[0] : points[points.length - 1], points: points};
   }
 
   async addMarkerDataToTracker(trackerId: string, markerId: string) {

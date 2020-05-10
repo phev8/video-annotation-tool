@@ -21,6 +21,9 @@ const databasePort: number = env.DB_PORT ? Number(env.DB_PORT) : 27017;
 const databaseUsername: string = env.DB_USERNAME ? env.DB_USERNAME : '';
 const databasePassword: string = env.DB_PASSWORD ? env.DB_PASSWORD : '';
 const databaseName: string = env.DB_NAME ? env.DB_NAME : 'satdb';
+const systemUserName: string = 'systemrecommendation';
+const systemUserEmail: string = 'system.recommendation@system.com';
+const systemUserPwd: string = 'sys123';
 
 const ormConfig: TypeOrmModuleOptions | MongoConnectionOptions = {
   type: 'mongodb',
@@ -42,5 +45,8 @@ export const config = {
   apiKeyExpiresIn: 8 * 60 * 60,
   typeOrmConfig: ormConfig,
   videoserviceUrl: videoserviceUrl,
-  systemColor: "#09a3b6"
+  systemColor: '#09a3b6',
+  systemUserName,
+  systemUserEmail,
+  systemUserPwd,
 };

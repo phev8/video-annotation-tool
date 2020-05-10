@@ -13,5 +13,5 @@ export class ProjectAnnotationResult {
     this.projectName = projectName;
     this.singleMedia = singleMedia;
     this.annotations = [];
-  };
+  }
 }

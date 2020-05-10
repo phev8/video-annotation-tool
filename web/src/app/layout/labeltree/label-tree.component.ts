@@ -87,6 +87,13 @@ export class LabelTreeComponent implements OnInit, OnDestroy {
       }
       location.reload();
     }));
+
+    this.subscription.add(this.labelsService.recommendationChange$().subscribe( response => {
+      if (response) {
+        alert('Recommendations Status Change: ' + response['data']);
+        location.reload();
+      }
+    }));
   }
 
   addNewLabel() {

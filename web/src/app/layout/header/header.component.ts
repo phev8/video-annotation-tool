@@ -39,6 +39,7 @@ import {
 export class HeaderComponent implements OnInit, OnDestroy {
   isProjectActive = true;
   isEditorActive = false;
+  isTutorialActive = false;
   isHeaderVisible = true;
 
   private user: UserModel;

@@ -36,11 +36,21 @@ export class Project {
   @Column()
   videoDimensions: string;
 
+  @Column()
+  recommendStatus: number;
+
+  @Column()
+  recommendPollId: string;
+
   constructor(body: any) {
-    if(body) {
+    if (body) {
       this.title = body.title;
       this.description = body.description;
       this.singleMedia = body.singleMedia;
+      if (this.singleMedia) {
+        this.recommendStatus = 0;
+        this.recommendPollId = '';
+      }
       this.modified = new Date();
       this.ownerId = body.ownerId;
       this.contributorIds = [];

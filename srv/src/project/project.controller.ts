@@ -1,9 +1,9 @@
- import {
+import {
   Body,
   Controller,
   Delete,
   FilesInterceptor,
-  Get,
+  Get, Header, Logger,
   Param,
   Post,
   Put,
@@ -13,47 +13,58 @@
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ProjectService } from './project.service';
-import { Project } from '../entities/project.entity';
-import { AuthGuard } from '@nestjs/passport';
-import { Directory } from '../entities/directory.entity';
-import { File } from '../entities/file.entity';
-import { createReadStream, Stats, statSync, createWriteStream } from 'fs';
-import { Request, Response } from 'express';
+import {ProjectService} from './project.service';
+import {Project} from '../entities/project.entity';
+import {AuthGuard} from '@nestjs/passport';
+import {File} from '../entities/file.entity';
+import {createReadStream, Stats, statSync} from 'fs';
+import {Request, Response} from 'express';
 import * as moment from 'moment';
 import * as csvStringify from 'csv-stringify';
-import { LabelsService } from '../labels/labels.service';
-import { SegmentService } from '../labels/segment/segment.service';
-import { Label } from '../entities/label.entity';
-import { Segment } from '../entities/segment.entity';
-import { ObjectID } from 'mongodb';
-import { config } from '../../config';
- import { LabelCategory } from '../entities/labelcategory.entity';
- import { User } from '../entities/user.entity';
- import { ProjectAnnotationResult } from '../interfaces/project.annotation';
- import { MarkerService } from '../labels/trackers/marker/marker.service';
- import { LabelResult } from '../interfaces/label.result';
- import { FileUpload } from '../interfaces/file.upload';
- import { SegmentResult } from '../interfaces/segment.result';
- import { AnnotationResult } from '../interfaces/annotation.result';
- import {RecommendationService} from "../recommendations/recommendation.service";
+import {LabelsService} from '../labels/labels.service';
+import {SegmentService} from '../labels/segment/segment.service';
+import {Label} from '../entities/label.entity';
+import {Segment} from '../entities/segment.entity';
+import {ObjectID} from 'mongodb';
+import {config} from '../../config';
+import {LabelCategory} from '../entities/labelcategory.entity';
+import {User} from '../entities/user.entity';
+import {ProjectAnnotationResult} from '../interfaces/project.annotation';
+import {MarkerService} from '../labels/trackers/marker/marker.service';
+import {LabelResult} from '../interfaces/label.result';
+import {FileUpload} from '../interfaces/file.upload';
+import {SegmentResult} from '../interfaces/segment.result';
+import {AnnotationResult} from '../interfaces/annotation.result';
+import {RecommendationService} from '../recommendations/recommendation.service';
+import {Pollingstatus} from '../entities/pollingstatus.entity';
+import {LabelsGateway} from '../labels/labels.gateway';
+import {UsersService} from '../users/users.service';
+import * as fs from 'fs';
+import {UserModel} from '../users/user.model';
 
 @Controller('project')
 export class ProjectController {
+
+  private readonly logger = new Logger(ProjectController.name);
 
   constructor(private projectService: ProjectService,
               private labelsService: LabelsService,
               private segmentsService: SegmentService,
               private markerService: MarkerService,
-              private recommendationService: RecommendationService) {
+              private recommendationService: RecommendationService,
+              private labelsGateway: LabelsGateway,
+              private userService: UsersService) {
   }
 
   @Post()
   @UseGuards(AuthGuard())
+  @Header('content-type', 'application/json')
   async create(@Req() req, @Body() body) {
-    body["ownerId"] = req.user;
+    this.logger.log('INCOMING PROJECT CREATION REQUEST : ' + JSON.stringify(body));
+    body.ownerId = req.user;
     const project = new Project(body);
     const response = await this.projectService.create(project);
+    this.logger.log('RESPONSE : ' + JSON.stringify({ result: response.result, id: response.insertedId }));
     return { result: response.result, id: response.insertedId };
   }
 
@@ -71,7 +82,7 @@ export class ProjectController {
   @UseInterceptors(FilesInterceptor('file'))
   async uploadFile(@Param('id') id, @UploadedFiles() uploads: FileUpload[]) {
     const project = await this.projectService.findOne(id);
-    if(!(project.singleMedia && project.fileTree.size == 1)) {
+    if (!(project.singleMedia && project.fileTree.size === 1)) {
       uploads.forEach((upload: FileUpload) => {
         if (upload.filename) {
           const file = new File(upload);
@@ -136,7 +147,7 @@ export class ProjectController {
   async updateProject(@Param('id') id, @Body() body) {
     const project = await this.projectService.findOne(id);
     if (body) {
-      project.videoDimensions = body['videoDimensions'];
+      project.videoDimensions = body.videoDimensions;
       await this.projectService.update(id, project);
     }
     return project;
@@ -148,14 +159,14 @@ export class ProjectController {
     const project = await this.projectService.findOne(id);
     let memberIds = [];
     if (body) {
-      let members:User[] = body['contributorIds'];
-      for (let member of members) {
+      let members: User[] = body.contributorIds;
+      for (const member of members) {
         memberIds.push(ObjectID.createFromHexString(member));
       }
       project.contributorIds = memberIds;
       memberIds = [];
-      members = body['supervisorIds'];
-      for (let member of members) {
+      members = body.supervisorIds;
+      for (const member of members) {
         memberIds.push(ObjectID.createFromHexString(member));
       }
       project.supervisorIds = memberIds;
@@ -167,6 +178,7 @@ export class ProjectController {
   @UseGuards(AuthGuard())
   async delete(@Param('id') projectId) {
     await this.labelsService.deleteProjectLabelCategories(projectId).then(result => {});
+    await this.removeVideoFiles(projectId);
     return await this.projectService.delete(projectId);
   }
 
@@ -194,25 +206,25 @@ export class ProjectController {
 
   @Get(':id/annotations')
   async generateAnnotations(@Param('id') projectId) {
-    //Needs refactoring
     const labelCategories: LabelCategory[] = await this.labelsService.getLabelCategories(projectId);
     const project: Project = await this.projectService.findOne(projectId);
-    let modifiedResponse: ProjectAnnotationResult = new ProjectAnnotationResult(project.title, project.singleMedia);
-    if(modifiedResponse.singleMedia) {
-      let dimensions = project.videoDimensions.split(" ");
-      modifiedResponse.videoDimensionsX = +dimensions[0];
-      modifiedResponse.videoDimensionsY = +dimensions[1];
+    const modifiedResponse: ProjectAnnotationResult = new ProjectAnnotationResult(project.title, project.singleMedia);
+    if (modifiedResponse.singleMedia) {
+      const dimensions = project.videoDimensions.split(' ');
+      modifiedResponse.videoDimensionsX = +dimensions[1];
+      modifiedResponse.videoDimensionsY = +dimensions[0];
     }
 
     for (const category of labelCategories) {
-      let categoryResponse: AnnotationResult = {categoryName: category.name, labels: []};
+      const categoryResponse: AnnotationResult = {categoryName: category.name, labels: []};
       for (const label of category.labels) {
-        let labelResult: LabelResult = {labelName: label.name, segments: []};
-        let segments: Segment[] = await this.segmentsService.getSegments(label["_id"].toHexString());
+        const labelResult: LabelResult = {labelName: label.name, segments: []};
+        // @ts-ignore
+        const segments: Segment[] = await this.segmentsService.getSegments(label._id.toHexString());
         for (const segment of segments) {
-          let segmentResult: SegmentResult = {start: segment.start, end: segment.end, trackable: category.isTrackable};
-          if(category.isTrackable)
-            segmentResult.trackers = await this.markerService.fetchTrackerResults(segment.id.toHexString());
+          const segmentResult: SegmentResult = {start: segment.start, end: segment.end, trackable: category.isTrackable};
+          if (category.isTrackable)
+            segmentResult.trackers = await this.markerService.fetchTrackerResults(segment.id.toHexString(), modifiedResponse.videoDimensionsX, modifiedResponse.videoDimensionsY);
           labelResult.segments.push(segmentResult);
         }
         categoryResponse.labels.push(labelResult);
@@ -225,10 +237,50 @@ export class ProjectController {
   @Post('recommendations/:projectId')
   @UseGuards(AuthGuard())
   async fetchRecommendations(@Param('projectId') id, @Req() req, @Body() body) {
+    const systemUser = await this.userService.findByUsername(config.systemUserName);
+    if (!systemUser || systemUser.length === 0) {
+      await this.userService.create(new UserModel(config.systemUserName, config.systemUserEmail, config.systemUserPwd));
+    }
     const project = await this.projectService.findOne(id);
-    if(project.singleMedia)
-      await this.recommendationService.fetchYoloRecommendations(project, config.videoserviceUrl);
-    return { message: "Not a single media project"};
+    if (project.singleMedia && project.recommendStatus === 0) {
+      // @ts-ignore
+      const poll_Id: string = await this.recommendationService.fetchYoloRecommendations(project, config.videoserviceUrl);
+      this.logger.log('Created poll for Project ' + project.title + ' - ID # ' + poll_Id);
+      if (poll_Id) {
+        project.recommendStatus = 1;
+        project.recommendPollId = poll_Id.toString();
+        await this.projectService.update(project.id.toHexString(), project);
+        return { status: 1, message: 'Recommendation Initiated', pollId: poll_Id};
+      } else {
+        project.recommendStatus = 0;
+        project.recommendPollId = '';
+        await this.projectService.update(project.id.toHexString(), project);
+        return { status: 0, message: 'Recommendation Failed', pollId: ''};
+      }
+    }
+    else if (project.recommendStatus) {
+      const poll: Pollingstatus = await this.getPollStatus(project.recommendPollId.toString());
+      project.recommendStatus = poll.completed ? 2 : 1;
+      await this.projectService.update(project.id.toHexString(), project);
+      return { status: project.recommendStatus, message: poll.completed ? 'Recommendation Complete' : 'Recommendation In Progress', pollId: poll.id.toString()};
+    }
+    return { status: -1, message: 'Not a single media project', pollId: ''};
+  }
+
+  @Post('recommendations/recreate/:projectId')
+  @UseGuards(AuthGuard())
+  async recreateRecommendations(@Param('projectId') id, @Req() req, @Body() body) {
+    const project = await this.projectService.findOne(id);
+    if (await this.removeYoloRecommendations(project)) {
+      await this.labelsGateway.triggerReload(project.id.toString(), 'Recommendation has been re-initiated');
+      const poll_Id: string = project.recommendPollId;
+      await this.recommendationService.removePoll(poll_Id);
+      project.recommendPollId = '';
+      project.recommendStatus = 0;
+      await this.projectService.update(project.id.toHexString(), project);
+      return await this.fetchRecommendations(id, req, body);
+    }
+    return { status: -1, message: 'Failed to delete recommendations', pollId: ''};
   }
 
   @Get('poll/:id')
@@ -237,4 +289,28 @@ export class ProjectController {
     return await this.recommendationService.fetchPollStatus(id);
   }
 
+  async removeYoloRecommendations(project: Project): Promise<boolean> {
+    const systemUser: User[] = await this.userService.findByUsername(config.systemUserName);
+    const categories: LabelCategory[] = await this.labelsService.getLabelCategoriesByAuthor(project.id.toString(), systemUser[0].id.toString());
+    if (categories) {
+      for (const category of categories) {
+        this.labelsService.deleteLabelCategory(category.id.toString()).then(result => {});
+      }
+    }
+    return true;
+  }
+
+  async removeVideoFiles(projectId: any) {
+    const project: Project = await this.projectService.findOne(projectId);
+    for (const index in project.fileTree.children) {
+      if (project.fileTree.children.hasOwnProperty(index)) {
+        const path = `${config.multerDest}/${project.fileTree.children[index].filename}`;
+        // tslint:disable-next-line:only-arrow-functions
+        await fs.unlink(path, function(error){
+          // console.log(error);
+          console.log('Successfully deleted: ' + path);
+        });
+      }
+    }
+  }
 }

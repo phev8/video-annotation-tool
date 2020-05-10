@@ -4,18 +4,18 @@
 <div *ngIf="freshStart" class="full-screen clr-row  margin-right-left-none">
     <div class="grey-card set-card-borders">
       <div class="clr-row margin-right-left-none">
-        <div class="clr-col-5">
-          <span class="invite-text">Lets get started.</span>
+        <div class="clr-col-5 table-displays">
+          <div class="center-item-rightlean" ><span class="invite-text">Lets get started.</span></div>
         </div>
 
-        <div class="clr-col-2">
-          <div class="card-start card-img">
+        <div class="clr-col-2 table-displays">
+          <div class="card-start card-img center-item">
             <img src="assets/playButton.png" (click)="modalOpen = true">
           </div>
         </div>
 
-        <div class="clr-col-4">
-          <div class="project-text-div">
+        <div class="clr-col-4 table-displays">
+          <div class="project-text-div center-item-leftlean">
             <span class="project-text">Click the icon to create a project to upload videos and begin annotating them.</span>
           </div>
         </div>
@@ -136,7 +136,7 @@
         </ng-template>
       </clr-tree-node> -->
 
-      <clr-tree-node>
+      <clr-tree-node class="project-contributor">
       <div>
         <clr-icon [attr.shape]='contributorModel.status ? "folder-open" : "folder"'></clr-icon>
         <label>Contributors</label>

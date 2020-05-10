@@ -39,7 +39,8 @@ export class FileUploadComponent implements OnInit {
   }
 
   onFilesAdded() {
-    const files: { [key: string]: File } = this.currentProject.singleMedia? Array.prototype.slice.call( this.file.nativeElement.files, 0, 1 ) : this.file.nativeElement.files;
+    // tslint:disable-next-line:max-line-length
+    const files: { [key: string]: File } = this.currentProject.singleMedia ? Array.prototype.slice.call( this.file.nativeElement.files, 0, 1 ) : this.file.nativeElement.files;
     for (const key in files) {
       if (!isNaN(parseInt(key, 10))) {
         this.files.add(files[key]);
@@ -56,13 +57,14 @@ export class FileUploadComponent implements OnInit {
   }
 
   updateProjectDimensions(uploadComplete: boolean) {
-    if(this.currentProject.singleMedia) {
-      let drawingBoardElement = this.elementRef.nativeElement.offsetParent.getElementsByTagName("drawing-board")[0];
-      if(drawingBoardElement) {
-        this.currentProject.videoDimensions = ""+ drawingBoardElement.offsetHeight+ " " + drawingBoardElement.offsetWidth;
+    if (this.currentProject.singleMedia) {
+      const drawingBoardElement = this.elementRef.nativeElement.offsetParent.getElementsByTagName('drawing-board')[0];
+      if (drawingBoardElement) {
+        this.currentProject.videoDimensions = '' + drawingBoardElement.offsetHeight + ' ' + drawingBoardElement.offsetWidth;
         this.projectService.updateProject(this.currentProject).subscribe(next => {
-          if(uploadComplete)
-            this.fetchRecommendations();
+          /*if (uploadComplete) {
+            this.fetchRecommendations();   // COMMENTED TO ENABLE RECOMMENDATIONS THROUGH BUTTON CLICK, CLEAN UP AND REMOVE THIS SECTION
+          }*/
         });
       }
     }
@@ -70,7 +72,7 @@ export class FileUploadComponent implements OnInit {
 
   closeDialog() {
     if (this.uploadSuccessful) {
-      if(this.currentProject.singleMedia) {
+      if (this.currentProject.singleMedia) {
         this.updateProjectDimensions(true);
       }
       this.reset();
@@ -109,11 +111,11 @@ export class FileUploadComponent implements OnInit {
     this.closeModal();
   }
 
-  private fetchRecommendations() {
+  /*private fetchRecommendations() {
     if (this.currentProject.singleMedia) {
       this.editorService.predictRecommendation(this.currentProject);
     }
-  }
+  }*/
 
   private closeModal() {
     this.opened = false;

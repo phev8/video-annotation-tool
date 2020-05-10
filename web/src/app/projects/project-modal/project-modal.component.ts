@@ -38,7 +38,7 @@ export class ProjectModalComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.model = new ProjectModel('', '', new Date(), true, [], []);
     this.supervisorModel = new MemberModel('', false, [], true, true, 'supervisor');
-    this.contributorModel = new MemberModel('', false, [], true, true, 'contributor');
+    this.contributorModel = new MemberModel('', true, [], true, true, 'contributor');
     this.singleMedia = true;
   }
 

@@ -13,6 +13,8 @@ export class ProjectModel {
     public memberIds?: string[],
     public description?: string,
     public fileTree?: DirectoryModel,
-    public videoDimensions?: string
+    public videoDimensions?: string,
+    public recommendStatus?: number,
+    public recommendPollId?: string,
   ) {}
 }

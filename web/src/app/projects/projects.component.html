@@ -43,11 +43,11 @@
             <!--Block-->
             <!--</div>-->
             <div class="card-text">
-              <strong>Description:</strong> {{project.description}} <br>
-              <strong>Modified:</strong> {{project.modified}} <br>
-              <strong>OwnerId:</strong> <span class="label label-info left-margin-1">{{project.ownerId.username}}</span><br>
-              <strong>SupervisorIds:</strong> <span *ngFor="let user of project.supervisorIds; let i = index" [attr.data-index]="i" [ngClass]="i == 0? 'label label-info left-margin-1': 'label label-info'">{{user.username}}</span><br>
-              <strong>ContributorIds:</strong><span *ngFor="let user of project.contributorIds; let i = index" [attr.data-index]="i" [ngClass]="i == 0? 'label label-info left-margin-1': 'label label-info'">{{user.username}}</span>
+              <strong>Description :</strong> {{project.description}} <br>
+              <strong>Modified :</strong> {{project.modified}} <br>
+              <strong>Owner :</strong> <span class="label label-info left-margin-1">{{project.ownerId.username}}</span><br>
+              <!-- <strong>SupervisorIds:</strong> <span *ngFor="let user of project.supervisorIds; let i = index" [attr.data-index]="i" [ngClass]="i == 0? 'label label-info left-margin-1': 'label label-info'">{{user.username}}</span><br> -->
+              <strong>Contributors :</strong><span *ngFor="let user of project.contributorIds; let i = index" [attr.data-index]="i" [ngClass]="i == 0? 'label label-info left-margin-1': 'label label-info'">{{user.username}}</span>
               <!--<strong>SupervisorIds:</strong> {{project.supervisorIds.join(", ")}} <br>
               <strong>ContributorIds:</strong> {{project.contributorIds.join(", ")}}-->
             </div>

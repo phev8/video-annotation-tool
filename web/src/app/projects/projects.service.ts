@@ -95,7 +95,7 @@ export class ProjectsService {
   }
 
   exportCsv(projectId: string): Observable<any> {
-    //return this.http.get(`${this.projectsUrl}/${projectId}/segments/csv`, {responseType: 'text'});
+    // return this.http.get(`${this.projectsUrl}/${projectId}/segments/csv`, {responseType: 'text'});
     return this.http.get(`${this.projectsUrl}/${projectId}/annotations`, {responseType: 'text'});
   }
 
@@ -107,5 +107,10 @@ export class ProjectsService {
   getRecommendations(project: ProjectModel) {
     return this.http.post(`${this.projectsUrl}/recommendations/${project.id}`, null)
       .pipe(catchError(this.handleError<any>(`recommendation failed ${JSON.stringify(project)}`)));
+  }
+
+  recreateRecommendations(projectId: string) {
+    return this.http.post(`${this.projectsUrl}/recommendations/recreate/${projectId}`, null)
+      .pipe(catchError(this.handleError<any>(`recommendation failed ${JSON.stringify(projectId)}`)));
   }
 }

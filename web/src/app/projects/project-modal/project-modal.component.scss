@@ -24,6 +24,7 @@
 
 .margin-right-left-none {
   margin-right: 0rem !important;
+  height: inherit;;
 }
 
 .width-inherit {
@@ -113,12 +114,43 @@
 }
 
 .invite-text{
-  position: absolute;
+  //position: absolute;
   color: #FFFFFF;
   font-weight: bolder;
   font-size: xx-large;
-  margin-left: 28%;
-  margin-top: 12%;
+  //margin-left: 28%;
+  //margin-top: 12%;
+}
+
+.table-displays {
+  display: table;
+  height: 100%;
+}
+
+.center-item {
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.center-item-rightlean {
+  text-align: right;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.center-item-leftlean {
+  text-align: left;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.margin-auto{
+  margin: auto;
+}
+
+.align-center{
+  text-align: center;
 }
 
 .project-text{
@@ -131,6 +163,10 @@
     color: #FFFFFF;
   }
 
+}
+
+.project-contributor {
+  margin-top: 1rem;
 }
 
 .card-start {

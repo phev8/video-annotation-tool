@@ -27,11 +27,14 @@ export class RecommendationService {
     private markerService: MarkerService) {
   }
 
-  async fetchYoloRecommendations(project: Project, trackerUrl: string) {
+  /*async fetchYoloRecommendations(project: Project, trackerUrl: string) {
+    const insertResult: InsertResult = await this.pollerService.createPoll(false);
+    const pollId = insertResult.identifiers[0].id;
+    console.log(pollId);
     this.pollerService.createPoll(false).then(result => {
       const poller_Id = result.identifiers[0].id;
       console.log(
-          "Created Poll id = " + poller_Id.toString()+ " for Project: id - "+ project.id.toString() + "; name :"+ project.title);
+          'Created Poll id = ' + poller_Id.toString() + ' for Project: id - ' + project.id.toString() + '; name :' + project.title);
       const request = {filename: project.fileTree.children[0].filename};
       this.httpService.post(trackerUrl + '/video/recommend', request).subscribe(response => {
         if (response) {
@@ -49,14 +52,43 @@ export class RecommendationService {
       }, error => {
         this.predictionError(error, poller_Id.toString());
       });
+      return poller_Id;
     }, error => {
-      console.log("Failed to create Poll for Project: id - "+ project.id.toString() + "; name :"+ project.title);
+      console.log(error);
+      console.log('Failed to create Poll for Project: id - ' + project.id.toString() + '; name :' + project.title);
+      return null;
     });
+  }*/
+
+  async fetchYoloRecommendations(project: Project, trackerUrl: string) {
+    const insertResult: InsertResult = await this.pollerService.createPoll(false);
+    const pollId = insertResult.identifiers[0].id;
+    if (!pollId) return null;
+    console.log(
+        'Created Poll id = ' + pollId + ' for Project: id - ' + project.id.toString() + '; name :' + project.title);
+    const request = {filename: project.fileTree.children[0].filename};
+    this.httpService.post(trackerUrl + '/video/recommend', request).subscribe(response => {
+      if (response) {
+        console.log(JSON.stringify(response.data));
+        if (response.data && response.data != {} && !response.data.status) {
+          let structuredResponse = this.processRecommendations(response.data, project);
+          this.storeAnnotations(structuredResponse, project).then(response => {
+            this.labelsGateways.triggerYoloGeneratedLabels(project.id.toString());
+          });
+        }
+        this.pollerService.updatePoll(pollId.toString(), { completed: true}).then(result => {
+          console.log('Poll completed : PollId - ' + pollId.toString());
+        });
+      }
+    }, error => {
+      this.predictionError(error, pollId.toString());
+    });
+    return pollId;
   }
 
   private predictionError(err, pollerId: string) {
     this.pollerService.updatePoll(pollerId, {completed: true, error: true, errorMessage: err}).then(result => {
-      console.log(result)
+      console.log(result);
     }, err => {
       console.log(err);
     });
@@ -102,10 +134,10 @@ export class RecommendationService {
   }
 
   async storeAnnotations(structuredResponse: {}, project: Project) {
-    let systemUser = await this.usersService.findByUsername("systemrecommendation");
+    let systemUser = await this.usersService.findByUsername(config.systemUserName);
     if(!systemUser || systemUser.length == 0) {
-      await this.usersService.create(new UserModel("systemrecommendation", "system.recommendation@system.com", "sys123"));
-      systemUser = await this.usersService.findByUsername("systemrecommendation");
+      await this.usersService.create(new UserModel(config.systemUserName, config.systemUserEmail, config.systemUserPwd));
+      systemUser = await this.usersService.findByUsername(config.systemUserName);
     }
     const samplingRate = structuredResponse["samplingRate"];
     for(let key in structuredResponse) {
@@ -178,5 +210,9 @@ export class RecommendationService {
 
   async fetchPollStatus(id: string) {
     return this.pollerService.findPoll(id);
+  }
+
+  async removePoll(poll_Id: string) {
+    return this.pollerService.removePoll(poll_Id);
   }
 }

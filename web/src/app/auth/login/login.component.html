@@ -27,5 +27,8 @@
     </div>
     <button [clrLoading]="loginBtnState" type="submit" class="btn btn-primary">LOGIN</button>
     <button class="btn btn-outline signup" (click)="onRegisterClick()">Register instead</button>
+    <clr-toggle-container clrInline>
+      <clr-control-helper>Don't have an account? Click Register to create an account</clr-control-helper>
+    </clr-toggle-container>
   </div>
 </form>

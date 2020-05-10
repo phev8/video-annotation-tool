@@ -244,12 +244,16 @@ export class LabelsGateway  {
 
   async triggerYoloGeneratedLabels(projectId: string) {
     this.io.to(projectId).emit('yoloRecommendations', {data: []});
-    //this.io.sockets.to(projectId).emit('yoloRecommendations', {data: []});
+    // this.io.sockets.to(projectId).emit('yoloRecommendations', {data: []});
   }
 
 // region
 
   private static getProjectRoom(socket: SocketIO.Socket) {
     return Object.keys(socket.rooms)[1];
+  }
+
+  async triggerReload(projectId: any, data: string) {
+    this.io.to(projectId).emit('recommendationChange', {data: data});
   }
 }

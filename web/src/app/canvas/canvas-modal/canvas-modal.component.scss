@@ -10,6 +10,21 @@
   margin-left: 45%;
 }
 
+.table-display {
+  display: table;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.set-height {
+  height: 6rem;
+}
+
+.table-cell-display {
+  display: table-cell;
+  text-align: center;
+}
+
 .width-max {
   width: 100%;
   max-width: 100%;
