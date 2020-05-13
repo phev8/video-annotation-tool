@@ -4,6 +4,7 @@ import * as hyperid from 'hyperid';
 
 import _ from "lodash";
 import { Time } from './utilities/time';
+import {UserModel} from "../../models/user.model";
 
 export class TimelineData {
   private readonly _groups: vis.DataSet<DataGroup>;
@@ -103,8 +104,7 @@ export class TimelineData {
   }
 
 
-  startRecording(groupId: IdType, start: number) {
-    //TODO: cHECK IF CURRENT ITEM STARTS WITHIN ANY OTHER ITEM
+  startRecording(groupId: IdType, start: number, users: UserModel[]) {
     let coincidingItem = this.findOverlappingItems(this.findItemsByOptions('group', groupId.toString()), start);
     if(coincidingItem) {
       this._map.set(groupId, {
@@ -114,7 +114,11 @@ export class TimelineData {
       });
       return coincidingItem.end;
     }
+
     const item = {id: this.instance(), group: groupId, content: '', start: start, end: start, type: 'range'};
+
+    let user = users.find(item => item.id == JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
+    if(user) {item['style'] = 'background: ' + user["color"]; item['title'] = user['username'];}
     this._items.add(item);
     this._map.set(groupId, {
       id: item.id,

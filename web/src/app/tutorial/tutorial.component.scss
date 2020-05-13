@@ -1,0 +1,57 @@
+.parent {
+  display: table;
+  width: 100%;
+  background: black;
+  text-align: center;
+  height: 900px;
+}
+
+.child {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.helper-text {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.font-color {
+  color: #FFFFFF;
+}
+
+.font-style {
+}
+
+.faq-section {
+  display: table;
+  width: 100%;
+  background: white;
+  text-align: center;
+  height: 800px;
+}
+
+.container {
+  scroll-behavior: smooth;
+}
+
+.background-card {
+  margin: 12rem;
+  vertical-align: middle;
+  background: linear-gradient(to right, rgba(226,226,226,1) 0%, rgba(219,219,219,1) 50%, rgba(209,209,209,1) 51%, rgba(254,254,254,1) 100%);
+  border: rgba(219,219,219,1);
+
+  box-shadow: 0px 4px 8px rgba(38, 38, 38, 0.2);
+  top: -4px;
+  border: 1px solid #cccccc;
+}
+
+.faq-text {
+  font-size: 1rem;
+}
+
+.small-text {
+  padding: 0.7rem;
+  font-size: 0.7rem;
+}

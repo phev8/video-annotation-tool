@@ -219,7 +219,6 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
   private userRole: string;
 
 
-
   ngOnInit(): void {
     this.subscription = this.projectService.getCurrentProject$()
       .subscribe(project => {
@@ -248,7 +247,9 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.subscription.add(this.toolBoxService.getCurrentItemStatus$().subscribe(next => {
       if(!next) {
-        this.timeline.setSelection(null);
+        if (this.timeline) {
+          this.timeline.setSelection(null);
+        }
       }
     }));
 
@@ -277,9 +278,9 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
         const curr = e[1];
 
         if (prev && prev.id === undefined) {
-          this.timelineData.startRecording(curr.id, this.currentTime);
+          this.timelineData.startRecording(curr.id, this.currentTime, this.users);
         } else if (curr.checked) {
-          this.timelineData.startRecording(curr.id, this.currentTime);
+          this.timelineData.startRecording(curr.id, this.currentTime, this.users);
         } else if (!curr.checked) {
           this.stopRecording(curr);
         }
@@ -371,9 +372,10 @@ export class TimelineComponent implements OnInit, AfterViewInit, OnDestroy {
             authorId: JSON.parse(localStorage.getItem('currentSession$'))['user']['id'],
           };
 
-          let user = this.users.find(item => item.id == JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
-          if(user) {response['style'] = 'background: ' + user["color"]; response['title'] = user['username'];}
+
           segment = response.updateExisting ? item : segment;
+          let user = this.users.find(item => item.id == JSON.parse(localStorage.getItem('currentSession$'))['user']['id']);
+          if(user) {segment['style'] = 'background: ' + user["color"]; segment['title'] = user['username'];}
           let checkForMerges = this.updateRequired(this.timelineData.findItemsByOptions('group', item.group), segment, response.updateExisting);
           let start: number;
           let end: number;

@@ -15,7 +15,7 @@ import {
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styles: [],
+  styleUrls: [ 'header.component.scss' ],
   animations: [
     trigger('openClose',
       [
@@ -58,10 +58,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
         if (url.startsWith('/project')) {
           this.isProjectActive = true;
           this.isEditorActive = false;
+          this.isTutorialActive = false;
         } else if (url.startsWith('/editor')) {
           this.isProjectActive = false;
           this.isEditorActive = true;
+          this.isTutorialActive = false;
           this.editorLink = url;
+        } else if (url.startsWith('/tutorial')) {
+          this.isProjectActive = false;
+          this.isEditorActive = false;
+          this.isTutorialActive = true;
+        } else {
+          this.isProjectActive = true;
+          this.isEditorActive = false;
+          this.isTutorialActive = false;
         }
       }
     });

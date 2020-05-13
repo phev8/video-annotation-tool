@@ -96,11 +96,10 @@ export class VideogridComponent implements OnInit, OnDestroy {
         if(this.dimensions && this.dimensions != '') this.ratio = '' + this.dimensions.split(' ')[0];
         else this.ratio = '1:2';
       }
-
-      if(this.singleMedia) {
-        if(this.dimensions && this.dimensions != '') this.ratio = '' + this.dimensions.split(' ')[0];
-        else this.ratio = "" + (this.elRef.nativeElement.parentElement.clientHeight - 50);
-      }
+      // if(this.singleMedia) {
+      // tslint:disable-next-line:max-line-length
+      if (this.dimensions && this.dimensions !== '') { this.ratio = '' + this.dimensions.split(' ')[0]; } else { this.ratio = '' + (this.elRef.nativeElement.parentElement.clientHeight - 50); }
+      // }
     }));
   }
 

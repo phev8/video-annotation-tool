@@ -5,6 +5,7 @@ import { ProjectsComponent } from './projects/projects.component';
 import { EditorComponent } from './editor/editor.component';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthComponent } from './auth/auth.component';
+import { TutorialComponent } from './tutorial/tutorial.component';
 
 
 const appRoutes: Routes = [
@@ -12,6 +13,7 @@ const appRoutes: Routes = [
   {path: 'auth', component: AuthComponent},
   // { filename: 'register', component: LoginComponent },
   {path: 'projects', component: ProjectsComponent, canActivate: [ AuthGuard ]},
+  {path: 'tutorial', component: TutorialComponent, canActivate: [ AuthGuard ]},
   {path: 'editor/:id', component: EditorComponent, canActivate: [ AuthGuard ]},
   {path: '**', redirectTo: ''}
 ];

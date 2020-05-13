@@ -3,6 +3,12 @@
   background: red;
   cursor: pointer
 }
-.branding {
+/*.branding {
   background-image: linear-gradient(to right, #002538, #345167) !important;
+}*/
+.hover-lighten {
+  &:hover {
+    box-shadow: inset 0 0 100px 100px rgba(255, 255, 255, 0.1) !important;
+    opacity: 0.8;
+  }
 }
