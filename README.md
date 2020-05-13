@@ -17,11 +17,18 @@ $ git config --global core.autocrlf false
 ```
 
 
+### 0. Dependencies
+
+* [Video Analyzer](https://github.com/sajeeth1009/video_analyzer.git)
+
+NOTE: This service is used by the Video Annotation tool to perform the tasks of object tracking as well as
+the generation of recommendations. Follow the instructions for the installations by clcking on the link above. 
+
 ### 1. Clone the repository
 
 This repository serves as a parent module for our client and server implementation. 
 ```bash
-$ git clone -b smart-labels https://github.com/phev8/video-annotation-tool.git
+$ git clone -b extended-video-annotation https://github.com/phev8/video-annotation-tool.git
 ```
 
 ### 2. Edit .env
