@@ -91,7 +91,7 @@ export class TrackerController {
           if (resp) {
             //TODO Handle different error codes from video analyzer microservice
             console.log(JSON.stringify(resp.data));
-            this.markerService.updateTrackerPrediction(tracker, resp.data, timeInfo.markers).then(completed => {
+            this.markerService.updateTrackerPrediction(tracker, resp.data, timeInfo.markers, videoDimensions.split(" ")).then(completed => {
               console.log(completed);
               this.pollerService.updatePoll(poller_Id, { completed: true}).then(result => {
                 console.log('');

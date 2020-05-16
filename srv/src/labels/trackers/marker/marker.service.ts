@@ -213,7 +213,7 @@ export class MarkerService {
     return { 'initialTrackerTime': marker.start, 'requiredTimes': requiredTimes, 'markers': searchedMarkers};
   }
 
-  async updateTrackerPrediction(tracker: Tracker, data: any, markers: Marker[]) {
+  async updateTrackerPrediction(tracker: Tracker, data: any, markers: Marker[], videoDimensions: string[]) {
     if(tracker.trackerType == 'rect') {
       let trackable  = tracker.trackables;
       for (const marker of markers) {
@@ -221,7 +221,7 @@ export class MarkerService {
           const track: Tracker = await this.getTracker(marker.trackerId);
           track.trackerType = tracker.trackerType;
           //TODO: Restructure the response from video analyzer to give responses by timeslot at the key
-          trackable = MarkerService.updatePredictedTracker(trackable, data[''+ marker.start]);
+          trackable = MarkerService.updatePredictedTracker(trackable, data[''+ marker.start], videoDimensions);
           track.trackables = trackable;
           this.updateTracker(marker.trackerId.toString(), track);
         }
@@ -230,9 +230,9 @@ export class MarkerService {
     return 'completed'
   }
 
-  private static updatePredictedTracker(trackable: string[], predictedData: any) {
-    console.log(predictedData);
-    const tuple = predictedData['trackerDim'].toString().replace('(','').replace(')','').split(',');
+  private static updatePredictedTracker(trackable: string[], predictedData: any, videoDimensions: string[]) {
+    // console.log(predictedData);
+    const tuple = this.adjustForVideoSize(predictedData['trackerDim'].toString().replace('(','').replace(')','').split(','), videoDimensions);
     trackable[0] = trackable[0].split(' x=\\"')[0] + ' x=\\"' + tuple[0] + '\\'+ trackable[0].split(' x=\\"')[1].substring(trackable[0].split(' x=\\"')[1].indexOf('\\') + 1);
     trackable[0] = trackable[0].split(' y=\\"')[0] + ' y=\\"' + tuple[1] + '\\' + trackable[0].split(' y=\\"')[1].substring(trackable[0].split(' y=\\"')[1].indexOf('\\') + 1);
     trackable[0] = trackable[0].split(' width=\\"')[0] + ' width=\\"' + tuple[2] + '\\'+ trackable[0].split(' width=\\"')[1].substring(trackable[0].split(' width=\\"')[1].indexOf('\\') + 1);
@@ -244,5 +244,22 @@ export class MarkerService {
     if(markerPredictionInfo && markerPredictionInfo['status'])
       return markerPredictionInfo['status'] == '200';
     return false;
+  }
+
+  /**
+   * Adjust x and y co-ordinates to not be less than 0. Adjust width and height to not cross video dimensions
+   * @param tuple
+   * @param videoDimensions
+   */
+  private static adjustForVideoSize(tuple, videoDimensions: string[]) {
+    let x = Number(tuple[0]);
+    let y = Number(tuple[1]);
+    let width = Number(tuple[2]);
+    let height = Number(tuple[3]);
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x + width > Number(videoDimensions[1])) width = Number(videoDimensions[1]) - x;
+    if (y + height > Number(videoDimensions[0])) height = Number(videoDimensions[0]) - y;
+    return [x, y, width, height];
   }
 }

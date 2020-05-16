@@ -1,19 +1,23 @@
 import {HttpService, Injectable} from '@nestjs/common';
 import {Project} from '../entities/project.entity';
-import {PollerService} from "../labels/trackers/poller.service";
-import {LabelsGateway} from "../labels/labels.gateway";
-import {RecommendationDTO} from "../dto/recommendation.dto";
-import {LabelsService} from "../labels/labels.service";
-import {UsersService} from "../users/users.service";
-import {UserModel} from "../users/user.model";
-import {LabelCategoryDto} from "../dto/label.category.dto";
-import {SegmentService} from "../labels/segment/segment.service";
-import {LabelCategory} from "../entities/labelcategory.entity";
-import {MarkerService} from "../labels/trackers/marker/marker.service";
-import {TrackerController} from "../labels/trackers/tracker.controller";
-import {config} from "../../config";
-import {Segment} from "../entities/segment.entity";
-import {InsertResult} from "typeorm";
+import {PollerService} from '../labels/trackers/poller.service';
+import {LabelsGateway} from '../labels/labels.gateway';
+import {RecommendationDTO} from '../dto/recommendation.dto';
+import {LabelsService} from '../labels/labels.service';
+import {UsersService} from '../users/users.service';
+import {UserModel} from '../users/user.model';
+import {LabelCategoryDto} from '../dto/label.category.dto';
+import {SegmentService} from '../labels/segment/segment.service';
+import {LabelCategory} from '../entities/labelcategory.entity';
+import {MarkerService} from '../labels/trackers/marker/marker.service';
+import {TrackerController} from '../labels/trackers/tracker.controller';
+import {config} from '../../config';
+import {Segment} from '../entities/segment.entity';
+import {InsertResult} from 'typeorm';
+import { PredictionResult } from '../interfaces/prediction.result';
+import { User } from '../entities/user.entity';
+import { liveSearch } from '../../../web/src/app/search/live-search.operator';
+import { Label } from '../entities/label.entity';
 
 @Injectable()
 export class RecommendationService {
@@ -27,39 +31,6 @@ export class RecommendationService {
     private markerService: MarkerService) {
   }
 
-  /*async fetchYoloRecommendations(project: Project, trackerUrl: string) {
-    const insertResult: InsertResult = await this.pollerService.createPoll(false);
-    const pollId = insertResult.identifiers[0].id;
-    console.log(pollId);
-    this.pollerService.createPoll(false).then(result => {
-      const poller_Id = result.identifiers[0].id;
-      console.log(
-          'Created Poll id = ' + poller_Id.toString() + ' for Project: id - ' + project.id.toString() + '; name :' + project.title);
-      const request = {filename: project.fileTree.children[0].filename};
-      this.httpService.post(trackerUrl + '/video/recommend', request).subscribe(response => {
-        if (response) {
-          console.log(JSON.stringify(response.data));
-          if(response.data && response.data != {} && !response.data.status) {
-            let structuredResponse = this.processRecommendations(response.data, project);
-            this.storeAnnotations(structuredResponse, project).then(response => {
-              this.labelsGateways.triggerYoloGeneratedLabels(project.id.toString());
-            });
-          }
-          this.pollerService.updatePoll(poller_Id, { completed: true}).then(result => {
-            console.log('Poll completed : PollId - ' + poller_Id);
-          });
-        }
-      }, error => {
-        this.predictionError(error, poller_Id.toString());
-      });
-      return poller_Id;
-    }, error => {
-      console.log(error);
-      console.log('Failed to create Poll for Project: id - ' + project.id.toString() + '; name :' + project.title);
-      return null;
-    });
-  }*/
-
   async fetchYoloRecommendations(project: Project, trackerUrl: string) {
     const insertResult: InsertResult = await this.pollerService.createPoll(false);
     const pollId = insertResult.identifiers[0].id;
@@ -71,7 +42,7 @@ export class RecommendationService {
       if (response) {
         console.log(JSON.stringify(response.data));
         if (response.data && response.data != {} && !response.data.status) {
-          let structuredResponse = this.processRecommendations(response.data, project);
+          const structuredResponse = this.processRecommendations(response.data, project);
           this.storeAnnotations(structuredResponse, project).then(response => {
             this.labelsGateways.triggerYoloGeneratedLabels(project.id.toString());
           });
@@ -89,86 +60,108 @@ export class RecommendationService {
   private predictionError(err, pollerId: string) {
     this.pollerService.updatePoll(pollerId, {completed: true, error: true, errorMessage: err}).then(result => {
       console.log(result);
-    }, err => {
-      console.log(err);
+    }, error => {
+      console.log(error);
     });
   }
 
-  private processRecommendations(recommendations: JSON, project: Project) {
+  /**
+   * Method that converts the response from the video service recommendations to a
+   * format easy to store as categories, labels, segments, markers and regions of interest.
+   * @param recommendations
+   * @param project
+   */
+   processRecommendations(recommendations: JSON, project: Project) {
     let samplingRate = 0;
-    let processedResponse = {};
+    const processedResponse = {};
     let previousTime = 0;
-    for (let time in recommendations) {
-      if(samplingRate == 0) samplingRate = parseInt(time);
-      let timeFrame: RecommendationDTO = recommendations[time];
-      timeFrame.classes.forEach(function (value, index, array) {
-        let responseKey = "" + time;
-        if(processedResponse[""+value]) {
-          let response = processedResponse[""+value][processedResponse[""+value].length -1 ];
-          if(previousTime!= 0 && response.end != previousTime) {
-            let response = {start: parseInt(time), end: parseInt(time)};
-            let trackingData = [];
-            trackingData.push(timeFrame["bounding boxes"][index]);
-            response[responseKey] = trackingData;
-            processedResponse["" + value].push(response);
+    for (const time in recommendations) {
+      if (recommendations[time]) {
+        if (samplingRate === 0) samplingRate = parseInt(time, 10);
+        const incomingTimeSlotData: RecommendationDTO = recommendations[time];
+        // tslint:disable-next-line:only-arrow-functions
+        incomingTimeSlotData.classes.forEach(function(value, index, array) {
+          const responseKey = '' + time;
+          if (processedResponse['' + value]) {
+            RecommendationService.handleExistingLabelInResponse(processedResponse, value, previousTime, time, incomingTimeSlotData, index, responseKey);
           } else {
-            response.end = parseInt(time);
-            let trackingData = response[responseKey]? response[responseKey]: [];
-            trackingData.push(timeFrame["bounding boxes"][index]);
-            response[responseKey] = trackingData;
-            processedResponse["" + value][processedResponse[""+value].length -1 ] = response;
+            RecommendationService.createNewLabelInResponse(time, incomingTimeSlotData, index, responseKey, processedResponse, value);
           }
-        } else {
-          let response = {start: parseInt(time), end: parseInt(time)};
-          let trackingData = [];
-          trackingData.push(timeFrame["bounding boxes"][index]);
-          response[responseKey] = trackingData;
-          processedResponse["" + value] = [response];
-        }
-      });
-      previousTime = parseInt(time);
-      if(samplingRate == 0) samplingRate = parseInt(time);
+        });
+        previousTime = parseInt(time, 10);
+        if (samplingRate === 0) samplingRate = parseInt(time, 10);
+      }
     }
-    processedResponse["samplingRate"] = samplingRate;
+    processedResponse['samplingRate'] = samplingRate;
     return processedResponse;
   }
 
-  async storeAnnotations(structuredResponse: {}, project: Project) {
-    let systemUser = await this.usersService.findByUsername(config.systemUserName);
-    if(!systemUser || systemUser.length == 0) {
-      await this.usersService.create(new UserModel(config.systemUserName, config.systemUserEmail, config.systemUserPwd));
-      systemUser = await this.usersService.findByUsername(config.systemUserName);
+  private static handleExistingLabelInResponse(processedResponse, value, previousTime: number, time, incomingTimeSlotData: RecommendationDTO, index, responseKey) {
+    const response = processedResponse['' + value][processedResponse['' + value].length - 1];
+    // Section to handle labels that do not occur between consecutive time slots - Consecutive time slots: Separated by one samplingRate
+    if (previousTime !== 0 && ((response.start > previousTime) || (previousTime > response.end))/*response.end !== previousTime */) {
+      RecommendationService.processNonConsecutiveLabels(time, incomingTimeSlotData, index, responseKey, processedResponse, value);
+    } else {
+      RecommendationService.processConsecutiveLabels(response, time, responseKey, incomingTimeSlotData, index, processedResponse, value);
     }
-    const samplingRate = structuredResponse["samplingRate"];
-    for(let key in structuredResponse) {
-      if(key  == "samplingRate") continue;
-      let labelCategory : LabelCategoryDto = new LabelCategoryDto(key, true, systemUser[0].id.toString(), structuredResponse["samplingRate"], "ms");
-      let createdItem = await this.labelsService.createSystemGeneratedLabelCategory(project.id.toString(),systemUser[0].id.toString(), "contributor", labelCategory);
-      if(createdItem instanceof LabelCategory) {
-          for(let j = 0; j < structuredResponse[key].length; j++) {
-            let item = structuredResponse[key][j];
-            let labelId = createdItem.labels[0]["_id"].toString();
-            //TODO FIX SEGMENT START AND END AT THE SAME TIME
-            let preExistingSegment: Segment = await this.segmentService.findCoincidingSegment(labelId,item["start"], item["end"], systemUser[0].id.toString(), samplingRate);
-            let segmentIdentifier;
-            if(preExistingSegment) {
-              await this.segmentService.updateSegment(preExistingSegment.id.toString(), preExistingSegment["start"], RecommendationService.getEnd(item, samplingRate));
-              segmentIdentifier = preExistingSegment.id.toString();
-            } else {
-              let insertResult = await this.segmentService.createSegment(labelId, systemUser[0].id.toString(), RecommendationService.getStart(item, samplingRate), RecommendationService.getEnd(item, samplingRate), "contributor");
-              segmentIdentifier = insertResult.identifiers[0].id.toString();
-            }
-            if(segmentIdentifier) {
-              for(const trackingKey in structuredResponse[key][j]) {
-                if(trackingKey == "start" || trackingKey == "end") continue;
-                let timeslot = parseInt(trackingKey);
-                if(!await this.markerService.findMarkerByTime(segmentIdentifier, timeslot)) {
-                  let response = await this.markerService.addMarker({ completed: true, start: timeslot, labelId: labelId,
-                    authorId: systemUser[0].id.toString(), authorClass: "contributor", segmentId: segmentIdentifier });
-                  let marker = await this.markerService.getMarker(response.insertedId.toString());
-                  let tracker = await this.markerService.getTracker(marker.trackerId.toString());
-                  let body = {"authorId": systemUser[0].id.toString(), "trackerType": "rect","authorClass": "contributor", "labelName": createdItem.labels[0].name,
-                          "trackables": this.generateRecommendedTrackables(structuredResponse[key][j][trackingKey], project.videoDimensions, createdItem.labels[0].name)};
+  }
+
+  private static createNewLabelInResponse(time, timeFrame: RecommendationDTO, index, responseKey, processedResponse, value) {
+    const response = { start: parseInt(time, 10), end: parseInt(time, 10) };
+    const regionsOfInterest = [];
+    regionsOfInterest.push(timeFrame['bounding boxes'][index]);
+    response[responseKey] = regionsOfInterest;
+    processedResponse['' + value] = [response];
+  }
+
+  private static processConsecutiveLabels(response, time, responseKey, timeFrame: RecommendationDTO, index, processedResponse, value) {
+    response.end = parseInt(time, 10);
+    const regionsOfInterest = response[responseKey] ? response[responseKey] : [];
+    regionsOfInterest.push(timeFrame['bounding boxes'][index]);
+    response[responseKey] = regionsOfInterest;
+    processedResponse['' + value][processedResponse['' + value].length - 1] = response;
+  }
+
+  private static processNonConsecutiveLabels(time, timeFrame: RecommendationDTO, index, responseKey, processedResponse, value) {
+    const timeSegment = { start: parseInt(time, 10), end: parseInt(time, 10) };
+    const regionsOfInterest = [];
+    regionsOfInterest.push(timeFrame['bounding boxes'][index]);
+    timeSegment[responseKey] = regionsOfInterest;
+    processedResponse['' + value].push(timeSegment);
+  }
+
+  /**
+   * Store the processed recommendation response into the database.
+   * @param structuredResponse
+   * @param project
+   */
+  async storeAnnotations(structuredResponse: {}, project: Project) {
+    const systemUser = await this.getSystemUser();
+    const samplingRate = structuredResponse['samplingRate'];
+    for (const key in structuredResponse) {
+      if (key  === 'samplingRate') continue;
+      const labelCategory: LabelCategoryDto = new LabelCategoryDto(key, true, systemUser[0].id.toString(), structuredResponse['samplingRate'], 'ms');
+      let category = await this.labelsService.createSystemGeneratedLabelCategory(project.id.toString(), systemUser[0].id.toString(), 'contributor', labelCategory);
+        // tslint:disable-next-line:prefer-for-of
+      for (let j = 0; j < structuredResponse[key].length; j++) {
+        const predictedCategoryInstanceInfo = structuredResponse[key][j];
+        for (const trackingKey in structuredResponse[key][j]) {
+          const seenLabels = {};
+          if (trackingKey === 'start' || trackingKey === 'end') continue;
+          if (structuredResponse[key][j].hasOwnProperty(trackingKey)) {
+            for (const labelInstance in structuredResponse[key][j][trackingKey]) {
+              if (structuredResponse[key][j][trackingKey].hasOwnProperty(labelInstance)) {
+                const timeslot = parseInt(trackingKey, 10);
+                const labelId = (await this.getLabelToUpdate(category, seenLabels, project.id.toString(), systemUser[0].id.toString())).id.toString(); // category.labels[0]['_id'].toString()
+                const segmentIdentifier = await this.getSegmentForLabel(labelId, timeslot, systemUser, samplingRate);
+                category = await this.labelsService.getLabelCategory(category.id.toString());
+                if (!await this.markerService.findMarkerByTime(segmentIdentifier, timeslot)) {
+                  const response = await this.markerService.addMarker({ completed: true, start: timeslot, labelId,
+                    authorId: systemUser[0].id.toString(), authorClass: 'contributor', segmentId: segmentIdentifier });
+                  const marker = await this.markerService.getMarker(response.insertedId.toString());
+                  const tracker = await this.markerService.getTracker(marker.trackerId.toString());
+                  const body = {authorId: systemUser[0].id.toString(), trackerType: 'rect', authorClass: 'contributor', labelName: category.labels[labelInstance].name,
+                    trackables: RecommendationService.generateRecommendedTrackables(structuredResponse[key][j][trackingKey][labelInstance], project.videoDimensions, category.labels[labelInstance].name)};
                   tracker.selectedColor = config.systemColor;
                   tracker.firstUpdate = false;
                   TrackerController.setTrackerFields(tracker, body);
@@ -176,36 +169,57 @@ export class RecommendationService {
                 }
               }
             }
+          }
         }
       }
     }
-    console.log("Recommendation Completed");
+    console.log('Recommendation Completed');
     return true;
   }
 
-  private static getStart(item, samplingRate: any) {
-    const start = item["start"] - Math.round(samplingRate / 2);
-    return start<=0? 0 : start;
+  private async getSegmentForLabel(labelId, trackingKey, systemUser, samplingRate) {
+    const preExistingSegment: Segment = await this.segmentService.findCoincidingSegment(labelId, Number(trackingKey), Number(trackingKey), systemUser[0].id.toString(), samplingRate);
+    let segmentIdentifier;
+    if (preExistingSegment) {
+      await this.segmentService.updateSegment(preExistingSegment.id.toString(), preExistingSegment['start'], RecommendationService.getEnd(Number(trackingKey), samplingRate));
+      segmentIdentifier = preExistingSegment.id.toString();
+    } else {
+      const insertResult = await this.segmentService.createSegment(labelId, systemUser[0].id.toString(), RecommendationService.getStart(Number(trackingKey), samplingRate), RecommendationService.getEnd(Number(trackingKey), samplingRate), 'contributor');
+      segmentIdentifier = insertResult.identifiers[0].id.toString();
+    }
+    return segmentIdentifier;
   }
 
-  private static getEnd(item, samplingRate) {
-    return item["end"] + Math.round(samplingRate / 2);
+  private async getSystemUser() {
+    let systemUser = await this.usersService.findByUsername(config.systemUserName);
+    if (!systemUser || systemUser.length === 0) {
+      await this.usersService.create(new UserModel(config.systemUserName, config.systemUserEmail, config.systemUserPwd));
+      systemUser = await this.usersService.findByUsername(config.systemUserName);
+    }
+    return systemUser;
   }
 
-  private generateRecommendedTrackables(trackingInfo: [number[]], videoDimensions: string, labelName: string) {
+  private static getStart(startTime, samplingRate: any) {
+    const start = startTime - Math.round(samplingRate / 2);
+    return start <= 0 ? 0 : start;
+  }
+
+  private static getEnd(endTime, samplingRate) {
+    return endTime + Math.round(samplingRate / 2);
+  }
+
+  private static generateRecommendedTrackables(trackingInfo: number[], videoDimensions: string, labelName: string) {
     // Note: trackinfo normally contains values like [[0.4466145833333333,0.3958333333333333,0.15963541666666667,0.34629629629629627]]
     // array of dimensions where each dimension is of the type [x, y, width, height] in ratios
-    let trackables = [];
-    let screenWidth = parseInt(videoDimensions.split(" ")[1]);
-    let screenHeight = parseInt(videoDimensions.split(" ")[0]);
-    for(let tracker in trackingInfo) {
-      let dimension = trackingInfo[tracker];
-      const [x, y, width, height]: number[] = [dimension[0]*screenWidth, dimension[1]*screenHeight,
-        dimension[2]*screenWidth, dimension[3]*screenHeight];
-      trackables.push("\"<rect id=\\\""+labelName+"\\\" fill=\\\""+config.systemColor+"\\\" fill-opacity=\\\"0.3\\\" shape-rendering=\\\"geometricPrecision\\\" stroke-linejoin=\\\"round\\\" stroke=\\\"#000000\\\" x=\\\""+
-          x+"\\\" y=\\\""+y+"\\\" width=\\\""+width+"\\\" height=\\\""+height+"\\\" title=\\\""+labelName+"\\\"><title>"+labelName+"</title></rect>\"");
-    }
-    return trackables;
+    const regionOfInterest = [];
+    const screenWidth = parseInt(videoDimensions.split(' ')[1], 10);
+    const screenHeight = parseInt(videoDimensions.split(' ')[0], 10);
+    const dimension = trackingInfo;
+    // @ts-ignore
+    const [x, y, width, height]: number[] = [ dimension[0] * screenWidth, dimension[1] * screenHeight, dimension[2] * screenWidth, dimension[3] * screenHeight];
+    regionOfInterest.push("\"<rect id=\\\""+labelName+"\\\" fill=\\\""+config.systemColor+"\\\" fill-opacity=\\\"0.3\\\" shape-rendering=\\\"geometricPrecision\\\" stroke-linejoin=\\\"round\\\" stroke=\\\"#000000\\\" x=\\\""+
+        x+"\\\" y=\\\""+y+"\\\" width=\\\""+width+"\\\" height=\\\""+height+"\\\" title=\\\""+labelName+"\\\"><title>"+labelName+"</title></rect>\"");
+    return regionOfInterest;
   }
 
   async fetchPollStatus(id: string) {
@@ -214,5 +228,24 @@ export class RecommendationService {
 
   async removePoll(poll_Id: string) {
     return this.pollerService.removePoll(poll_Id);
+  }
+
+  /**
+   * Method to create or retrieve an appropriate label instance. i.e, 4th instance for the fourth occurence of a label.
+   * @param category
+   * @param labelTracker
+   */
+  async getLabelToUpdate(category: LabelCategory, labelTracker: {}, projectId: string, authorId: string) {
+    if (!labelTracker[category.name] && labelTracker[category.name] !== 0) {
+      labelTracker[category.name] = 0;
+      return await this.labelsService.getLabel(category.labels[labelTracker[category.name]]['_id'].toString());
+    }
+    labelTracker[category.name] += 1;
+    if (category.labels[labelTracker[category.name]]) {
+      return await this.labelsService.getLabel(category.labels[labelTracker[category.name]]['_id'].toString());
+    } else {
+      const label: Label = await this.labelsService.createLabel(projectId, authorId, category.id.toString(), 'contributor');
+      return label;
+    }
   }
 }
