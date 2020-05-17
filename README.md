@@ -24,7 +24,7 @@ $ git config --global core.autocrlf false
 NOTE: This service is used by the Video Annotation tool to perform the tasks of object tracking as well as
 the generation of recommendations. Follow the instructions for the installations by clcking on the link above. 
 
-Complete the installation for this before proceeding further.
+<b>Complete the installation for this before proceeding further.</b>
 
 ### 1. Clone the repository
 
