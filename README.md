@@ -2,7 +2,7 @@
 
 * [Video Annotation Tool](https://github.com/phev8/video-annotation-tool.git) (this repository)
 
-## Quickstart
+## Quickstart - Installation Instructions
 
 ### 0. Prerequisites:
 
