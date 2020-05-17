@@ -14,9 +14,6 @@ import {TrackerController} from '../labels/trackers/tracker.controller';
 import {config} from '../../config';
 import {Segment} from '../entities/segment.entity';
 import {InsertResult} from 'typeorm';
-import { PredictionResult } from '../interfaces/prediction.result';
-import { User } from '../entities/user.entity';
-import { liveSearch } from '../../../web/src/app/search/live-search.operator';
 import { Label } from '../entities/label.entity';
 
 @Injectable()
