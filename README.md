@@ -98,6 +98,11 @@ You can do so by running:
 sudo service mongod stop
 ```
 
+### ERR cb() never called
+
+This can occur due to problems with the package-lock.json file. Delete that file for either the backend or the frontend.
+Run sudo npm cache clean --force if required. And retru docker-compose up --build
+
 
 ###  Stop and remove containers, networks and volumes
 
