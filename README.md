@@ -74,6 +74,31 @@ Kindly refer to the getting-started.doc for a walk-through on getting started an
 
 ## Troubleshooting
 
+### Permission errors
+
+You might encounter errors in connecting to docker daemon either on running the command 
+```bash
+$ (sudo) docker-compose up --build
+```
+or on the command 
+
+```bash
+docker run --net=host codenvy/che-ip
+```
+
+In both cases ensure that docker is installed and docker service is running. If that fails, try running the former command through sudo.
+
+
+### Conflicting Mongodb error
+
+If a mongod service is already running on the system, stop it before running the docker-compose up --build command.
+You can do so by running:
+
+```bash
+sudo service mongod stop
+```
+
+
 ###  Stop and remove containers, networks and volumes
 
 WARNING: This will clear any data you had in your mongodb instance. If you wish to save persistent data, try this link 
